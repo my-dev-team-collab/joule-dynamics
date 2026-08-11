@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bot, X, AlertCircle, Sparkles, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp } from 'lucide-react';
+import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -137,15 +137,15 @@ export default function RealEstateChatWidget() {
 
       {/* Slide-over Drawer Panel */}
       {isOpen && (
-        <div className={`fixed inset-y-0 right-0 z-[60] bg-background border-l border-border shadow-2xl flex flex-col transition-all duration-200 ${
+        <div className={`fixed top-12 bottom-0 right-0 z-40 bg-background border-l border-border shadow-2xl flex flex-col transition-all duration-200 ${
           isMaximized 
-            ? "inset-0 w-full h-full" 
+            ? "left-0 w-full" 
             : "w-full sm:w-[400px] md:max-w-md"
         }`}>
           {/* Header */}
-          <div className="p-4 border-b border-border flex justify-between items-center bg-card">
+          <div className="p-4 border-b border-border flex justify-between items-center bg-card shrink-0">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
+              <Activity className="w-5 h-5 text-primary" />
               <div>
                 <h3 className="text-sm font-bold text-foreground">Real Estate Intelligence</h3>
                 <p className="text-xs text-muted-foreground">Scoped to Rate Monitor</p>
@@ -168,8 +168,10 @@ export default function RealEstateChatWidget() {
             </div>
           </div>
 
-          {/* Read-Only Scope Notice */}
-          <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center gap-2 text-xs text-muted-foreground">
+          {/* Centered Content Column */}
+          <div className={`flex flex-col flex-1 overflow-hidden ${isMaximized ? 'max-w-4xl mx-auto w-full' : 'w-full'}`}>
+            {/* Read-Only Scope Notice */}
+            <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center gap-2 text-xs text-muted-foreground shrink-0">
             <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
             <span className="leading-snug">Answers grounded live from page data and methodology context.</span>
           </div>
@@ -336,6 +338,7 @@ export default function RealEstateChatWidget() {
                 </button>
               </div>
             </form>
+          </div>
           </div>
         </div>
       )}
