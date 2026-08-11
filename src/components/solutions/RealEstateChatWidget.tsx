@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bot, Send, X, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
+import { Bot, X, AlertCircle, Sparkles, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -32,9 +32,29 @@ export default function RealEstateChatWidget() {
   const [isErrorState, setIsErrorState] = useState(false);
 
   // Browser-scoped persistent session ID
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
+  const [isMaximized, setIsMaximized] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleNewChat = () => {
+    setSessionId(crypto.randomUUID());
+    setMessages([
+      {
+        sender: 'assistant',
+        text: "Hello! I'm your Real Estate Intelligence Assistant. Ask me about live rate volatility, property availability, or how our tracking methodology works."
+      }
+    ]);
+    setInput('');
+    setIsErrorState(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
 
 
@@ -117,7 +137,11 @@ export default function RealEstateChatWidget() {
 
       {/* Slide-over Drawer Panel */}
       {isOpen && (
-        <div className="fixed inset-y-0 right-0 z-[60] w-full sm:w-[400px] md:max-w-md bg-background border-l border-border shadow-2xl flex flex-col transition-transform transform translate-x-0">
+        <div className={`fixed inset-y-0 right-0 z-[60] bg-background border-l border-border shadow-2xl flex flex-col transition-all duration-200 ${
+          isMaximized 
+            ? "inset-0 w-full h-full" 
+            : "w-full sm:w-[400px] md:max-w-md"
+        }`}>
           {/* Header */}
           <div className="p-4 border-b border-border flex justify-between items-center bg-card">
             <div className="flex items-center gap-2">
@@ -127,9 +151,21 @@ export default function RealEstateChatWidget() {
                 <p className="text-xs text-muted-foreground">Scoped to Rate Monitor</p>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground p-1 rounded-md transition-colors">
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button onClick={handleNewChat} className="text-muted-foreground hover:text-foreground p-1.5 rounded-md transition-colors" title="New Chat">
+                <MessageSquarePlus className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => setIsMaximized(!isMaximized)} 
+                className="hidden md:flex text-muted-foreground hover:text-foreground p-1.5 rounded-md transition-colors"
+                title={isMaximized ? "Minimize" : "Maximize"}
+              >
+                {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
+              <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground p-1.5 rounded-md transition-colors" title="Close">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Read-Only Scope Notice */}
@@ -139,7 +175,7 @@ export default function RealEstateChatWidget() {
           </div>
 
           {/* Messages Feed */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 relative">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 relative assistant-scrollbar">
             {isErrorState && (
               <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-6 text-center">
                 <AlertCircle className="w-8 h-8 text-amber-500 mb-3" />
@@ -176,7 +212,7 @@ export default function RealEstateChatWidget() {
 
               const markdownComponents: Components = {
                 table: ({ children, ...props }) => (
-                  <div className="w-full overflow-x-auto my-3 border border-border rounded-md">
+                  <div className="w-full overflow-x-auto my-3 border border-border rounded-md assistant-scrollbar">
                     <table className="w-full text-left border-collapse text-xs whitespace-nowrap" {...props}>
                       {children}
                     </table>
@@ -273,23 +309,32 @@ export default function RealEstateChatWidget() {
                 e.preventDefault();
                 handleSend();
               }}
-              className="flex gap-2"
+              className="flex flex-col gap-2 p-3 bg-zinc-900 border border-zinc-800 rounded-xl focus-within:ring-1 focus-within:ring-zinc-700 transition-shadow"
             >
-              <input
-                type="text"
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Ask about rates, spikes..."
-                className="flex-1 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
+                rows={Math.min(5, input.split('\n').length || 1)}
+                className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none min-h-[24px] max-h-32 assistant-scrollbar"
               />
-              <button
-                type="submit"
-                disabled={loading || !input.trim()}
-                className="bg-primary text-primary-foreground p-2 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 shrink-0 flex items-center justify-center w-10 h-10"
-                aria-label="Send message"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+              <div className="flex justify-between items-center mt-1">
+                <span className="px-2 py-1 bg-zinc-800 rounded text-[10px] font-mono text-zinc-400">rate-monitor-v1</span>
+                
+                <button
+                  type="submit"
+                  disabled={loading || !input.trim()}
+                  className={`p-1.5 rounded-full flex items-center justify-center w-8 h-8 transition-all ${
+                    loading || !input.trim() 
+                      ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" 
+                      : "bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                  }`}
+                  aria-label="Send message"
+                >
+                  <ArrowUp className="w-4 h-4 stroke-[3]" />
+                </button>
+              </div>
             </form>
           </div>
         </div>
