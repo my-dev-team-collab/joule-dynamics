@@ -10,7 +10,108 @@ interface Message {
   text: string;
   path?: string;
   suggested_actions?: string[];
+  isError?: boolean;
+  retryable?: boolean;
+  isStreaming?: boolean;
 }
+
+const MessageBubble = ({
+  msg,
+  isLastMessage,
+  handleSend,
+  loading,
+  markdownComponents
+}: {
+  msg: Message;
+  isLastMessage: boolean;
+  handleSend: (text?: string) => void;
+  loading: boolean;
+  markdownComponents: Components;
+}) => {
+  const [displayedText, setDisplayedText] = useState(msg.isStreaming ? '' : msg.text);
+  const [isComplete, setIsComplete] = useState(!msg.isStreaming);
+
+  useEffect(() => {
+    if (!msg.isStreaming || isComplete) {
+      setDisplayedText(msg.text);
+      setIsComplete(true);
+      return;
+    }
+
+    let i = 0;
+    const interval = setInterval(() => {
+      i += 1;
+      setDisplayedText(msg.text.slice(0, i));
+      if (i >= msg.text.length) {
+        clearInterval(interval);
+        setIsComplete(true);
+        msg.isStreaming = false;
+      }
+    }, 25);
+
+    return () => clearInterval(interval);
+  }, [msg.text, msg.isStreaming, isComplete, msg]);
+
+  return (
+    <div className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+      <div
+        className={`max-w-[90%] p-3 rounded-xl text-sm ${
+          msg.sender === 'user'
+            ? 'bg-secondary text-secondary-foreground font-medium rounded-br-sm'
+            : msg.isError
+              ? 'bg-red-500/10 border border-red-500/50 text-red-500 rounded-bl-sm'
+              : 'bg-card text-foreground border border-border/50 shadow-sm rounded-bl-sm'
+        }`}
+      >
+        {msg.sender === 'assistant' ? (
+          msg.isError ? (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <p className="whitespace-pre-wrap">{displayedText}</p>
+              </div>
+              {msg.retryable && (
+                <button 
+                  onClick={() => handleSend()} 
+                  className="self-start mt-1 text-xs px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-600 dark:text-red-400 rounded-md transition-colors font-medium"
+                >
+                  Try again
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="prose dark:prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-muted prose-pre:text-muted-foreground prose-a:text-primary">
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+                components={markdownComponents}
+              >
+                {displayedText}
+              </ReactMarkdown>
+              {!isComplete && <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />}
+            </div>
+          )
+        ) : (
+          <p className="whitespace-pre-wrap">{msg.text}</p>
+        )}
+      </div>
+      
+      {msg.sender === 'assistant' && msg.suggested_actions && msg.suggested_actions.length > 0 && isLastMessage && isComplete && (
+        <div className="flex flex-wrap gap-2 mt-3 max-w-[90%]">
+          {msg.suggested_actions.map((action, actionIdx) => (
+            <button
+              key={actionIdx}
+              onClick={() => handleSend(action)}
+              disabled={loading}
+              className="text-xs px-3 py-1.5 rounded-full border border-border hover:bg-accent hover:text-accent-foreground text-muted-foreground bg-transparent transition-colors disabled:opacity-50 text-left"
+            >
+              {action}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const STARTER_QUESTIONS = [
   "What is the average rate in Miami?",
@@ -29,7 +130,6 @@ export default function RealEstateChatWidget() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
-  const [isErrorState, setIsErrorState] = useState(false);
 
   // Browser-scoped persistent session ID
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
@@ -42,11 +142,11 @@ export default function RealEstateChatWidget() {
     setMessages([
       {
         sender: 'assistant',
-        text: "Hello! I'm your Real Estate Intelligence Assistant. Ask me about live rate volatility, property availability, or how our tracking methodology works."
+        text: "Hello! I'm your Real Estate Intelligence Assistant. Ask me about live rate volatility, property availability, or how our tracking methodology works.",
+        isStreaming: false
       }
     ]);
     setInput('');
-    setIsErrorState(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -65,14 +165,26 @@ export default function RealEstateChatWidget() {
   }, [messages, loading, isOpen]);
 
   const handleSend = async (queryToSend?: string) => {
-    const text = queryToSend || input;
+    let text = queryToSend || input;
+    
+    // Find the last user message if we're retrying (no input, no queryToSend)
+    if (!text.trim()) {
+      const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
+      if (lastUserMsg) text = lastUserMsg.text;
+    }
+    
     if (!text.trim() || loading) return;
 
-    const userMsg: Message = { sender: 'user', text };
-    setMessages((prev) => [...prev, userMsg]);
-    if (!queryToSend) setInput('');
+    if (!queryToSend && text === input) {
+      const userMsg: Message = { sender: 'user', text };
+      setMessages((prev) => [...prev, userMsg]);
+      setInput('');
+    } else if (queryToSend) {
+      const userMsg: Message = { sender: 'user', text };
+      setMessages((prev) => [...prev, userMsg]);
+    }
+    
     setLoading(true);
-    setIsErrorState(false);
 
     // Capture URL SearchParam Filters to send to backend
     const activeFilters = {
@@ -95,28 +207,38 @@ export default function RealEstateChatWidget() {
         })
       });
 
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.status}`);
-      }
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
+      if (!response.ok || data.error) {
+        const errPayload = data.error || { message: `Network response was not ok: ${response.status}`, retryable: true };
+        throw errPayload;
+      }
       
       if (data.path_used === "ERROR") {
-        setIsErrorState(true);
-        // Remove the optimistic user message if we want, or just leave it.
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: 'assistant',
-            text: data.reply || "I couldn't parse the response. Please try again.",
-            path: data.path_used,
-            suggested_actions: data.suggested_actions
-          }
-        ]);
+        throw { message: "The Real Estate Intelligence Layer experienced an issue parsing the request.", retryable: true };
       }
-    } catch (err) {
-      setIsErrorState(true);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: 'assistant',
+          text: data.reply || "I couldn't parse the response. Please try again.",
+          path: data.path_used,
+          suggested_actions: data.suggested_actions,
+          isStreaming: true
+        }
+      ]);
+    } catch (err: any) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: 'assistant',
+          text: err.message || "An unexpected error occurred. Please try again later.",
+          isError: true,
+          retryable: err.retryable !== false,
+          isStreaming: false
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -178,25 +300,12 @@ export default function RealEstateChatWidget() {
 
           {/* Messages Feed */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 relative assistant-scrollbar">
-            {isErrorState && (
-              <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-6 text-center">
-                <AlertCircle className="w-8 h-8 text-amber-500 mb-3" />
-                <p className="text-sm font-medium text-foreground">Real Estate Intelligence Layer experienced an issue. Resolving...</p>
-                <button 
-                  onClick={() => setIsErrorState(false)} 
-                  className="mt-4 text-xs px-3 py-1.5 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-md transition-colors"
-                >
-                  Dismiss
-                </button>
-              </div>
-            )}
-            
             {messages.map((msg, idx) => {
               const isLastMessage = idx === messages.length - 1;
               
               // Format data and dates
               let formattedText = msg.text;
-              if (msg.sender === 'assistant') {
+              if (msg.sender === 'assistant' && !msg.isError) {
                 formattedText = formattedText.replace(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?\b/g, (_match) => {
                   try {
                     return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(_match));
@@ -231,50 +340,19 @@ export default function RealEstateChatWidget() {
                 )
               };
 
+              const formattedMsg = { ...msg, text: formattedText };
+
               return (
-              <div
-                key={idx}
-                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-              >
-                <div
-                  className={`max-w-[90%] p-3 rounded-xl text-sm ${
-                    msg.sender === 'user'
-                      ? 'bg-secondary text-secondary-foreground font-medium rounded-br-sm'
-                      : 'bg-card text-foreground border border-border/50 shadow-sm rounded-bl-sm'
-                  }`}
-                >
-                  {msg.sender === 'assistant' ? (
-                    <div className="prose dark:prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-muted prose-pre:text-muted-foreground prose-a:text-primary">
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]}
-                        components={markdownComponents}
-                      >
-                        {formattedText}
-                      </ReactMarkdown>
-                    </div>
-                  ) : (
-                    <p className="whitespace-pre-wrap">{formattedText}</p>
-                  )}
-                </div>
-                
-                {/* Suggested Actions - only on last message */}
-                {msg.sender === 'assistant' && msg.suggested_actions && msg.suggested_actions.length > 0 && isLastMessage && (
-                  <div className="flex flex-wrap gap-2 mt-3 max-w-[90%]">
-                    {msg.suggested_actions.map((action, actionIdx) => (
-                      <button
-                        key={actionIdx}
-                        onClick={() => handleSend(action)}
-                        disabled={loading}
-                        className="text-xs px-3 py-1.5 rounded-full border border-border hover:bg-accent hover:text-accent-foreground text-muted-foreground bg-transparent transition-colors disabled:opacity-50 text-left"
-                      >
-                        {action}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                <MessageBubble
+                  key={idx}
+                  msg={formattedMsg}
+                  isLastMessage={isLastMessage}
+                  handleSend={handleSend}
+                  loading={loading}
+                  markdownComponents={markdownComponents}
+                />
+              );
+            })}
             {loading && (
               <div className="flex justify-start">
                 <div className="flex items-center gap-2 bg-transparent text-muted-foreground py-2 px-1">
