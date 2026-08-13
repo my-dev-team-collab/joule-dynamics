@@ -1,14 +1,12 @@
 /**
  * PropertyMap.tsx
- * Mapbox GL JS map showing all tracked properties.
- * Data: v_rate_volatility (includes latitude/longitude after view update).
- * Token: VITE_MAP_BOX_API_KEY env var.
  * Pattern: useRef + useEffect (official Mapbox React pattern from skill).
  */
 import { useRef, useEffect, useState, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { MapPin } from "lucide-react";
+import { useTheme } from "../theme-provider";
 
 interface PropertyPoint {
   property_id: string;
@@ -34,6 +32,7 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const { theme } = useTheme();
 
   const [mapReady, setMapReady] = useState(false);
 
@@ -60,10 +59,14 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
       return;
     }
 
+    const initialStyle = theme === 'light' 
+      ? "mapbox://styles/mapbox/light-v11" 
+      : "mapbox://styles/mapbox/dark-v11";
+
     mapRef.current = new mapboxgl.Map({
       accessToken: token,
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      style: initialStyle,
       center: [-74.006, 40.7128], // NYC default
       zoom: 9,
     });
@@ -81,7 +84,16 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, []); // Run once on mount
+
+  // ── Sync Mapbox Style with Theme ──────────────────────────────────────────
+  useEffect(() => {
+    if (!mapRef.current || !mapReady) return;
+    const style = theme === 'light' 
+      ? "mapbox://styles/mapbox/light-v11" 
+      : "mapbox://styles/mapbox/dark-v11";
+    mapRef.current.setStyle(style);
+  }, [theme, mapReady]);
 
   // ── Add/update markers when properties or map is ready ───────────────────
   useEffect(() => {

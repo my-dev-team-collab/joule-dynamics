@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import config from "@/data/config.json";
 import type { RootConfig } from "@/types/data";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { LogoIcon, LogoLockup } from "@/components/ui/Logo";
 import { Menu, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -60,8 +61,8 @@ export function SystemStatusBar() {
           <span className="shrink-0 flex items-center">
             <a href="/" className="hover:opacity-80 transition-opacity flex items-center">
               {/* Icon-only on mobile, full lockup on sm+ */}
-              <img src="/joule-dynamics.svg" alt="Joule Dynamics" className="h-5 w-auto sm:hidden" />
-              <img src="/horizontal-lockup.svg" alt="Joule Dynamics" className="h-5 w-auto hidden sm:block dark:brightness-100 brightness-0" />
+              <LogoIcon className="h-5 w-auto sm:hidden" />
+              <LogoLockup className="h-5 w-auto hidden sm:block text-zinc-900 dark:text-white" />
             </a>
           </span>
 

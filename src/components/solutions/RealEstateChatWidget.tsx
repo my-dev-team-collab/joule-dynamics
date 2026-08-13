@@ -20,13 +20,15 @@ const MessageBubble = ({
   isLastMessage,
   handleSend,
   loading,
-  markdownComponents
+  markdownComponents,
+  onStreamComplete
 }: {
   msg: Message;
   isLastMessage: boolean;
   handleSend: (text?: string) => void;
   loading: boolean;
   markdownComponents: Components;
+  onStreamComplete?: () => void;
 }) => {
   const [displayedText, setDisplayedText] = useState(msg.isStreaming ? '' : msg.text);
   const [isComplete, setIsComplete] = useState(!msg.isStreaming);
@@ -45,7 +47,7 @@ const MessageBubble = ({
       if (i >= msg.text.length) {
         clearInterval(interval);
         setIsComplete(true);
-        msg.isStreaming = false;
+        if (onStreamComplete) onStreamComplete();
       }
     }, 25);
 
@@ -247,15 +249,17 @@ export default function RealEstateChatWidget() {
   return (
     <>
       {/* Floating Action Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[60] p-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-full shadow-lg flex items-center gap-2 transition-all"
-        aria-label="Toggle Intelligence Assistant"
-      >
-        <Bot className="w-6 h-6" />
-        {/* Hide text on small screens for responsiveness */}
-        <span className="hidden sm:inline-block text-sm font-semibold pr-1">Ask Intelligence</span>
-      </button>
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-[60] p-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-full shadow-lg flex items-center gap-2 transition-all"
+          aria-label="Toggle Intelligence Assistant"
+        >
+          <Bot className="w-6 h-6" />
+          {/* Hide text on small screens for responsiveness */}
+          <span className="hidden sm:inline-block text-sm font-semibold pr-1">Ask Intelligence</span>
+        </button>
+      )}
 
       {/* Slide-over Drawer Panel */}
       {isOpen && (
@@ -350,6 +354,13 @@ export default function RealEstateChatWidget() {
                   handleSend={handleSend}
                   loading={loading}
                   markdownComponents={markdownComponents}
+                  onStreamComplete={() => {
+                    setMessages(prev => {
+                      const newMsgs = [...prev];
+                      newMsgs[idx] = { ...newMsgs[idx], isStreaming: false };
+                      return newMsgs;
+                    });
+                  }}
                 />
               );
             })}
@@ -383,13 +394,13 @@ export default function RealEstateChatWidget() {
           )}
 
           {/* Input Box */}
-          <div className="p-4 border-t border-border bg-card">
+          <div className="p-4 pb-8 md:pb-4 border-t border-border bg-card">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend();
               }}
-              className="flex flex-col gap-2 p-3 bg-zinc-900 border border-zinc-800 rounded-xl focus-within:ring-1 focus-within:ring-zinc-700 transition-shadow"
+              className="flex flex-col gap-2 p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus-within:ring-1 focus-within:ring-zinc-300 dark:focus-within:ring-zinc-700 transition-shadow"
             >
               <textarea
                 value={input}
@@ -400,15 +411,15 @@ export default function RealEstateChatWidget() {
                 className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none min-h-[24px] max-h-32 assistant-scrollbar"
               />
               <div className="flex justify-between items-center mt-1">
-                <span className="px-2 py-1 bg-zinc-800 rounded text-[10px] font-mono text-zinc-400">rate-monitor-v1</span>
+                <span className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded text-[10px] font-mono text-zinc-500 dark:text-zinc-400">rate-monitor-v1</span>
                 
                 <button
                   type="submit"
                   disabled={loading || !input.trim()}
                   className={`p-1.5 rounded-full flex items-center justify-center w-8 h-8 transition-all ${
                     loading || !input.trim() 
-                      ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" 
-                      : "bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed" 
+                      : "bg-emerald-500 text-white hover:bg-emerald-600 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
                   }`}
                   aria-label="Send message"
                 >

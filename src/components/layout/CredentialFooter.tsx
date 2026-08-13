@@ -7,6 +7,8 @@ import config from "@/data/config.json";
 import type { LinkNode, RootConfig } from "@/types/data";
 import { Link } from "react-router-dom";
 import { Mail } from "lucide-react";
+import { LogoLockup } from "../ui/Logo";
+
 
 const { links } = config as unknown as RootConfig;
 const LINKS = links as LinkNode[];
@@ -58,11 +60,7 @@ export default function CredentialFooter() {
           {/* ── Column 1: Brand Lock ── */}
           <div className="flex flex-col gap-3">
             <a href="/" className="inline-block">
-              <img
-                src="/horizontal-lockup.svg"
-                alt="Joule Dynamics"
-                className="h-5 w-auto dark:brightness-100 brightness-0"
-              />
+              <LogoLockup className="h-5 w-auto text-zinc-900 dark:text-white" />
             </a>
             <p className="text-sm text-muted-foreground font-mono">
               Built on Industrial Logic.
