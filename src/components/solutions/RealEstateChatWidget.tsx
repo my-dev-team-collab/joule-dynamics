@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp } from 'lucide-react';
+import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -104,7 +104,7 @@ const MessageBubble = ({
               key={actionIdx}
               onClick={() => handleSend(action)}
               disabled={loading}
-              className="text-xs px-3 py-1.5 rounded-full border border-border hover:bg-accent hover:text-accent-foreground text-muted-foreground bg-transparent transition-colors disabled:opacity-50 text-left"
+              className="px-3 py-1.5 text-xs font-medium text-secondary-foreground bg-secondary/80 hover:bg-secondary border border-border rounded-full transition-all hover:scale-[1.02] disabled:opacity-50 text-left"
             >
               {action}
             </button>
@@ -217,9 +217,15 @@ export default function RealEstateChatWidget() {
 
       const data = await response.json().catch(() => ({}));
 
-      if (!response.ok || data.error) {
-        const errPayload = data.error || { message: `Network response was not ok: ${response.status}`, retryable: true };
-        throw errPayload;
+      if (!response.ok) {
+        if (data.error) throw data.error;
+        if (response.status === 429) throw { message: "Rate limit exceeded. Please wait a moment before trying again.", retryable: true };
+        if (response.status === 503) throw { message: "Service temporarily unavailable. Please try again.", retryable: true };
+        throw { message: `Network error: ${response.status}`, retryable: true };
+      }
+      
+      if (data.error) {
+        throw data.error;
       }
       
       if (data.path_used === "ERROR") {
@@ -345,9 +351,46 @@ export default function RealEstateChatWidget() {
                 td: ({ children, ...props }) => (
                   <td className="p-2 border-b border-border/50" {...props}>{children}</td>
                 ),
-                a: ({ children, href, ...props }) => (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 underline" {...props}>{children}</a>
-                )
+                a: ({ children, href, title, ...props }: any) => {
+                  if (title === 'button') {
+                    const isWhatsApp = href?.startsWith('https://wa.me');
+                    const isEmail = href?.startsWith('mailto:');
+                    
+                    return (
+                      <a
+                        href={href}
+                        target={isEmail ? '_self' : '_blank'}
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 my-2 mr-2 font-medium text-white transition-all bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md hover:shadow-lg no-underline"
+                        {...props}
+                      >
+                        {isWhatsApp && <MessageSquare className="w-4 h-4" />}
+                        {isEmail && <Mail className="w-4 h-4" />}
+                        {children}
+                      </a>
+                    );
+                  }
+
+                  if (href?.includes('/download?')) {
+                    return (
+                      <a
+                        href={href}
+                        download
+                        className="inline-flex items-center gap-2 px-3.5 py-1.5 my-1 font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-500/30 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 rounded-lg transition-colors no-underline"
+                        {...props}
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>{children}</span>
+                      </a>
+                    );
+                  }
+
+                  return (
+                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 underline" {...props}>
+                      {children} <ExternalLink className="inline w-3 h-3 ml-0.5" />
+                    </a>
+                  );
+                }
               };
 
               const formattedMsg = { ...msg, text: formattedText };
