@@ -6,7 +6,7 @@ import { caseStudies } from "@/data/caseStudies";
 import type { CaseStudy } from "@/data/caseStudies";
 
 export default function ServiceTierSection() {
-  const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | null>(null);
+  const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | CaseStudy[] | null>(null);
 
   const customBuilds = [
     caseStudies["unified-triage-engine"],
@@ -77,10 +77,14 @@ export default function ServiceTierSection() {
                 Try it now
               </button>
               <button
-                onClick={() => setSelectedCaseStudy(caseStudies["pulse-market-intelligence"])}
+                onClick={() => setSelectedCaseStudy([
+                  caseStudies["pulse-market-intelligence"],
+                  caseStudies["pulse-str-concierge"],
+                  caseStudies["pulse-multifamily-leasing"]
+                ])}
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:opacity-80 transition-opacity"
               >
-                View Case Study <ArrowRight className="size-3" />
+                View Case Studies <ArrowRight className="size-3" />
               </button>
             </div>
           </div>

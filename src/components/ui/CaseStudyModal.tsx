@@ -32,7 +32,7 @@ function useMediaQuery(query: string) {
 }
 
 interface CaseStudyModalProps {
-  caseStudy: CaseStudy
+  caseStudy: CaseStudy | CaseStudy[]
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -47,24 +47,27 @@ export function CaseStudyModal({ caseStudy, open, onOpenChange }: CaseStudyModal
     return "bg-muted text-muted-foreground border-border";
   };
 
-  const Content = () => (
-    <div className="flex flex-col gap-6 text-sm">
+  const ContentBlock = ({ study, isLast }: { study: CaseStudy, isLast: boolean }) => (
+    <div className="flex flex-col gap-6 text-sm mb-6">
+      {Array.isArray(caseStudy) && (
+        <h3 className="font-bold text-lg text-foreground border-l-4 border-primary pl-3">{study.title}</h3>
+      )}
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className={`font-mono text-[10px] tracking-wider uppercase rounded-full ${getStatusColor(caseStudy.status)}`}>
-          {caseStudy.status}
+        <Badge variant="outline" className={`font-mono text-[10px] tracking-wider uppercase rounded-full ${getStatusColor(study.status)}`}>
+          {study.status}
         </Badge>
       </div>
 
       <div className="flex flex-col gap-2">
         <h4 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase">The Challenge</h4>
-        <p className="text-foreground leading-relaxed">{caseStudy.challenge}</p>
+        <p className="text-foreground leading-relaxed">{study.challenge}</p>
       </div>
 
       <div className="flex flex-col gap-2">
         <h4 className="font-mono text-[11px] font-bold tracking-widest text-primary uppercase">
-          {caseStudy.solutionLabel || "How This Works"}
+          {study.solutionLabel || "How This Works"}
         </h4>
-        <p className="text-foreground leading-relaxed">{caseStudy.solution}</p>
+        <p className="text-foreground leading-relaxed">{study.solution}</p>
       </div>
 
       <div className="flex flex-col gap-2 p-4 bg-muted/30 rounded-lg border border-border">
@@ -72,34 +75,49 @@ export function CaseStudyModal({ caseStudy, open, onOpenChange }: CaseStudyModal
         <div className="flex flex-col gap-3">
           <div className="flex gap-2">
             <span className="text-muted-foreground font-medium shrink-0">Before:</span>
-            <span className="text-muted-foreground italic">{caseStudy.beforeAfter.before}</span>
+            <span className="text-muted-foreground italic">{study.beforeAfter.before}</span>
           </div>
           <div className="flex gap-2">
             <span className="text-foreground font-medium shrink-0">After:</span>
-            <span className="text-foreground font-medium">{caseStudy.beforeAfter.after}</span>
+            <span className="text-foreground font-medium">{study.beforeAfter.after}</span>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <h4 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
-          {caseStudy.resultsLabel || "What You'd Get"}
+          {study.resultsLabel || "What You'd Get"}
         </h4>
         <ul className="flex flex-col gap-2 list-disc list-inside text-foreground leading-relaxed marker:text-primary">
-          {caseStudy.results.map((result, i) => (
+          {study.results.map((result, i) => (
             <li key={i}>{result}</li>
           ))}
         </ul>
       </div>
+
+      {!isLast && <hr className="border-border mt-6" />}
     </div>
   )
+
+  const Content = () => {
+    const studies = Array.isArray(caseStudy) ? caseStudy : [caseStudy];
+    return (
+      <div className="flex flex-col">
+        {studies.map((study, i) => (
+          <ContentBlock key={study.id} study={study} isLast={i === studies.length - 1} />
+        ))}
+      </div>
+    );
+  };
+
+  const modalTitle = Array.isArray(caseStudy) ? "Pulse — Intelligence Implementations" : caseStudy.title;
 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold tracking-tight text-foreground text-left">{caseStudy.title}</DialogTitle>
+            <DialogTitle className="text-2xl font-bold tracking-tight text-foreground text-left">{modalTitle}</DialogTitle>
           </DialogHeader>
           <div className="mt-2">
             <Content />
@@ -113,7 +131,7 @@ export function CaseStudyModal({ caseStudy, open, onOpenChange }: CaseStudyModal
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[90vh]">
         <div className="px-4 pt-4 pb-2 border-b border-border shrink-0">
-          <DrawerTitle className="text-2xl font-bold tracking-tight text-foreground text-left">{caseStudy.title}</DrawerTitle>
+          <DrawerTitle className="text-2xl font-bold tracking-tight text-foreground text-left">{modalTitle}</DrawerTitle>
         </div>
         <div className="p-4 overflow-y-auto">
           <Content />
