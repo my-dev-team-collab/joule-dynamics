@@ -126,7 +126,7 @@ export default function RealEstateChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: 'assistant',
-      text: "Hello! I'm your Real Estate Intelligence Assistant. Ask me about live rate volatility, property availability, or how our tracking methodology works."
+      text: "Hello! I'm Pulse, your Real Estate Intelligence Assistant. Ask me about live rate volatility, property availability, or how our tracking methodology works."
     }
   ]);
   const [input, setInput] = useState('');
@@ -144,7 +144,7 @@ export default function RealEstateChatWidget() {
     setMessages([
       {
         sender: 'assistant',
-        text: "Hello! I'm your Real Estate Intelligence Assistant. Ask me about live rate volatility, property availability, or how our tracking methodology works.",
+        text: "Hello! I'm Pulse, your Real Estate Intelligence Assistant. Ask me about live rate volatility, property availability, or how our tracking methodology works.",
         isStreaming: false
       }
     ]);
@@ -165,6 +165,12 @@ export default function RealEstateChatWidget() {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, loading, isOpen]);
+
+  useEffect(() => {
+    const handleOpenPulse = () => setIsOpen(true);
+    window.addEventListener('open-pulse', handleOpenPulse);
+    return () => window.removeEventListener('open-pulse', handleOpenPulse);
+  }, []);
 
   const handleSend = async (queryToSend?: string) => {
     let text = queryToSend || input;
@@ -217,7 +223,7 @@ export default function RealEstateChatWidget() {
       }
       
       if (data.path_used === "ERROR") {
-        throw { message: "The Real Estate Intelligence Layer experienced an issue parsing the request.", retryable: true };
+        throw { message: "Pulse experienced an issue parsing the request.", retryable: true };
       }
 
       setMessages((prev) => [
@@ -257,7 +263,7 @@ export default function RealEstateChatWidget() {
         >
           <Bot className="w-6 h-6" />
           {/* Hide text on small screens for responsiveness */}
-          <span className="hidden sm:inline-block text-sm font-semibold pr-1">Ask Intelligence</span>
+          <span className="hidden sm:inline-block text-sm font-semibold pr-1">Ask Pulse</span>
         </button>
       )}
 
@@ -273,7 +279,7 @@ export default function RealEstateChatWidget() {
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
               <div>
-                <h3 className="text-sm font-bold text-foreground">Real Estate Intelligence</h3>
+                <h3 className="text-sm font-bold text-foreground">Pulse — Real Estate Intelligence</h3>
                 <p className="text-xs text-muted-foreground">Scoped to Rate Monitor</p>
               </div>
             </div>
