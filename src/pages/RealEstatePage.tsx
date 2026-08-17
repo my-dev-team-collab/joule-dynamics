@@ -58,6 +58,7 @@ export default function RealEstatePage() {
           supabase
             .from("v_rate_volatility")
             .select("*")
+            .order("recorded_at", { ascending: false })
             .order("stay_date", { ascending: false })
         ]);
 

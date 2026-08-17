@@ -88,21 +88,44 @@ export interface RealEstateDemoProps {
 export default function RealEstateDemo({ data, loading }: RealEstateDemoProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
 
-  // Initialize selected property
+  // Initialize and maintain selected property (auto-selects rich, volatile time-series)
   useEffect(() => {
-    if (data.length > 0 && !selectedPropertyId) {
-      const nycProps = data.filter(
-        (r) => r.market && (r.market.toLowerCase().includes("nyc") || r.market.toLowerCase().includes("nj"))
-      );
-      const targetPool = nycProps.length > 0 ? nycProps : data;
-      const mostVolatile = targetPool.reduce((prev, curr) => {
-        const prevVal = Math.abs(prev.pct_above_trailing_avg ?? 0);
-        const currVal = Math.abs(curr.pct_above_trailing_avg ?? 0);
-        return currVal > prevVal ? curr : prev;
-      }, targetPool[0]);
-      if (mostVolatile) setSelectedPropertyId(mostVolatile.property_id);
+    if (uniqueProperties.length === 0) return;
+
+    const isCurrentValid = selectedPropertyId && uniqueProperties.some((p) => p.id === selectedPropertyId);
+    if (isCurrentValid) return;
+
+    const availableIds = new Set(uniqueProperties.map((p) => p.id));
+    const propStats = new Map<string, { count: number; maxVol: number; isRecent: boolean }>();
+    const now = Date.now();
+    const twoDaysAgo = now - 48 * 3600 * 1000;
+
+    for (const r of data) {
+      if (!availableIds.has(r.property_id) || r.nightly_rate === null) continue;
+      const stats = propStats.get(r.property_id) || { count: 0, maxVol: 0, isRecent: false };
+      stats.count += 1;
+      const vol = Math.abs(r.pct_above_trailing_avg ?? 0);
+      if (vol > stats.maxVol) stats.maxVol = vol;
+      if (new Date(r.recorded_at).getTime() >= twoDaysAgo) stats.isRecent = true;
+      propStats.set(r.property_id, stats);
     }
-  }, [data, selectedPropertyId]);
+
+    const pool = Array.from(propStats.entries());
+
+    if (pool.length > 0) {
+      pool.sort((a, b) => {
+        if (a[1].isRecent !== b[1].isRecent) return a[1].isRecent ? -1 : 1;
+        const aRich = a[1].count >= 4 ? 1 : 0;
+        const bRich = b[1].count >= 4 ? 1 : 0;
+        if (aRich !== bRich) return bRich - aRich;
+        if (b[1].maxVol !== a[1].maxVol) return b[1].maxVol - a[1].maxVol;
+        return b[1].count - a[1].count;
+      });
+      setSelectedPropertyId(pool[0][0]);
+    } else {
+      setSelectedPropertyId(uniqueProperties[0].id);
+    }
+  }, [data, uniqueProperties, selectedPropertyId]);
 
 
 
@@ -119,12 +142,16 @@ export default function RealEstateDemo({ data, loading }: RealEstateDemoProps) {
   ), [data]);
 
 
-  // Apply filtered properties (data is already filtered by parent)
-  const filteredProperties = uniqueProperties;
-
-  const latestPerProperty = useMemo(() =>
-    filteredProperties.map((p) => data.find((r) => r.property_id === p.id)!).filter(Boolean),
-  [filteredProperties, data]);
+  const latestPerProperty = useMemo(() => {
+    const propMap = new Map<string, RateRow>();
+    for (const r of data) {
+      const existing = propMap.get(r.property_id);
+      if (!existing || new Date(r.recorded_at).getTime() > new Date(existing.recorded_at).getTime()) {
+        propMap.set(r.property_id, r);
+      }
+    }
+    return Array.from(propMap.values());
+  }, [data]);
 
   // Volatility alerts (unfiltered — show all properties)
   const spikes = useMemo(() => {
@@ -485,8 +512,8 @@ export default function RealEstateDemo({ data, loading }: RealEstateDemoProps) {
                       const lastKnown = recentPriced[recentPriced.length - 1];
                       rateDisplay = (
                         <span className="flex flex-col gap-0.5">
-                          <span className={`font-medium flex items-center gap-1 ${isStale ? "text-amber-500/80" : "text-muted-foreground"}`}>
-                            {isStale ? "Stale" : "Unavailable"}
+                          <span className="font-medium flex items-center gap-1 text-muted-foreground">
+                            Unavailable
                             <span title="Reflects a 2-night stay starting today rather than the property's full calendar. Other dates may still be bookable.">
                               <Info className="size-3 opacity-60 cursor-help" />
                             </span>
