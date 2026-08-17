@@ -88,6 +88,29 @@ export interface RealEstateDemoProps {
 export default function RealEstateDemo({ data, loading }: RealEstateDemoProps) {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
 
+  // ── Derived state ────────────────────────────────────────────────────────────
+
+  const uniqueProperties = useMemo(() => Array.from(
+    new Map(data.map((r) => [r.property_id, {
+      id: r.property_id,
+      name: r.property_name,
+      market: r.market,
+      platform: r.platform,
+      bedrooms: r.bedrooms,
+    }])).values()
+  ), [data]);
+
+  const latestPerProperty = useMemo(() => {
+    const propMap = new Map<string, RateRow>();
+    for (const r of data) {
+      const existing = propMap.get(r.property_id);
+      if (!existing || new Date(r.recorded_at).getTime() > new Date(existing.recorded_at).getTime()) {
+        propMap.set(r.property_id, r);
+      }
+    }
+    return Array.from(propMap.values());
+  }, [data]);
+
   // Initialize and maintain selected property (auto-selects rich, volatile time-series)
   useEffect(() => {
     if (uniqueProperties.length === 0) return;
@@ -126,32 +149,6 @@ export default function RealEstateDemo({ data, loading }: RealEstateDemoProps) {
       setSelectedPropertyId(uniqueProperties[0].id);
     }
   }, [data, uniqueProperties, selectedPropertyId]);
-
-
-
-  // ── Derived state ────────────────────────────────────────────────────────────
-
-  const uniqueProperties = useMemo(() => Array.from(
-    new Map(data.map((r) => [r.property_id, {
-      id: r.property_id,
-      name: r.property_name,
-      market: r.market,
-      platform: r.platform,
-      bedrooms: r.bedrooms,
-    }])).values()
-  ), [data]);
-
-
-  const latestPerProperty = useMemo(() => {
-    const propMap = new Map<string, RateRow>();
-    for (const r of data) {
-      const existing = propMap.get(r.property_id);
-      if (!existing || new Date(r.recorded_at).getTime() > new Date(existing.recorded_at).getTime()) {
-        propMap.set(r.property_id, r);
-      }
-    }
-    return Array.from(propMap.values());
-  }, [data]);
 
   // Volatility alerts (unfiltered — show all properties)
   const spikes = useMemo(() => {
