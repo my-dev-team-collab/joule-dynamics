@@ -240,16 +240,34 @@ export default function RealEstatePage() {
   const [loading, setLoading]     = useState(true);
   const [allProperties, setAllProperties] = useState<PropertyMeta[]>([]);
 
-  // ── Once-only: fetch full property list for filter dropdown options ─────────
+  // ── Once-only: fetch distinct property metadata for filter dropdown options ──
+  // Uses v_rate_volatility (has anon SELECT grant) rather than the properties
+  // table directly (which may be protected by RLS). This gives us the full
+  // universe of tracked properties for populating the filter controls.
   useEffect(() => {
     supabase
-      .from("properties")
-      .select("id, name, market, platform, bedrooms")
+      .from("v_rate_volatility")
+      .select("property_id, property_name, market, platform, bedrooms, is_active")
       .eq("is_active", true)
-      .order("market")
-      .order("name")
       .then(({ data: rows }) => {
-        if (rows) setAllProperties(rows as PropertyMeta[]);
+        if (!rows) return;
+        // Deduplicate by property_id to get one entry per property
+        const seen = new Map<string, PropertyMeta>();
+        for (const r of rows) {
+          if (!seen.has(r.property_id)) {
+            seen.set(r.property_id, {
+              id: r.property_id,
+              name: r.property_name,
+              market: r.market,
+              platform: r.platform,
+              bedrooms: r.bedrooms,
+            });
+          }
+        }
+        const sorted = Array.from(seen.values()).sort((a, b) =>
+          a.market.localeCompare(b.market) || a.name.localeCompare(b.name)
+        );
+        setAllProperties(sorted);
       });
   }, []);
 
