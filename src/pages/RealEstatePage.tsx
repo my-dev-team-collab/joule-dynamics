@@ -248,7 +248,8 @@ export default function RealEstatePage() {
     supabase
       .from("v_rate_volatility")
       .select("property_id, property_name, market, platform, bedrooms, is_active")
-      .eq("is_active", true)
+      // No is_active filter here — dropdown options should show ALL properties
+      // (active and previously tracked) so Status filter works correctly.
       .then(({ data: rows }) => {
         if (!rows) return;
         // Deduplicate by property_id to get one entry per property
@@ -526,6 +527,8 @@ export default function RealEstatePage() {
             <RealEstateDemo
               data={data}
               loading={loading}
+              startDate={filterStartDate}
+              endDate={filterEndDate}
             />
           </div>
         </ErrorBoundary>
