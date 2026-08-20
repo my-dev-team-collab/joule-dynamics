@@ -111,8 +111,17 @@ export default function RealEstateDemo({ data, loading }: RealEstateDemoProps) {
     return Array.from(propMap.values());
   }, [data]);
 
-  // Initialize and maintain selected property (auto-selects rich, volatile time-series)
+  // Single-property lock: when only 1 property is in the dataset (e.g. user
+  // selected exactly 1 via the global multi-select filter), lock the chart to
+  // it immediately — skip the scoring algorithm entirely.
+  const isSinglePropertyLocked = uniqueProperties.length === 1;
+
   useEffect(() => {
+    if (isSinglePropertyLocked) {
+      setSelectedPropertyId(uniqueProperties[0].id);
+      return;
+    }
+
     if (uniqueProperties.length === 0) return;
 
     const isCurrentValid = selectedPropertyId && uniqueProperties.some((p) => p.id === selectedPropertyId);
@@ -148,7 +157,7 @@ export default function RealEstateDemo({ data, loading }: RealEstateDemoProps) {
     } else {
       setSelectedPropertyId(uniqueProperties[0].id);
     }
-  }, [data, uniqueProperties, selectedPropertyId]);
+  }, [data, uniqueProperties, selectedPropertyId, isSinglePropertyLocked]);
 
   // Volatility alerts (unfiltered — show all properties)
   const spikes = useMemo(() => {
@@ -330,15 +339,21 @@ export default function RealEstateDemo({ data, loading }: RealEstateDemoProps) {
             </span>
           </div>
           {uniqueProperties.length > 0 && (
-            <select
-              className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary max-w-[220px] truncate"
-              value={selectedPropertyId ?? ""}
-              onChange={(e) => setSelectedPropertyId(e.target.value)}
-            >
-              {uniqueProperties.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+            isSinglePropertyLocked ? (
+              <span className="text-xs font-medium text-foreground truncate max-w-[220px]" title={uniqueProperties[0].name}>
+                {uniqueProperties[0].name}
+              </span>
+            ) : (
+              <select
+                className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary max-w-[220px] truncate"
+                value={selectedPropertyId ?? ""}
+                onChange={(e) => setSelectedPropertyId(e.target.value)}
+              >
+                {uniqueProperties.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            )
           )}
         </div>
 

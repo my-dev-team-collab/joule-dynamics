@@ -1,10 +1,19 @@
 /**
  * RealEstatePage.tsx
  * Dedicated page for the Real Estate Rate Monitor at /real-estate.
- * Includes KPI cards (from get_dashboard_kpis RPC), RealEstateDemo widget,
- * PropertyMap (Mapbox), and the Service Tier section.
+ *
+ * Architecture (post-refactor):
+ *  - Filter state lives in URL search params (shareable/restorable).
+ *  - A separate once-fetched `allProperties` query populates filter dropdowns
+ *    so options are always the full universe regardless of active filters.
+ *  - Every filter change triggers a new server-side Supabase query using
+ *    .eq() / .in() / .gte() / .lte() — no client-side in-memory filtering.
+ *  - get_dashboard_kpis() RPC is called with the active filter params so that
+ *    ALL four KPI cards (including Rate Changes 7d) reflect the filtered set.
+ *  - A multi-select searchable checkbox dropdown for the "Properties" filter
+ *    sits at the front of the Global Filters bar.
  */
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { SystemStatusBar } from "@/components/layout/SystemStatusBar";
@@ -16,7 +25,9 @@ import ServiceTierSection from "@/components/solutions/ServiceTierSection";
 import RealEstateChatWidget from "@/components/solutions/RealEstateChatWidget";
 import ScrapeHealthStrip from "@/components/solutions/ScrapeHealthStrip";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { Building2 } from "lucide-react";
+import { Building2, ChevronDown, Search, Check } from "lucide-react";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface RealEstateKPIs {
   properties_tracked: number;
@@ -26,111 +37,288 @@ interface RealEstateKPIs {
   last_scrape_status: Record<string, string> | null;
 }
 
+interface PropertyMeta {
+  id: string;
+  name: string;
+  market: string;
+  platform: string;
+  bedrooms: number | null;
+}
+
+// ── Multi-select Searchable Checkbox Dropdown ─────────────────────────────────
+
+interface PropertyMultiSelectProps {
+  allProperties: PropertyMeta[];
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+}
+
+function PropertyMultiSelect({ allProperties, selectedIds, onChange }: PropertyMultiSelectProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = allProperties.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.market.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const toggle = (id: string) => {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter(x => x !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  const selectAll = () => onChange(allProperties.map(p => p.id));
+  const clearAll = () => onChange([]);
+
+  const label = selectedIds.length === 0
+    ? "All Properties"
+    : selectedIds.length === 1
+      ? allProperties.find(p => p.id === selectedIds[0])?.name ?? "1 selected"
+      : `${selectedIds.length} selected`;
+
+  return (
+    <div className="flex flex-col gap-1" ref={containerRef}>
+      <label className="text-[10px] text-muted-foreground">Properties</label>
+      <div className="relative">
+        <button
+          id="property-multiselect-trigger"
+          type="button"
+          onClick={() => setOpen(v => !v)}
+          className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary transition-colors min-w-[130px] max-w-[200px] ${
+            selectedIds.length > 0
+              ? "border-primary/60 bg-primary/5 text-foreground"
+              : "border-border bg-background text-foreground"
+          }`}
+        >
+          <span className="truncate flex-1 text-left">{label}</span>
+          <ChevronDown className={`size-3 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+
+        {open && (
+          <div className="absolute top-full left-0 z-50 mt-1 w-64 rounded-md border border-border bg-card shadow-lg">
+            {/* Search */}
+            <div className="flex items-center gap-1.5 border-b border-border px-2 py-1.5">
+              <Search className="size-3 text-muted-foreground shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search properties..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+              />
+            </div>
+
+            {/* Select all / Clear */}
+            <div className="flex items-center justify-between px-2 py-1 border-b border-border/50">
+              <button
+                type="button"
+                onClick={selectAll}
+                className="text-[10px] text-primary hover:underline"
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                onClick={clearAll}
+                className="text-[10px] text-muted-foreground hover:text-foreground hover:underline"
+              >
+                Clear all
+              </button>
+            </div>
+
+            {/* List */}
+            <div className="max-h-52 overflow-y-auto py-1">
+              {filtered.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-muted-foreground">No properties found.</p>
+              ) : (
+                filtered.map(p => {
+                  const checked = selectedIds.includes(p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => toggle(p.id)}
+                      className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-muted/40 ${checked ? "text-foreground" : "text-muted-foreground"}`}
+                    >
+                      <span className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${checked ? "border-primary bg-primary" : "border-border bg-background"}`}>
+                        {checked && <Check className="size-2.5 text-primary-foreground" />}
+                      </span>
+                      <span className="flex-1 truncate">{p.name}</span>
+                      <span className="shrink-0 text-[9px] text-muted-foreground/60">{p.market}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
 export default function RealEstatePage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const filterPlatform = searchParams.get("platform") || "all";
-  const filterMarket = searchParams.get("market") || "all";
-  const filterTracked = searchParams.get("tracked") || "tracked";
-  const filterStartDate = searchParams.get("start");
-  const filterEndDate = searchParams.get("end");
-  const filterBedrooms = searchParams.get("bedrooms") || "all";
 
-  const setFilter = (key: string, value: string | null) => {
+  // ── Read filter state from URL ─────────────────────────────────────────────
+  const filterPlatform    = searchParams.get("platform") || "all";
+  const filterMarket      = searchParams.get("market") || "all";
+  const filterTracked     = searchParams.get("tracked") || "tracked";
+  const filterStartDate   = searchParams.get("start") ?? null;
+  const filterEndDate     = searchParams.get("end") ?? null;
+  const filterBedrooms    = searchParams.get("bedrooms") || "all";
+  const filterPropertyIds = searchParams.get("properties")
+    ? searchParams.get("properties")!.split(",").filter(Boolean)
+    : [] as string[];
+
+  // ── Write helpers ──────────────────────────────────────────────────────────
+  const setFilter = useCallback((key: string, value: string | null) => {
     setSearchParams(prev => {
-      if (value === null || value === "all" && key !== "tracked" && key !== "start" && key !== "end") {
+      if (value === null || (value === "all" && key !== "tracked" && key !== "start" && key !== "end")) {
         prev.delete(key);
       } else {
         prev.set(key, value);
       }
       return prev;
     });
-  };
+  }, [setSearchParams]);
 
-  const [baseKpis, setBaseKpis] = useState<RealEstateKPIs | null>(null);
-  const [rawData, setRawData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const setPropertyFilter = useCallback((ids: string[]) => {
+    setSearchParams(prev => {
+      if (ids.length === 0) {
+        prev.delete("properties");
+      } else {
+        prev.set("properties", ids.join(","));
+      }
+      return prev;
+    });
+  }, [setSearchParams]);
 
+  const clearAllFilters = useCallback(() => {
+    setSearchParams(prev => {
+      prev.delete("market");
+      prev.delete("platform");
+      prev.delete("bedrooms");
+      prev.delete("tracked");
+      prev.delete("start");
+      prev.delete("end");
+      prev.delete("properties");
+      return prev;
+    });
+  }, [setSearchParams]);
+
+  const hasActiveFilters =
+    filterPlatform !== "all" ||
+    filterMarket !== "all" ||
+    filterBedrooms !== "all" ||
+    filterTracked !== "tracked" ||
+    !!filterStartDate ||
+    !!filterEndDate ||
+    filterPropertyIds.length > 0;
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [kpis, setKpis]           = useState<RealEstateKPIs | null>(null);
+  const [data, setData]           = useState<any[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [allProperties, setAllProperties] = useState<PropertyMeta[]>([]);
+
+  // ── Once-only: fetch full property list for filter dropdown options ─────────
+  useEffect(() => {
+    supabase
+      .from("properties")
+      .select("id, name, market, platform, bedrooms")
+      .eq("is_active", true)
+      .order("market")
+      .order("name")
+      .then(({ data: rows }) => {
+        if (rows) setAllProperties(rows as PropertyMeta[]);
+      });
+  }, []);
+
+  // Derive distinct options from allProperties (not from filtered data)
+  const markets        = [...new Set(allProperties.map(p => p.market).filter(Boolean))].sort();
+  const platforms      = [...new Set(allProperties.map(p => p.platform).filter(Boolean))].sort();
+  const bedroomOptions = [...new Set(
+    allProperties.map(p => p.bedrooms).filter((b): b is number => b !== null)
+  )].sort((a, b) => a - b);
+
+  // ── Server-side filtered fetch — re-fires on every filter change ───────────
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
+        // Build filtered v_rate_volatility query
+        let query = supabase
+          .from("v_rate_volatility")
+          .select("*")
+          .order("recorded_at", { ascending: false })
+          .order("stay_date",   { ascending: false });
+
+        if (filterMarket !== "all")          query = query.eq("market",   filterMarket);
+        if (filterPlatform !== "all")        query = query.eq("platform", filterPlatform);
+        if (filterBedrooms !== "all")        query = query.eq("bedrooms", Number(filterBedrooms));
+        if (filterTracked === "tracked")     query = query.eq("is_active", true);
+        if (filterTracked === "untracked")   query = query.eq("is_active", false);
+        if (filterPropertyIds.length > 0)   query = query.in("property_id", filterPropertyIds);
+        if (filterStartDate)                 query = query.gte("stay_date", filterStartDate);
+        if (filterEndDate)                   query = query.lte("stay_date", filterEndDate);
+
+        // Build parameterized RPC call
+        const rpcParams: Record<string, unknown> = {
+          p_market:        filterMarket !== "all"        ? filterMarket        : null,
+          p_platform:      filterPlatform !== "all"      ? filterPlatform      : null,
+          p_bedrooms:      filterBedrooms !== "all"      ? Number(filterBedrooms) : null,
+          p_is_active:     filterTracked === "all"       ? null
+                         : filterTracked === "tracked"   ? true : false,
+          p_property_ids:  filterPropertyIds.length > 0  ? filterPropertyIds  : null,
+          p_start_date:    filterStartDate ?? null,
+          p_end_date:      filterEndDate   ?? null,
+        };
+
         const [kpiRes, dataRes] = await Promise.all([
-          supabase.rpc("get_dashboard_kpis"),
-          supabase
-            .from("v_rate_volatility")
-            .select("*")
-            .order("recorded_at", { ascending: false })
-            .order("stay_date", { ascending: false })
+          supabase.rpc("get_dashboard_kpis", rpcParams),
+          query,
         ]);
 
         if (kpiRes.data) {
           const d = kpiRes.data as Record<string, unknown>;
-          setBaseKpis((d.real_estate as RealEstateKPIs) ?? null);
+          setKpis((d.real_estate as RealEstateKPIs) ?? null);
         }
-        
         if (dataRes.data) {
-          setRawData(dataRes.data);
+          setData(dataRes.data);
         }
       } catch (e) {
-        console.error("Unexpected error fetching data:", e);
+        console.error("Unexpected error fetching dashboard data:", e);
       } finally {
         setLoading(false);
       }
     };
+
     void fetchData();
-  }, []);
+    // Stringify array to get a stable dependency value
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterMarket, filterPlatform, filterBedrooms, filterTracked,
+      filterStartDate, filterEndDate, filterPropertyIds.join(",")]);
 
-  // Filter options
-  const uniqueProperties = useMemo(() => Array.from(
-    new Map(rawData.map((r) => [r.property_id, {
-      id: r.property_id,
-      market: r.market,
-      platform: r.platform,
-      bedrooms: r.bedrooms,
-    }])).values()
-  ), [rawData]);
-
-  const markets = useMemo(() => Array.from(new Set(uniqueProperties.map(p => p.market).filter(Boolean))).sort(), [uniqueProperties]);
-  const platforms = useMemo(() => Array.from(new Set(uniqueProperties.map(p => p.platform).filter(Boolean))).sort(), [uniqueProperties]);
-  const bedroomOptions = useMemo(() => Array.from(new Set(uniqueProperties.map(p => p.bedrooms).filter((b): b is number => b !== null))).sort((a,b)=>a-b), [uniqueProperties]);
-
-  // Filter data
-  const filteredData = useMemo(() => {
-    return rawData.filter((r) => {
-      if (filterPlatform !== "all" && r.platform !== filterPlatform) return false;
-      if (filterMarket && filterMarket !== "all" && r.market !== filterMarket) return false;
-      if (filterTracked === "tracked" && r.is_active === false) return false;
-      if (filterTracked === "untracked" && r.is_active === true) return false;
-      if (filterBedrooms !== "all" && String(r.bedrooms) !== filterBedrooms) return false;
-      
-      if (filterStartDate || filterEndDate) {
-        const stay = new Date(r.stay_date).getTime();
-        if (filterStartDate && stay < new Date(filterStartDate).getTime()) return false;
-        if (filterEndDate && stay > new Date(filterEndDate).getTime()) return false;
-      }
-      return true;
-    });
-  }, [rawData, filterPlatform, filterMarket, filterTracked, filterStartDate, filterEndDate, filterBedrooms]);
-
-  // Derive KPIs from filtered data
-  const kpis = useMemo(() => {
-    if (!baseKpis) return null;
-    const uniqueProps = new Set(filteredData.map(d => d.property_id)).size;
-    
-    // Spikes logic matches RPC (abs(pct) >= 25, recorded_at in last 7 days)
-    const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
-    const spikes = filteredData.filter(r => 
-      r.pct_above_trailing_avg !== null && 
-      Math.abs(r.pct_above_trailing_avg) >= 25 &&
-      new Date(r.recorded_at).getTime() >= sevenDaysAgo
-    ).length;
-
-    return {
-      ...baseKpis,
-      properties_tracked: uniqueProps,
-      spikes_7d: spikes
-    };
-  }, [baseKpis, filteredData]);
-
+  // ── Helpers ────────────────────────────────────────────────────────────────
   const statusColor = (s: string | null) =>
     s === "success" || s === "completed" ? "text-green-500" : "";
 
@@ -145,6 +333,7 @@ export default function RealEstatePage() {
     </div>
   );
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
       <SystemStatusBar />
@@ -185,7 +374,17 @@ export default function RealEstatePage() {
         {/* Global Filters */}
         <div className="flex flex-col gap-2 p-4 border border-border bg-card/50 rounded-lg shadow-sm">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Global Filters</span>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 items-end">
+
+            {/* ── Multi-select property filter (Parent) ── */}
+            {allProperties.length > 0 && (
+              <PropertyMultiSelect
+                allProperties={allProperties}
+                selectedIds={filterPropertyIds}
+                onChange={setPropertyFilter}
+              />
+            )}
+
             {markets.length > 1 && (
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] text-muted-foreground">Market</label>
@@ -199,6 +398,7 @@ export default function RealEstatePage() {
                 </select>
               </div>
             )}
+
             {platforms.length > 1 && (
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] text-muted-foreground">Platform</label>
@@ -212,6 +412,7 @@ export default function RealEstatePage() {
                 </select>
               </div>
             )}
+
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-muted-foreground">Status</label>
               <select
@@ -224,6 +425,7 @@ export default function RealEstatePage() {
                 <option value="all">All Historical</option>
               </select>
             </div>
+
             {bedroomOptions.length > 1 && (
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] text-muted-foreground">Bedrooms</label>
@@ -237,10 +439,11 @@ export default function RealEstatePage() {
                 </select>
               </div>
             )}
+
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-muted-foreground">Stay Dates</label>
               <div className="flex items-center gap-1">
-                <input 
+                <input
                   type="date"
                   className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   value={filterStartDate || ""}
@@ -248,7 +451,7 @@ export default function RealEstatePage() {
                   title="Start Date"
                 />
                 <span className="text-muted-foreground text-xs">to</span>
-                <input 
+                <input
                   type="date"
                   className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   value={filterEndDate || ""}
@@ -257,19 +460,12 @@ export default function RealEstatePage() {
                 />
               </div>
             </div>
-            
-            {(filterPlatform !== "all" || filterBedrooms !== "all" || filterTracked !== "tracked" || filterStartDate || filterEndDate) && (
-            <div className="flex flex-col gap-1 justify-end">
+
+            {hasActiveFilters && (
+              <div className="flex flex-col gap-1 justify-end">
                 <button
                   className="text-[10px] text-muted-foreground hover:text-foreground transition-colors border border-border rounded-md px-2 py-1 h-[26px]"
-                  onClick={() => {
-                    setFilter("market", "all");
-                    setFilter("platform", "all");
-                    setFilter("bedrooms", "all");
-                    setFilter("tracked", "tracked");
-                    setFilter("start", null);
-                    setFilter("end", null);
-                  }}
+                  onClick={clearAllFilters}
                 >
                   Clear filters
                 </button>
@@ -283,8 +479,8 @@ export default function RealEstatePage() {
           {loading || !kpis ? renderSkeleton(4) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <KPICard label="Properties Tracked" value={kpis.properties_tracked} />
-              <KPICard label="Rate Changes (7d)" value={kpis.rate_changes_7d} />
-              <KPICard label="25%+ Spikes (7d)" value={kpis.spikes_7d} />
+              <KPICard label="Rate Changes (7d)"  value={kpis.rate_changes_7d} />
+              <KPICard label="25%+ Spikes (7d)"   value={kpis.spikes_7d} />
 
               {/* Per-platform scrape status */}
               <div className="flex flex-col p-4 bg-card border border-border rounded-lg shadow-sm">
@@ -309,8 +505,8 @@ export default function RealEstatePage() {
         {/* Main Dashboard Widget */}
         <ErrorBoundary fallbackMessage="Failed to load Rate Monitor dashboard.">
           <div className="border border-border rounded-lg overflow-hidden bg-card/30">
-            <RealEstateDemo 
-              data={filteredData} 
+            <RealEstateDemo
+              data={data}
               loading={loading}
             />
           </div>
@@ -318,10 +514,10 @@ export default function RealEstatePage() {
 
         {/* Property Map */}
         <ErrorBoundary fallbackMessage="Failed to load property map.">
-          <PropertyMap 
-            data={filteredData}
+          <PropertyMap
+            data={data}
             loading={loading}
-            totalProperties={kpis?.properties_tracked} 
+            totalProperties={kpis?.properties_tracked}
           />
         </ErrorBoundary>
 
@@ -332,9 +528,9 @@ export default function RealEstatePage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <ScrapeHealthStrip />
-        
+
         <RealEstateChatWidget />
-        
+
         <CredentialFooter />
       </div>
     </>
