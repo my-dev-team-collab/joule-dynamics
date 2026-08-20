@@ -94,7 +94,7 @@ export default function CredentialFooter() {
         {/* ── Bottom SYS bar ── */}
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="font-mono text-[10px] text-muted-foreground tracking-widest">
-            SYS // JOULE-DYNAMICS-V2.0.0 · STACK: REACT 19 · VITE · TAILWIND V4 · SHADCN
+            SYS // JOULE-DYNAMICS-V2.0.0 · STACK: REACT 19 · VITE · TAILWIND V4 · SHADCN · POSTGRES · SUPABASE · FASTAPI · GROQ MODELS · LANGFUSE
           </p>
           <p className="font-mono text-[10px] text-muted-foreground tracking-widest">
             🔧 ACTIVE DEVELOPMENT HUB — VERCEL

@@ -1,9 +1,25 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare } from 'lucide-react';
+import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import html2pdf from 'html2pdf.js';
+
+export const exportMarkdownToPdf = (elementId: string, filename: string = 'Real_Estate_Report.pdf') => {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  
+  const opt = {
+    margin:       [10, 10, 10, 10] as [number, number, number, number],
+    filename:     filename,
+    image:        { type: 'jpeg' as const, quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } as const
+  };
+
+  html2pdf().set(opt).from(element).save();
+};
 
 interface Message {
   sender: 'assistant' | 'user';
@@ -21,7 +37,8 @@ const MessageBubble = ({
   handleSend,
   loading,
   markdownComponents,
-  onStreamComplete
+  onStreamComplete,
+  id
 }: {
   msg: Message;
   isLastMessage: boolean;
@@ -29,6 +46,7 @@ const MessageBubble = ({
   loading: boolean;
   markdownComponents: Components;
   onStreamComplete?: () => void;
+  id?: string;
 }) => {
   const [displayedText, setDisplayedText] = useState(msg.isStreaming ? '' : msg.text);
   const [isComplete, setIsComplete] = useState(!msg.isStreaming);
@@ -49,13 +67,13 @@ const MessageBubble = ({
         setIsComplete(true);
         if (onStreamComplete) onStreamComplete();
       }
-    }, 25);
+    }, 12);
 
     return () => clearInterval(interval);
   }, [msg.text, msg.isStreaming, isComplete, msg]);
 
   return (
-    <div className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+    <div id={id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
       <div
         className={`max-w-[90%] p-3 rounded-xl text-sm ${
           msg.sender === 'user'
@@ -199,6 +217,8 @@ export default function RealEstateChatWidget() {
       market: searchParams.get('market') || 'all',
       platform: searchParams.get('platform') || 'all',
       bedrooms: searchParams.get('bedrooms') || 'all',
+      start_date: searchParams.get('start') || null,
+      end_date: searchParams.get('end') || null,
     };
 
     try {
@@ -211,7 +231,7 @@ export default function RealEstateChatWidget() {
         body: JSON.stringify({
           message: text,
           session_id: sessionId,
-          context: activeFilters
+          client_context: activeFilters
         })
       });
 
@@ -352,16 +372,16 @@ export default function RealEstateChatWidget() {
                   <td className="p-2 border-b border-border/50" {...props}>{children}</td>
                 ),
                 a: ({ children, href, title, ...props }: any) => {
-                  if (title === 'button') {
-                    const isWhatsApp = href?.startsWith('https://wa.me');
-                    const isEmail = href?.startsWith('mailto:');
-                    
+                  const isWhatsApp = href?.startsWith('https://wa.me');
+                  const isEmail = href?.startsWith('mailto:');
+                  
+                  if (isWhatsApp || isEmail) {
                     return (
                       <a
                         href={href}
                         target={isEmail ? '_self' : '_blank'}
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 my-2 mr-2 font-medium text-white transition-all bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md hover:shadow-lg no-underline"
+                        className="inline-flex items-center gap-2 px-4 py-2 my-2 mr-2 font-medium text-primary-foreground transition-all bg-primary hover:bg-primary/90 rounded-xl shadow-md hover:shadow-lg no-underline"
                         {...props}
                       >
                         {isWhatsApp && <MessageSquare className="w-4 h-4" />}
@@ -371,17 +391,26 @@ export default function RealEstateChatWidget() {
                     );
                   }
 
-                  if (href?.includes('/download?')) {
+                  if (href?.includes('/download')) {
                     return (
-                      <a
-                        href={href}
-                        download
-                        className="inline-flex items-center gap-2 px-3.5 py-1.5 my-1 font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-500/30 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 rounded-lg transition-colors no-underline"
-                        {...props}
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>{children}</span>
-                      </a>
+                      <div className="flex flex-wrap items-center gap-2 my-2">
+                        <a
+                          href={href}
+                          download={`Real_Estate_Report_${sessionId}.md`}
+                          className="inline-flex items-center gap-2 px-3.5 py-1.5 font-medium text-primary dark:text-primary bg-primary/10 border border-primary/30 hover:bg-primary/20 rounded-lg transition-colors no-underline"
+                          {...props}
+                        >
+                          <Download className="w-4 h-4" />
+                          <span>MD</span>
+                        </a>
+                        <button
+                          onClick={() => exportMarkdownToPdf(`msg-${idx}`, `Real_Estate_Report_${sessionId}.pdf`)}
+                          className="inline-flex items-center gap-2 px-3.5 py-1.5 font-medium text-primary dark:text-primary bg-primary/10 border border-primary/30 hover:bg-primary/20 rounded-lg transition-colors no-underline"
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span>PDF</span>
+                        </button>
+                      </div>
                     );
                   }
 
@@ -398,6 +427,7 @@ export default function RealEstateChatWidget() {
               return (
                 <MessageBubble
                   key={idx}
+                  id={`msg-${idx}`}
                   msg={formattedMsg}
                   isLastMessage={isLastMessage}
                   handleSend={handleSend}
@@ -468,7 +498,7 @@ export default function RealEstateChatWidget() {
                   className={`p-1.5 rounded-full flex items-center justify-center w-8 h-8 transition-all ${
                     loading || !input.trim() 
                       ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed" 
-                      : "bg-emerald-500 text-white hover:bg-emerald-600 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_var(--color-primary)]"
                   }`}
                   aria-label="Send message"
                 >
