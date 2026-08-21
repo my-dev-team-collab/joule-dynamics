@@ -249,6 +249,7 @@ export default function RealEstateChatWidget() {
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let receivedDoneEvent = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -297,6 +298,7 @@ export default function RealEstateChatWidget() {
                     }
                     return newMsgs;
                   });
+                  receivedDoneEvent = true;
                   break;
                 case "error":
                   throw payload;
@@ -308,17 +310,45 @@ export default function RealEstateChatWidget() {
           }
         }
       }
+
+      if (!receivedDoneEvent) {
+        throw { message: "Connection to Pulse was interrupted mid-stream. Please check your network and try again.", retryable: true };
+      }
     } catch (err: any) {
+      let errorMessage = err.message || "An unexpected error occurred. Please try again later.";
+      let isRetryable = err.retryable !== false;
+
+      // Handle native network failures
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        errorMessage = "Failed to connect to the server. Please check your internet connection.";
+        isRetryable = true;
+      } else if (err.name === 'AbortError') {
+        errorMessage = "Request was cancelled.";
+      }
+
       setMessages((prev) => {
-        // If the last message is an empty streaming assistant message, replace it
         const newMsgs = [...prev];
         const lastIdx = newMsgs.length - 1;
+        
+        // If the last message is an empty streaming assistant message, replace it entirely
         if (newMsgs[lastIdx] && newMsgs[lastIdx].sender === 'assistant' && newMsgs[lastIdx].isStreaming && newMsgs[lastIdx].text === "") {
            newMsgs[lastIdx] = {
              sender: 'assistant',
-             text: err.message || "An unexpected error occurred. Please try again later.",
+             text: errorMessage,
              isError: true,
-             retryable: err.retryable !== false,
+             retryable: isRetryable,
+             isStreaming: false
+           };
+           return newMsgs;
+        }
+        
+        // If it was already streaming text and got interrupted, just append the error text
+        if (newMsgs[lastIdx] && newMsgs[lastIdx].sender === 'assistant' && newMsgs[lastIdx].isStreaming) {
+           newMsgs[lastIdx] = {
+             ...newMsgs[lastIdx],
+             text: newMsgs[lastIdx].text + `\n\n**[Error]** ${errorMessage}`,
+             isError: true, // We could flag it as error, but we want to keep the text it already streamed. We'll just style it via markdown.
+             retryable: isRetryable,
              isStreaming: false
            };
            return newMsgs;
@@ -328,9 +358,9 @@ export default function RealEstateChatWidget() {
           ...prev,
           {
             sender: 'assistant',
-            text: err.message || "An unexpected error occurred. Please try again later.",
+            text: errorMessage,
             isError: true,
-            retryable: err.retryable !== false,
+            retryable: isRetryable,
             isStreaming: false
           }
         ];
