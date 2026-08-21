@@ -37,7 +37,6 @@ const MessageBubble = ({
   handleSend,
   loading,
   markdownComponents,
-  onStreamComplete,
   id
 }: {
   msg: Message;
@@ -45,32 +44,10 @@ const MessageBubble = ({
   handleSend: (text?: string) => void;
   loading: boolean;
   markdownComponents: Components;
-  onStreamComplete?: () => void;
   id?: string;
 }) => {
-  const [displayedText, setDisplayedText] = useState(msg.isStreaming ? '' : msg.text);
-  const [isComplete, setIsComplete] = useState(!msg.isStreaming);
-
-  useEffect(() => {
-    if (!msg.isStreaming || isComplete) {
-      setDisplayedText(msg.text);
-      setIsComplete(true);
-      return;
-    }
-
-    let i = 0;
-    const interval = setInterval(() => {
-      i += 1;
-      setDisplayedText(msg.text.slice(0, i));
-      if (i >= msg.text.length) {
-        clearInterval(interval);
-        setIsComplete(true);
-        if (onStreamComplete) onStreamComplete();
-      }
-    }, 12);
-
-    return () => clearInterval(interval);
-  }, [msg.text, msg.isStreaming, isComplete, msg]);
+  const displayedText = msg.text;
+  const isComplete = !msg.isStreaming;
 
   return (
     <div id={id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
@@ -139,6 +116,17 @@ const STARTER_QUESTIONS = [
   "Explain how the 7-day trailing average works."
 ];
 
+const TOOL_LABELS: Record<string, string> = {
+  get_market_averages:       "Fetching market averages...",
+  get_dashboard_kpis:        "Loading KPI metrics...",
+  get_property_rate_changes: "Analyzing rate changes...",
+  get_rate_anomaly_report:   "Scanning for anomalies...",
+  get_market_snapshot:       "Building market snapshot...",
+  generate_data_export:      "Preparing your export...",
+  generate_contact_buttons:  "Generating contact options...",
+  geocode_address:           "Locating address...",
+};
+
 export default function RealEstateChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -149,6 +137,7 @@ export default function RealEstateChatWidget() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
 
   // Browser-scoped persistent session ID
@@ -223,11 +212,16 @@ export default function RealEstateChatWidget() {
 
     try {
       const baseUrl = import.meta.env.VITE_BACKEND_URL ?? "https://johnalbarkaibrahim-sentimentscope.hf.space";
-      const apiUrl = `${baseUrl}/api/v1/real-estate/chat`;
+      const apiUrl = `${baseUrl}/api/v1/real-estate/chat/stream`;
+      
+      setLoadingStatus("Connecting...");
       
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream'
+        },
         body: JSON.stringify({
           message: text,
           session_id: sessionId,
@@ -235,46 +229,115 @@ export default function RealEstateChatWidget() {
         })
       });
 
-      const data = await response.json().catch(() => ({}));
-
       if (!response.ok) {
-        if (data.error) throw data.error;
+        const errBody = await response.json().catch(() => ({}));
+        if (errBody.error) throw errBody.error;
         if (response.status === 429) throw { message: "Rate limit exceeded. Please wait a moment before trying again.", retryable: true };
         if (response.status === 503) throw { message: "Service temporarily unavailable. Please try again.", retryable: true };
         throw { message: `Network error: ${response.status}`, retryable: true };
       }
-      
-      if (data.error) {
-        throw data.error;
-      }
-      
-      if (data.path_used === "ERROR") {
-        throw { message: "Pulse experienced an issue parsing the request.", retryable: true };
-      }
 
       setMessages((prev) => [
         ...prev,
         {
           sender: 'assistant',
-          text: data.reply || "I couldn't parse the response. Please try again.",
-          path: data.path_used,
-          suggested_actions: data.suggested_actions,
+          text: "",
           isStreaming: true
         }
       ]);
-    } catch (err: any) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: 'assistant',
-          text: err.message || "An unexpected error occurred. Please try again later.",
-          isError: true,
-          retryable: err.retryable !== false,
-          isStreaming: false
+
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        let currentEvent = "";
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            currentEvent = line.slice(7).trim();
+          } else if (line.startsWith("data: ")) {
+            try {
+              const payload = JSON.parse(line.slice(6));
+              switch (currentEvent) {
+                case "status":
+                  setLoadingStatus("Thinking...");
+                  break;
+                case "tool_call":
+                  setLoadingStatus(TOOL_LABELS[payload.tool] ?? "Fetching data...");
+                  break;
+                case "token":
+                  setLoadingStatus(null);
+                  setMessages((prev) => {
+                    const newMsgs = [...prev];
+                    const lastIdx = newMsgs.length - 1;
+                    if (newMsgs[lastIdx] && newMsgs[lastIdx].sender === 'assistant') {
+                      newMsgs[lastIdx] = { ...newMsgs[lastIdx], text: newMsgs[lastIdx].text + payload.token };
+                    }
+                    return newMsgs;
+                  });
+                  break;
+                case "done":
+                  setMessages((prev) => {
+                    const newMsgs = [...prev];
+                    const lastIdx = newMsgs.length - 1;
+                    if (newMsgs[lastIdx] && newMsgs[lastIdx].sender === 'assistant') {
+                      newMsgs[lastIdx] = { 
+                        ...newMsgs[lastIdx], 
+                        isStreaming: false,
+                        path: payload.path_used,
+                        suggested_actions: payload.suggested_actions
+                      };
+                    }
+                    return newMsgs;
+                  });
+                  break;
+                case "error":
+                  throw payload;
+              }
+            } catch (e: any) {
+              if (currentEvent === "error") throw e;
+            }
+            currentEvent = "";
+          }
         }
-      ]);
+      }
+    } catch (err: any) {
+      setMessages((prev) => {
+        // If the last message is an empty streaming assistant message, replace it
+        const newMsgs = [...prev];
+        const lastIdx = newMsgs.length - 1;
+        if (newMsgs[lastIdx] && newMsgs[lastIdx].sender === 'assistant' && newMsgs[lastIdx].isStreaming && newMsgs[lastIdx].text === "") {
+           newMsgs[lastIdx] = {
+             sender: 'assistant',
+             text: err.message || "An unexpected error occurred. Please try again later.",
+             isError: true,
+             retryable: err.retryable !== false,
+             isStreaming: false
+           };
+           return newMsgs;
+        }
+        
+        return [
+          ...prev,
+          {
+            sender: 'assistant',
+            text: err.message || "An unexpected error occurred. Please try again later.",
+            isError: true,
+            retryable: err.retryable !== false,
+            isStreaming: false
+          }
+        ];
+      });
     } finally {
       setLoading(false);
+      setLoadingStatus(null);
     }
   };
 
@@ -433,21 +496,14 @@ export default function RealEstateChatWidget() {
                   handleSend={handleSend}
                   loading={loading}
                   markdownComponents={markdownComponents}
-                  onStreamComplete={() => {
-                    setMessages(prev => {
-                      const newMsgs = [...prev];
-                      newMsgs[idx] = { ...newMsgs[idx], isStreaming: false };
-                      return newMsgs;
-                    });
-                  }}
                 />
               );
             })}
-            {loading && (
+            {loading && loadingStatus && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-2 bg-transparent text-muted-foreground py-2 px-1">
+                <div className="flex items-center gap-2 bg-transparent text-primary py-1.5 px-3 border border-primary/20 bg-primary/5 rounded-full mt-2 animate-in fade-in zoom-in duration-300">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span className="text-xs font-medium">Running tool...</span>
+                  <span className="text-xs font-medium tracking-wide">{loadingStatus}</span>
                 </div>
               </div>
             )}
