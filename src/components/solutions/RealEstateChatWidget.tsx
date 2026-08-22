@@ -117,15 +117,26 @@ const STARTER_QUESTIONS = [
 ];
 
 const TOOL_LABELS: Record<string, string> = {
-  get_market_averages:       "Fetching market averages...",
-  get_dashboard_kpis:        "Loading KPI metrics...",
-  get_property_rate_changes: "Analyzing rate changes...",
-  get_rate_anomaly_report:   "Scanning for anomalies...",
-  get_market_snapshot:       "Building market snapshot...",
-  generate_data_export:      "Preparing your export...",
-  generate_contact_buttons:  "Generating contact options...",
-  geocode_address:           "Locating address...",
-  suggest_actions:           "Preparing follow-up options...",
+  get_dashboard_kpis:            "Loading KPI metrics...",
+  get_market_averages:           "Fetching market averages...",
+  get_market_snapshot:           "Building market snapshot...",
+  get_market_trend:              "Analyzing pricing trends...",
+  get_spike_alerts:              "Checking spike alerts...",
+  get_rate_anomaly_report:       "Scanning for anomalies...",
+  get_most_volatile_properties:  "Finding volatile listings...",
+  get_property_snapshot:         "Loading property profile...",
+  get_property_rate_changes:     "Analyzing rate revisions...",
+  compare_properties:            "Comparing properties...",
+  search_properties:             "Searching listing database...",
+  get_availability_rate:         "Calculating occupancy...",
+  geocode_address:               "Locating address...",
+  get_nearby_properties:         "Finding nearby listings...",
+  get_distance_km:               "Calculating distance...",
+  get_tracked_markets:           "Fetching tracked regions...",
+  get_recently_changed_tracking: "Checking recent tracking...",
+  generate_data_export:          "Preparing your export...",
+  generate_contact_buttons:      "Generating contact options...",
+  suggest_actions:               "Preparing suggested options...",
 };
 
 export default function RealEstateChatWidget() {
@@ -146,6 +157,17 @@ export default function RealEstateChatWidget() {
   const [isMaximized, setIsMaximized] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-expand textarea height as user types up to max limit (140px)
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollH = textareaRef.current.scrollHeight;
+      const targetHeight = Math.min(Math.max(scrollH, 36), 140);
+      textareaRef.current.style.height = `${targetHeight}px`;
+    }
+  }, [input]);
 
   const handleNewChat = () => {
     setSessionId(crypto.randomUUID());
@@ -566,23 +588,49 @@ export default function RealEstateChatWidget() {
                 e.preventDefault();
                 handleSend();
               }}
-              className="flex flex-col gap-2 p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus-within:ring-1 focus-within:ring-zinc-300 dark:focus-within:ring-zinc-700 transition-shadow"
+              className={`flex flex-col gap-2 p-3 bg-white dark:bg-zinc-900 border rounded-xl transition-all duration-150 ${
+                input.length >= 1000 
+                  ? "border-red-500/80 ring-1 ring-red-500/30" 
+                  : input.length >= 800
+                    ? "border-amber-500/50 focus-within:ring-1 focus-within:ring-amber-500/30"
+                    : "border-zinc-200 dark:border-zinc-800 focus-within:ring-1 focus-within:ring-zinc-300 dark:focus-within:ring-zinc-700"
+              }`}
             >
               <textarea
+                ref={textareaRef}
                 value={input}
+                maxLength={1000}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about rates, spikes..."
-                rows={Math.min(5, input.split('\n').length || 1)}
-                className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none min-h-[24px] max-h-32 assistant-scrollbar"
+                rows={1}
+                className="w-full bg-transparent text-sm leading-relaxed text-foreground placeholder:text-muted-foreground resize-none focus:outline-none min-h-[36px] max-h-[140px] overflow-y-auto assistant-scrollbar py-1 px-0.5"
               />
               <div className="flex justify-between items-center mt-1">
-                <span className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded text-[10px] font-mono text-zinc-500 dark:text-zinc-400">rate-monitor-v1</span>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+                    rate-monitor-v1
+                  </span>
+                  {input.length > 0 && (
+                    <span 
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all duration-150 ${
+                        input.length >= 1000 
+                          ? "bg-red-500/15 text-red-500 font-bold border border-red-500/30 animate-pulse" 
+                          : input.length >= 800 
+                            ? "bg-amber-500/15 text-amber-500 font-medium border border-amber-500/30" 
+                            : "text-muted-foreground/70"
+                      }`}
+                      title={input.length >= 1000 ? "Character limit reached" : `${1000 - input.length} characters remaining`}
+                    >
+                      {input.length}/1,000{input.length >= 1000 ? " (Max)" : ""}
+                    </span>
+                  )}
+                </div>
                 
                 <button
                   type="submit"
                   disabled={loading || !input.trim()}
-                  className={`p-1.5 rounded-full flex items-center justify-center w-8 h-8 transition-all ${
+                  className={`p-1.5 rounded-full flex items-center justify-center w-8 h-8 transition-all shrink-0 ${
                     loading || !input.trim() 
                       ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed" 
                       : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_var(--color-primary)]"
