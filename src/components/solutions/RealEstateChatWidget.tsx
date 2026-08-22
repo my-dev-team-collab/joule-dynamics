@@ -99,7 +99,7 @@ const MessageBubble = ({
               key={actionIdx}
               onClick={() => handleSend(action)}
               disabled={loading}
-              className="px-3 py-1.5 text-xs font-medium text-secondary-foreground bg-secondary/80 hover:bg-secondary border border-border rounded-full transition-all hover:scale-[1.02] disabled:opacity-50 text-left"
+              className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-primary dark:text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-full shadow-sm transition-all duration-150 active:scale-95 disabled:opacity-50 text-left"
             >
               {action}
             </button>
@@ -125,6 +125,7 @@ const TOOL_LABELS: Record<string, string> = {
   generate_data_export:      "Preparing your export...",
   generate_contact_buttons:  "Generating contact options...",
   geocode_address:           "Locating address...",
+  suggest_actions:           "Preparing follow-up options...",
 };
 
 export default function RealEstateChatWidget() {
