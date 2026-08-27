@@ -163,29 +163,37 @@ The core data layer is hosted on **Supabase (PostgreSQL 15)**. The database acts
 
 ### 1.1. Mathematical Formulation
 
-#### 1. 7-Day Trailing Average Benchmark ($\overline{R_{7d}}$)
+#### 1. 7-Day Trailing Average Benchmark
 For each listing $p$ and target stay date $d$, the benchmark rate represents the arithmetic mean of all recorded rates across the 7 days preceding timestamp $t$:
 
-$$\overline{R_{7d}}(p, d, t) = \frac{1}{K} \sum_{k=1}^{K} r_{p, d, t_k} \quad \text{where } t - 7\text{ days} \le t_k \le t \text{ and } \text{is\_available} = \text{true}$$
+```math
+\overline{R_{7d}}(p, d, t) = \frac{1}{K} \sum_{k=1}^{K} r_{p, d, t_k} \quad \text{where } (t - 7\text{ days}) \le t_k \le t \quad \text{and} \quad \text{available} = \text{true}
+```
 
 #### 2. Percentage Divergence ($\Delta\%$)
 The rate anomaly score measures how far the latest nightly rate $R_{\text{current}}$ deviates from its historical baseline:
 
-$$\Delta\% = \left( \frac{R_{\text{current}} - \overline{R_{7d}}}{\overline{R_{7d}}} \right) \times 100$$
+```math
+\Delta\% = \left( \frac{R_{\text{current}} - \overline{R_{7d}}}{\overline{R_{7d}}} \right) \times 100
+```
 
 #### 3. Spike Classification Threshold
 A listing is categorized as experiencing severe market volatility when the rate divergence reaches or exceeds 25%:
 
-$$\text{VolatilityStatus}(p) = \begin{cases} 
-\mathbf{SURGE} \; (+), & \Delta\% \ge +25.0\% \\ 
-\mathbf{DROP} \; (-), & \Delta\% \le -25.0\% \\ 
-\mathbf{STABLE}, & -25.0\% < \Delta\% < +25.0\% 
-\end{cases}$$
+```math
+\text{VolatilityStatus}(p) = \begin{cases} 
+\text{SURGE}, & \Delta\% \ge +25.0\% \\ 
+\text{DROP}, & \Delta\% \le -25.0\% \\ 
+\text{STABLE}, & -25.0\% < \Delta\% < +25.0\% 
+\end{cases}
+```
 
-#### 4. Effective Market Occupancy Index ($\text{Occ}_{\text{market}}$)
+#### 4. Effective Market Occupancy Index
 Calculated across $M$ monitored properties in a target region for a specific check-in date:
 
-$$\text{Occ}_{\text{market}} = \left( 1 - \frac{\sum_{i=1}^M \mathbb{I}(\text{is\_available}_i = \text{true})}{M} \right) \times 100$$
+```math
+\text{Occ}_{\text{market}} = \left( 1 - \frac{\sum_{i=1}^M \mathbb{I}(\text{available}_i = \text{true})}{M} \right) \times 100
+```
 
 ---
 
@@ -464,7 +472,6 @@ npm run build
 
 - **Live Frontend**: [https://www.jouledynamics.me/real-estate](https://www.jouledynamics.me/real-estate)
 - **Backend API Repository**: [https://github.com/JohnJodinho/joule-dynamics-server](https://github.com/JohnJodinho/joule-dynamics-server)
-- **Production Backend Endpoint**: `https://johnjodinho-sentimentscope.hf.space`
 
 ---
 
