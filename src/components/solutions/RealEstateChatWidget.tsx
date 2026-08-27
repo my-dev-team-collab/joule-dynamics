@@ -88,9 +88,9 @@ const MessageBubble = ({
     : { cleanedText: msg.text, actions: msg.suggested_actions || [] };
 
   return (
-    <div id={id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+    <div id={id} className={`flex flex-col w-full min-w-0 ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
       <div
-        className={`max-w-[92%] sm:max-w-[90%] p-3 rounded-xl text-sm ${
+        className={`max-w-[92%] sm:max-w-[90%] p-3 rounded-xl text-sm break-words overflow-hidden ${
           msg.sender === 'user'
             ? 'bg-secondary text-secondary-foreground font-medium rounded-br-sm'
             : msg.isError
@@ -100,10 +100,10 @@ const MessageBubble = ({
       >
         {msg.sender === 'assistant' ? (
           msg.isError ? (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-start gap-2">
+            <div className="flex flex-col gap-2 min-w-0">
+              <div className="flex items-start gap-2 min-w-0">
                 <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                <p className="whitespace-pre-wrap">{cleanedText}</p>
+                <p className="whitespace-pre-wrap break-words min-w-0">{cleanedText}</p>
               </div>
               {msg.retryable && (
                 <button 
@@ -115,7 +115,7 @@ const MessageBubble = ({
               )}
             </div>
           ) : (
-            <div className="prose dark:prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-muted prose-pre:text-muted-foreground prose-a:text-primary">
+            <div className="prose dark:prose-invert prose-sm max-w-full break-words overflow-x-hidden prose-p:leading-relaxed prose-pre:bg-muted prose-pre:text-muted-foreground prose-a:text-primary">
               <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
                 components={markdownComponents}
@@ -126,20 +126,20 @@ const MessageBubble = ({
             </div>
           )
         ) : (
-          <p className="whitespace-pre-wrap">{msg.text}</p>
+          <p className="whitespace-pre-wrap break-words">{msg.text}</p>
         )}
       </div>
       
       {msg.sender === 'assistant' && actions.length > 0 && isLastMessage && isComplete && (
-        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2.5 max-w-[95%]">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2.5 max-w-[95%] w-full min-w-0">
           {actions.map((action, actionIdx) => (
             <button
               key={actionIdx}
               onClick={() => handleSend(action)}
               disabled={loading}
-              className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs font-medium text-primary dark:text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-full shadow-sm transition-all duration-150 active:scale-95 disabled:opacity-50 text-left"
+              className="inline-flex items-center max-w-full px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs font-medium text-primary dark:text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-full shadow-sm transition-all duration-150 active:scale-95 disabled:opacity-50 text-left whitespace-normal break-words"
             >
-              {action}
+              <span className="break-words leading-tight">{action}</span>
             </button>
           ))}
         </div>
@@ -489,7 +489,7 @@ export default function RealEstateChatWidget() {
             </div>
 
             {/* Messages Feed */}
-            <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-4 relative assistant-scrollbar">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-4 space-y-4 relative assistant-scrollbar w-full min-w-0">
               {messages.map((msg, idx) => {
                 const isLastMessage = idx === messages.length - 1;
               

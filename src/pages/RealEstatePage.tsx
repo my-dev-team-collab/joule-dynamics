@@ -380,11 +380,11 @@ export default function RealEstatePage() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-28 sm:pb-20 space-y-8 sm:space-y-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-28 sm:pb-20 space-y-8 sm:space-y-12">
 
         {/* Header */}
         <div className="max-w-3xl pt-2 sm:pt-4">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-4xl flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-4xl flex items-center gap-3 pt-2">
             <LogoIcon className="h-6 sm:h-7 w-auto shrink-0" />
             Real Estate Rate Monitor
           </h1>

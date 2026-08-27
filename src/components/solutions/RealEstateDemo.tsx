@@ -243,19 +243,73 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
     return finalSpikes;
   }, [data]);
 
-  // ── Chart data ─────────────────────────────────────────────────────────────
-  const chartData = useMemo(() => data
-    .filter((r) => r.property_id === selectedPropertyId)
-    .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime())
-    .map((r) => {
+  // ── Chart data with intelligent adaptive aggregation ───────────────────────
+  const chartData = useMemo(() => {
+    const rawFiltered = data
+      .filter((r) => r.property_id === selectedPropertyId && r.nightly_rate !== null)
+      .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime());
+
+    if (rawFiltered.length === 0) return [];
+
+    // Scenario A: Ultra-Short range (<= 6 readings) -> Keep raw timestamps
+    if (rawFiltered.length <= 6) {
+      return rawFiltered.map((r) => {
+        const d = new Date(r.recorded_at);
+        return {
+          ...r,
+          dateShort: d.toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }),
+          dateOnly:  d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+          timeOnly:  d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
+          isAggregated: false,
+          samplesCount: 1,
+        };
+      });
+    }
+
+    // Scenario B & C: Daily average aggregation to eliminate multiple intraday overlapping dots
+    const dayMap = new Map<string, {
+      rates: number[];
+      trailinAvgs: number[];
+      latestRow: RateRow;
+      dateObj: Date;
+    }>();
+
+    for (const r of rawFiltered) {
       const d = new Date(r.recorded_at);
+      const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const existing = dayMap.get(dayKey);
+      if (!existing) {
+        dayMap.set(dayKey, {
+          rates: [r.nightly_rate!],
+          trailinAvgs: r.trailing_avg_rate !== null ? [r.trailing_avg_rate] : [],
+          latestRow: r,
+          dateObj: d,
+        });
+      } else {
+        existing.rates.push(r.nightly_rate!);
+        if (r.trailing_avg_rate !== null) existing.trailinAvgs.push(r.trailing_avg_rate);
+        existing.latestRow = r;
+      }
+    }
+
+    return Array.from(dayMap.values()).map(({ rates, trailinAvgs, latestRow, dateObj }) => {
+      const avgRate = Math.round(rates.reduce((a, b) => a + b, 0) / rates.length);
+      const avgTrailing = trailinAvgs.length > 0
+        ? Math.round(trailinAvgs.reduce((a, b) => a + b, 0) / trailinAvgs.length)
+        : latestRow.trailing_avg_rate;
+
       return {
-        ...r,
-        dateShort: d.toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }),
-        dateOnly:  d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-        timeOnly:  d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
+        ...latestRow,
+        nightly_rate: avgRate,
+        trailing_avg_rate: avgTrailing,
+        dateShort: dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }),
+        dateOnly:  dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        timeOnly:  "",
+        isAggregated: rates.length > 1,
+        samplesCount: rates.length,
       };
-    }), [data, selectedPropertyId]);
+    });
+  }, [data, selectedPropertyId]);
 
   // ── Health indicator — only meaningful in present mode ─────────────────────
   const totalProperties = uniqueProperties.length;
@@ -387,7 +441,7 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
   }
 
   return (
-    <div className="flex w-full flex-col gap-8 bg-card p-6 text-sm">
+    <div className="flex w-full flex-col gap-8 bg-card p-4 sm:p-6 text-sm">
 
       {/* ── Temporal context badge (non-present) OR Health Indicator (present) ── */}
       <div className="flex items-center justify-between">
@@ -497,29 +551,17 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
         {chartData.length > 0 ? (
           <div className="relative w-full border border-border/50 rounded-lg bg-card/50 overflow-hidden">
             <div className="w-full overflow-x-auto assistant-scrollbar">
-              <div className="h-64 min-w-[500px] w-full p-4 pr-6">
+              <div className="h-64 min-w-[480px] sm:min-w-[540px] w-full p-4 pr-6">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                  <LineChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.5} />
                     <XAxis
-                      dataKey="dateShort"
+                      dataKey="dateOnly"
                       interval="preserveStartEnd"
-                      tick={(props: any) => {
-                        const { x, y, index } = props;
-                        const dataPoint = chartData[index];
-                        if (!dataPoint) return null;
-                        return (
-                          <g transform={`translate(${x},${y})`}>
-                            <text x={0} y={0} dy={10} textAnchor="middle" fill="var(--color-muted-foreground)" fontSize={10}>
-                              <tspan>{dataPoint.dateOnly}</tspan>
-                              <tspan className="hidden sm:inline">, {dataPoint.timeOnly}</tspan>
-                            </text>
-                          </g>
-                        );
-                      }}
+                      tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
                       tickLine={false}
                       axisLine={false}
-                      dy={5}
+                      dy={6}
                     />
                     <YAxis
                       domain={["auto", "auto"]}
@@ -530,20 +572,24 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                       dx={-5}
                     />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "var(--color-card)", borderColor: "var(--color-border)", borderRadius: "6px", maxWidth: "240px", padding: "8px" }}
+                      contentStyle={{ backgroundColor: "var(--color-card)", borderColor: "var(--color-border)", borderRadius: "6px", maxWidth: "260px", padding: "8px 12px" }}
                       itemStyle={{ fontSize: "11px" }}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      formatter={((value: unknown, name: unknown) => [
-                        value != null ? `$${Number(value).toFixed(0)}/night` : "N/A",
-                        name === "nightly_rate" ? "Nightly Rate" : trailingAvgLabel,
-                      ]) as any}
+                      formatter={((value: unknown, name: unknown, item: any) => {
+                        if (value == null) return ["N/A", name === "nightly_rate" ? "Nightly Rate" : trailingAvgLabel];
+                        const formatted = `$${Number(value).toFixed(0)}/night`;
+                        const labelName = name === "nightly_rate"
+                          ? (item?.payload?.isAggregated && item?.payload?.samplesCount > 1 ? `Daily Avg (${item.payload.samplesCount} checks)` : "Nightly Rate")
+                          : trailingAvgLabel;
+                        return [formatted, labelName];
+                      }) as any}
                       labelFormatter={(label, payload) => {
                         if (payload && payload.length && payload[0].payload) {
                           return payload[0].payload.dateShort;
                         }
                         return label;
                       }}
-                      labelStyle={{ color: "var(--color-muted-foreground)", fontSize: "10px", marginBottom: "4px" }}
+                      labelStyle={{ color: "var(--color-foreground)", fontWeight: 600, fontSize: "11px", marginBottom: "4px" }}
                     />
                     <Legend
                       iconType="line"
@@ -555,8 +601,8 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                       dataKey="nightly_rate"
                       stroke="var(--color-primary)"
                       strokeWidth={2}
-                      dot={{ r: 2.5, fill: "var(--color-card)", strokeWidth: 2, stroke: "var(--color-primary)" }}
-                      activeDot={{ r: 4, fill: "var(--color-primary)" }}
+                      dot={chartData.length <= 8 ? { r: 3, fill: "var(--color-card)", strokeWidth: 2, stroke: "var(--color-primary)" } : false}
+                      activeDot={{ r: 5, fill: "var(--color-primary)" }}
                     />
                     <Line
                       type="monotone"
