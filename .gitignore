@@ -29,20 +29,5 @@ __pycache__
 .venv
 *.pyc
 
-joule-dynamics-revamp-blueprint.md
-HANDOVER.md
-get_project_tree.
-Joule_Dynamics_Site_Redesign_Directive.md
-supabase_sql_view.sql
-joule_dynamics_logo_concepts.html
-check.sql
-new_sql_views.sql
-real-estate-page-separation-brief.md
-schema.sql
-new_real_estate_views.sql
 misc
-joule_dynamics_final_lockup.html
-Frontend_API_Updates.md
-Real Estate Intelligence Layer.md
-check_miami.mjs
-methodology_kb.json
+images

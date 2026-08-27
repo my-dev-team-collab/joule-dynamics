@@ -1,4 +1,4 @@
-# Joule Dynamics // Enterprise AI & Data Intelligence Infrastructure
+# Joule Dynamics // Enterprise Data & AI Intelligence Platform
 
 [![Live Platform](https://img.shields.io/badge/Live_Deployment-jouledynamics.me-00E599?style=for-the-badge&logo=vercel&logoColor=black)](https://www.jouledynamics.me)
 [![Real Estate Monitor](https://img.shields.io/badge/Real_Estate_Monitor-Live_Demo-0070F3?style=for-the-badge&logo=googlemaps&logoColor=white)](https://www.jouledynamics.me/real-estate)
@@ -13,306 +13,185 @@
 
 ---
 
-## 1. Executive Summary & Architectural Overview
+## Executive Summary
 
-**Joule Dynamics** is an enterprise-grade autonomous data intelligence and real-time telemetry platform. Rather than presenting static simulations or mock portfolios, Joule Dynamics orchestrates production-scale web extraction pipelines, real-time statistical anomaly detection in PostgreSQL, and an agentic Retrieval-Augmented Generation (RAG) assistant running over Server-Sent Events (SSE).
+**Joule Dynamics** is an enterprise-grade data engineering and agentic intelligence platform designed for automated web-scale ingestion, statistical anomaly detection, and real-time conversational analysis.
 
-The system bridges high-frequency web scraping engines, an enterprise database layer powered by **Supabase PostgreSQL**, a dedicated **FastAPI / Groq LLM inference backend** ([joule-dynamics-server](https://github.com/JohnJodinho/joule-dynamics-server)), and a reactive **React 19 single-page application** optimized for zero-latency dashboard filtering and live reporting.
+The platform is anchored around its flagship production infrastructure: the **Real Estate Rate Monitor** ([Live Dashboard](https://www.jouledynamics.me/real-estate) | [Backend Repository](https://github.com/JohnJodinho/joule-dynamics-server)). The system monitors high-volatility short-term rental markets (Airbnb/Vrbo) in major metropolitan areas, continuously computing rolling pricing benchmarks, isolating rate surges, and providing natural language data synthesis through an autonomous AI reasoning loop.
 
-### Global System Topology
+Joule Dynamics decouples compute and presentation across a high-performance **Dual-API Architecture**:
+1. **The Data API (Supabase PostgreSQL 15)**: Handles automated batch ingestion, statistical window functions, time-series rolling averages, and sub-millisecond server-side parameterized filtering via custom PL/pgSQL RPCs.
+2. **The Intelligence API (FastAPI + Groq + Langfuse)**: Orchestrates an autonomous agentic loop powered by high-throughput LLMs, an 18-tool execution registry for direct database inspection, and Server-Sent Events (SSE) for native chunk-by-chunk streaming.
+3. **The Ingestion Pipelines (GitHub Actions / Cron)**: Executes scheduled multi-market extraction sweeps, transforming unstructured HTML/JSON into structured PostgreSQL relation schemas.
+4. **The Presentation Engine (React 19 + Vite)**: A reactive client SPA driven by server-side URL parameter synchronization and a deterministic Temporal State Machine.
+
+---
+
+## System Architecture
+
+Instead of routing analytical calculations through intermediate application servers, Joule Dynamics splits workloads into two specialized, high-throughput flows:
+
+### 1. The Data Pipeline (Ingestion & Analytical Aggregation)
 
 ```mermaid
-flowchart TB
-    subgraph INGESTION["1. Ingestion & Extraction Layer (Python Scrapers)"]
-        S1["E-Commerce Scraper<br/>(Hourly Polling)"]
-        S2["Real Estate Scraper<br/>(4x Daily Cadence)"]
-        S3["B2B Directory Crawler<br/>(Continuous Stream)"]
+flowchart LR
+    subgraph INGESTION["Orchestrated Ingestion Layer"]
+        GH["GitHub Actions Cron<br/>(4x Daily Triggers)"] --> SCRAPER["Python Scraper Fleet<br/>(Playwright / Scrapling)"]
     end
 
-    subgraph STORAGE["2. Supabase Cloud (PostgreSQL 15 Core)"]
-        DB_RAW[("Raw Scrape Tables<br/>(properties, rate_history, products, leads)")]
-        DB_VIEWS["SQL Window Functions & Analytical Views<br/>(v_rate_volatility, v_price_volatility, v_lead_generation_metrics)"]
-        DB_RPC["Stored Procedures & Filter RPCs<br/>(get_dashboard_kpis)"]
-        
-        DB_RAW --> DB_VIEWS
-        DB_VIEWS --> DB_RPC
-    end
-
-    subgraph BACKEND["3. AI Inference & Tool Execution (FastAPI Server)"]
+    subgraph SUPABASE["Supabase PostgreSQL 15 (Data API)"]
         direction TB
-        API["FastAPI 2.0 Engine<br/>(/api/v1/real-estate/chat/stream)"]
-        AGENT["Agentic Reasoning Loop<br/>(GPT-OSS-120B / 20B Failover)"]
-        TOOLS["18 Execution Tools<br/>(RPC Querying, Geocoding, Anomaly Scans)"]
-        LANGFUSE["Langfuse Tracing & Telemetry"]
-        APPWRITE["Appwrite Storage<br/>(Markdown Report Hosting)"]
+        RAW[("Raw Scrape Tables<br/>properties · rate_history")]
+        VIEW["SQL Analytical View<br/>v_rate_volatility (Window CTEs)"]
+        RPC["Parameterized Stored Procedure<br/>get_dashboard_kpis()"]
         
-        API --> AGENT
-        AGENT <--> TOOLS
-        AGENT --> LANGFUSE
-        AGENT --> APPWRITE
-        TOOLS <--> DB_RPC
-        TOOLS <--> DB_VIEWS
+        RAW --> VIEW --> RPC
     end
 
-    subgraph CLIENT["4. Presentation Layer (React 19 + Vite SPA)"]
-        direction TB
-        LIVE_DASH["/live-systems<br/>(Cross-Industry Intelligence)"]
-        RE_DASH["/real-estate<br/>(Nightly Rate Volatility Hub)"]
-        PULSE["Pulse AI Assistant<br/>(SSE Streaming & PDF Synthesis)"]
-        MAP["Geospatial Leaflet Layer<br/>(Clustered Coordinates)"]
-    end
-
-    S1 & S2 & S3 -->|Batch UPSERT| DB_RAW
-    DB_RPC & DB_VIEWS -->|PostgREST REST/GraphQL| CLIENT
-    PULSE <-->|SSE Stream & HTTP POST| API
+    SCRAPER -->|Batch UPSERT / PostgREST| RAW
 
     classDef ing fill:#1a1a24,stroke:#3b82f6,color:#e2e8f0;
     classDef sto fill:#141d18,stroke:#10b981,color:#e2e8f0;
-    classDef bkd fill:#22151f,stroke:#d946ef,color:#e2e8f0;
-    classDef cli fill:#0f172a,stroke:#38bdf8,color:#e2e8f0;
-
-    class S1,S2,S3 ing;
-    class DB_RAW,DB_VIEWS,DB_RPC sto;
-    class API,AGENT,TOOLS,LANGFUSE,APPWRITE bkd;
-    class LIVE_DASH,RE_DASH,PULSE,MAP cli;
+    class GH,SCRAPER ing;
+    class RAW,VIEW,RPC sto;
 ```
 
----
-
-## 2. The Four Live Systems Pillars (`/live-systems`)
-
-The Joule Dynamics platform is anchored around four foundational intelligence pillars accessible on the [Live Systems Hub](https://www.jouledynamics.me/live-systems):
-
-| Pillar | Route | Ingestion Cadence | Primary SQL Entities / Views | Primary Objective |
-|---|---|---|---|---|
-| **1. Pricing Intelligence Engine** | [`/live-systems#pricing`](https://www.jouledynamics.me/live-systems#pricing) | Hourly checks | `v_category_price_index`, `v_price_volatility` | Real-time e-commerce competitor SKU tracking, stock-out alerts, and stealth markdown detection. |
-| **2. Real Estate Rate Monitor** | [`/real-estate`](https://www.jouledynamics.me/real-estate) | 4× daily sweeps | `v_rate_volatility`, `get_dashboard_kpis` | Nightly short-term rental rate intelligence, 7-day trailing average baselines, ±25% spike anomalies, and temporal UX projection. |
-| **3. Customer Support Assistant** | [`/live-systems#assistant`](https://www.jouledynamics.me/live-systems#assistant) | Real-time RAG | Vector embeddings (pgvector), 15-doc KB | Zero-hallucination contextual support grounded strictly in product manuals, warranty terms, and shipping policies. |
-| **4. B2B Lead Prospector** | [`/live-systems#leads`](https://www.jouledynamics.me/live-systems#leads) | Continuous stream | `v_lead_generation_metrics`, `leads` | Automated multi-directory scraping, email validation, ICP categorization, and enrichment velocity monitoring. |
-
-```
-                                  LIVE SYSTEMS PORTFOLIO
-                                             │
-         ┌───────────────────┬───────────────┴───────────────┬───────────────────┐
-         ▼                   ▼                               ▼                   ▼
-┌─────────────────┐ ┌─────────────────┐             ┌─────────────────┐ ┌─────────────────┐
-│ E-Commerce      │ │ Real Estate     │             │ Customer RAG    │ │ B2B Lead        │
-│ Pricing Monitor │ │ Rate Monitor    │             │ Support Agent   │ │ Prospector      │
-│ (Hourly SKUs)   │ │ (4× Daily STRs) │             │ (Zero-Halluc.)  │ │ (ICP Enrich)    │
-└─────────────────┘ └─────────────────┘             └─────────────────┘ └─────────────────┘
-```
-
-### Pillar 1: Pricing Intelligence Engine (`/live-systems#pricing`)
-- **Data Model**: Normalizes SKUs across target competitors, indexing brand, current price, promotional discount flags, and in-stock booleans.
-- **Analytical Layer**:
-  - `v_category_price_index`: Aggregates hourly price movements across product categories to generate macro pricing indices.
-  - `v_price_volatility`: Evaluates variance between current pricing and the 30-day moving average, automatically surfacing stealth markdowns and predatory price shifts.
-- **Frontend Presentation**: Interactive Recharts time-series visualizer showing intraday pricing curves against rolling baselines.
-
-### Pillar 3: Customer Support Assistant (`/live-systems#assistant`)
-- **Knowledge Architecture**: Ingests 15 domain-specific documents (return rules, international shipping logistics, technical specs) into Supabase `pgvector`.
-- **Inference Constraints**: Employs strict prompt guardrails enforcing strict zero-hallucination rules. Unresolved queries automatically trigger a structured fallback object for human handoff.
-
-### Pillar 4: B2B Lead Prospector (`/live-systems#leads`)
-- **Ingestion Mechanics**: Scrapes targeted B2B directories, parsing company names, decision-maker roles, verified email structures, and geographic locations.
-- **Analytical Layer**: `v_lead_generation_metrics` calculates real-time enrichment velocity (leads discovered per hour, verification success rates, platform distribution breakdown).
-
----
-
-## 3. Deep Dive: Real Estate Rate Monitor (`/real-estate`)
-
-> 🌐 **Live URL**: [https://www.jouledynamics.me/real-estate](https://www.jouledynamics.me/real-estate)  
-> ⚙️ **Backend Repository**: [https://github.com/JohnJodinho/joule-dynamics-server](https://github.com/JohnJodinho/joule-dynamics-server)
-
-The **Real Estate Rate Monitor** is the flagship infrastructure demonstration of Joule Dynamics. It continuously monitors short-term rental listings (Airbnb and Vrbo) in high-volatility metropolitan markets (such as NYC Metro and Miami around major event dates), providing real-time rate revision analysis, automated spike detection, temporal projection modeling, and conversational market intelligence.
-
-![Real Estate Rate Monitor Overview](public/screenshots/real-estate.png)
-
----
-
-### 3.1. Visual System Architecture & Page Layout
-
-The dashboard is structured into an intuitive, telemetry-first layout that flows from high-level KPI aggregations down to granular geospatial coordinates:
-
-```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│ [1] Sticky Navigation & Breadcrumbs                                             │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [2] Page Header (Title, Subtitle, Real-Time Ingestion Status)                    │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [3] Global Server-Side Filters Bar (Properties, Market, Platform, Beds, Status)  │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [4] Top-Line KPI Cards (Properties Tracked, Rate Changes, 25%+ Spikes, Health)   │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [5] Health Indicator & Temporal Context Mode Badge (Present / Historical / Future)│
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [6] Rate Volatility Highlight Cards (Top 2 Surges & Top 2 Steepest Drops)       │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [7] Nightly Rate History Chart (Solid Rate vs. Dotted 7D Trailing Baseline)     │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [8] Regional Market Average Badges (Mean Rates with Listing Count Sub-badges)   │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [9] Property Rate Snapshot Matrix (Table with Sparklines, Avail Badges, Rating) │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│ [10] Interactive Geospatial Map (Clustered Leaflet Layer with Custom Tooltips)   │
-└──────────────────────────────────────────────────────────────────────────────────┘
-```
-
-#### Page Visual Gallery
-
-![Real Estate Page Top View](public/screenshots/real-estate-page.png)
-*Figure 1: Global Filters Bar, Top-line KPI Cards, and Rate Volatility Surge/Drop Highlights.*
-
-![Real Estate Page Middle View](public/screenshots/real-estate-page2.png)
-*Figure 2: Time-series Nightly Rate Chart with 7-Day Trailing Baseline, Regional Averages, and Detailed Property Matrix.*
-
-![Real Estate Page Matrix & Table](public/screenshots/real-estate-page3.png)
-*Figure 3: Granular tabular listings with embedded historical SVG sparklines and temporal availability chips.*
-
-![Geospatial Map Clustering](public/screenshots/real-estate-map-view.png)
-*Figure 4: Leaflet interactive map with coordinate clustering and real-time listing availability pins.*
-
----
-
-### 3.2. Global Multi-Dimensional Filtering Architecture
-
-The dashboard implements **Server-Side URL Parameter Filtering**. Rather than downloading monolithic payloads and filtering on the client, state changes in the UI directly mutate URL search parameters (`useSearchParams`). These parameters are pushed down to PostgreSQL RPCs and SQL views.
+### 2. The Intelligence & Application Flow
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Client Browser
-    participant URL as URL SearchParams (?market=Miami&bedrooms=2)
-    participant RPC as Supabase RPC (get_dashboard_kpis)
-    participant View as Supabase SQL View (v_rate_volatility)
-    participant UI as React 19 UI Components
+flowchart TD
+    CLIENT(["Client Browser<br/>(React 19 SPA)"])
 
-    User->>URL: Selects Filter (e.g., Market = 'Miami', Bedrooms = 2)
-    URL->>RPC: Executes get_dashboard_kpis(p_market, p_bedrooms, ...)
-    URL->>View: Queries v_rate_volatility with WHERE filters
-    RPC-->>UI: Returns calculated KPI counters (Properties, 7D Changes, 25%+ Spikes)
-    View-->>UI: Returns filtered dataset for Charts, Table, Highlights & Map
-    UI-->>User: Renders synchronized visual telemetry
+    subgraph DATA_API["Supabase Data Layer"]
+        RPC_CALL["RPC: get_dashboard_kpis()"]
+        VIEW_CALL["View: v_rate_volatility"]
+    end
+
+    subgraph AI_API["FastAPI Intelligence Layer (joule-dynamics-server)"]
+        STREAM["SSE Stream Endpoint<br/>/api/v1/real-estate/chat/stream"]
+        AGENT["Agentic Reasoning Loop<br/>(Groq gpt-oss-120b / 20b)"]
+        TOOLS["18-Tool Execution Registry<br/>(Market Analytics, Geocoding, Anomaly Engine)"]
+        OBS["Langfuse Tracing"]
+        APPWRITE["Appwrite Cloud Storage<br/>(Report Hosting)"]
+        
+        STREAM --> AGENT
+        AGENT <--> TOOLS
+        AGENT --> OBS
+        AGENT --> APPWRITE
+    end
+
+    CLIENT -->|URL State -> PostgREST| RPC_CALL & VIEW_CALL
+    RPC_CALL & VIEW_CALL -->|Instant Hydration| CLIENT
+    
+    CLIENT <-->|SSE Token Stream & Tool Badges| STREAM
+    TOOLS <-->|Direct SQL Invocations| DATA_API
+
+    classDef cli fill:#0f172a,stroke:#38bdf8,color:#e2e8f0;
+    classDef dat fill:#141d18,stroke:#10b981,color:#e2e8f0;
+    classDef aic fill:#22151f,stroke:#d946ef,color:#e2e8f0;
+    class CLIENT cli;
+    class RPC_CALL,VIEW_CALL dat;
+    class STREAM,AGENT,TOOLS,OBS,APPWRITE aic;
 ```
-
-#### Supported Filter Matrix
-
-| Filter Dimension | URL Param Key | Data Type | Database Mapping | Behavior & Edge Cases |
-|---|---|---|---|---|
-| **Property Selector** | `property_ids` | `string[]` (comma-separated) | `p.id = ANY(uuid_array)` | Multi-select checkbox dropdown with internal fuzzy search. Evaluated against the entire universe of listings. |
-| **Market Region** | `market` | `string` | `p.market = :market` | Filters by designated metropolitan boundary (e.g. `Miami`, `NYC/NJ Metro`). |
-| **Platform** | `platform` | `string` | `p.platform = :platform` | Filters short-term rental channels (`Airbnb`, `Vrbo`). |
-| **Bedrooms** | `bedrooms` | `integer` | `p.bedrooms = :bedrooms` | Filters by unit capacity (`1`, `2`, `3+`). |
-| **Status (Active)** | `tracked` | `string` | `p.is_active = :bool` | `tracked` (monitored active), `untracked` (historical decommissioned), or `all` (complete archive). |
-| **Stay Dates** | `start`, `end` | `YYYY-MM-DD` | `rh.stay_date BETWEEN :start AND :end` | Targets reservation check-in date (`stay_date`), **not** the scraper timestamp (`recorded_at`). Directly drives the **Temporal UX State Machine**. |
 
 ---
 
-### 3.3. The Temporal UX State Machine
+## Architecture by Discipline
 
-Because short-term rental rates are tied to future reservation check-in dates as well as historical scrape logs, the dashboard features a **Temporal State Machine** that dynamically modifies visual copy, descriptions, badge colors, and column headers based on the active `stay_date` window:
+Explore how Joule Dynamics demonstrates production-grade engineering across specialized domains:
 
-```
-                                  STAY DATES SELECTION
-                                           │
-         ┌─────────────────────────────────┼─────────────────────────────────┐
-         ▼                                 ▼                                 ▼
-┌───────────────────┐             ┌───────────────────┐             ┌───────────────────┐
-│   PRESENT MODE    │             │  HISTORICAL MODE  │             │    FUTURE MODE    │
-│  (Default / Today)│             │ (All Dates Past)  │             │(All Dates Future) │
-└─────────┬─────────┘             └─────────┬─────────┘             └─────────┬─────────┘
-          │                                 │                                 │
-          ├─► Live health dot (Green)       ├─► Clock icon badge (Muted)      ├─► Calendar badge (Blue)
-          ├─► Relative times ("3h ago")     ├─► Absolute dates ("Aug 12")     ├─► Absolute dates ("Nov 04")
-          ├─► Stale warnings (>24h)         ├─► Stale warnings disabled       ├─► Stale warnings disabled
-          ├─► Avail: "YES" / "NO"           ├─► Avail: "Was Available"        ├─► Avail: "Pre-open"
-          └─► Volatility: "Live Anomalies"  └─► Volatility: "Historical Anom."└─► Volatility: "Projected Anom."
-```
+### For Data Analysts
+- **Statistical Baselines**: Calculates an unweighted 7-day trailing average ($\overline{R_{7d}}$) for every listing to establish true market baselines rather than relying on noisy point-in-time rates.
+- **Divergence & Anomaly Isolation**: Evaluates percentage price divergence ($\Delta\%$) on every scrape sweep to classify market behavior into normal fluctuation vs. critical surge/drop events ($|\Delta\%| \ge 25\%$).
+- **Effective Occupancy Modeling**: Derives point-in-time market occupancy rates by monitoring availability states across future stay dates.
+- **Multidimensional Slicing**: Instant cross-tabulation across geographic markets, platforms, bedroom counts, active tracking status, and forward-looking check-in dates.
 
-#### Detailed Temporal State Behaviors
+### For Data Engineers
+- **Orchestrated Ingestion**: Headless scraping pipelines orchestrated via **GitHub Actions** cron schedules 4× daily, handling rate limiting, session rotation, and schema normalization.
+- **Relational Integrity**: Normalizes entity metadata (`properties`) against high-frequency time-series scrape events (`rate_history`) using foreign key constraints and indexed lookup paths.
+- **In-Database Analytics**: Offloads computation from application servers directly to **PostgreSQL 15** using analytical window functions (`ROW_NUMBER() OVER (...)`, partitioned rolling averages).
+- **Push-Down Filtering**: Eliminates over-fetching by encapsulating 7-dimensional filter state within a custom PL/pgSQL stored procedure (`get_dashboard_kpis`).
 
-| Feature / Element | Present Mode (Default) | Historical Mode (`end < today`) | Future Mode (`start > today`) |
-|---|---|---|---|
-| **Health Context Badge** | `45 / 45 properties reporting in last 24h` (Green live indicator) | `Viewing historical stay dates (Jun 01 – Jul 31)` | `Showing projected availability for future dates` |
-| **Availability Badges** | `YES` (Green), `YES (STALE)` (Yellow-green), `NO` (Zinc) | `Was Available` (Teal), `Was Booked` (Rose) | `Pre-open` (Sky Blue), `Pre-booked` (Rose) |
-| **Timestamp Column** | Header: `Last Checked`. Relative timestamps (`3h ago`). Rows >24h old dim to 60% opacity. | Header: `Recorded`. Absolute formatted dates (`Aug 14, 2026`). Dimming disabled. | Header: `Recorded`. Absolute dates (`Aug 21, 2026`). Dimming disabled. |
-| **Volatility Card Titles** | `Rate Volatility Alerts` | `Historical Rate Anomalies` | `Projected Rate Anomalies` |
-| **Chart Title Baseline** | `Nightly Rate History` | `Historical Rate Tracking` | `Rate Projections` |
+### For AI Engineers
+- **Autonomous Agentic RAG**: Implements an iterative reasoning agent in **FastAPI** ([joule-dynamics-server](https://github.com/JohnJodinho/joule-dynamics-server)) powered by Groq-accelerated models (`gpt-oss-120b` with seamless `gpt-oss-20b` fallback).
+- **18-Tool Execution Registry**: Equips the LLM with deterministic Python tools capable of querying database views, computing market snapshots, geolocating listings, and calculating anomaly distributions.
+- **Native SSE Streaming**: Delivers chunk-by-chunk token streams over HTTP `text/event-stream` with dedicated lifecycle events (`status`, `tool_call`, `token`, `done`, `error`).
+- **Telemetry & Tracing**: Full observability instrumented via **Langfuse**, tracking token usage, latency distribution, execution paths, and tool-call accuracy.
+
+### For Software Engineers
+- **Reactive State Management**: Built with **React 19** and **Vite 7**, leveraging URL parameters as the single source of truth (`useSearchParams`) for shareable, reproducible dashboard states.
+- **Temporal UX State Machine**: Deterministically switches UI components, timestamp formatting, badges, and terminology across **Present**, **Historical**, and **Future** date contexts.
+- **Geospatial Clustering**: Interactive **Leaflet** map engine supporting dynamic viewport re-centering, coordinate grouping, and availability status pins.
+- **Client-Side Synthesis**: Converts streaming Markdown reports into vector PDF documents on the fly using `html2pdf.js` with zero server-side rendering bottlenecks.
 
 ---
 
-### 3.4. Mathematical & Algorithmic Methodology
+## 1. Data Engineering & Database Architecture
+
+The core data layer is hosted on **Supabase (PostgreSQL 15)**. The database acts as an analytical engine that continuously processes incoming scrape batches and exposes pre-aggregated views to the frontend and AI agent.
+
+```
+                          INGESTION & DATA LAYER
+                                    │
+    ┌───────────────────────────────┴───────────────────────────────┐
+    ▼                                                               ▼
+┌───────────────────────────┐                   ┌───────────────────────────┐
+│ properties Table          │                   │ rate_history Table        │
+│ • id (UUID, PK)           │                   │ • id (UUID, PK)           │
+│ • property_name (Text)    │                   │ • property_id (UUID, FK)  │
+│ • market (Text)           │───1:N Relation───►│ • stay_date (Date)        │
+│ • platform (Airbnb/Vrbo)  │                   │ • nightly_rate (Numeric)  │
+│ • bedrooms (Int)          │                   │ • is_available (Boolean)  │
+│ • latitude / longitude    │                   │ • recorded_at (Timestamp) │
+└───────────────────────────┘                   └───────────────────────────┘
+                                    │
+                                    ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│ v_rate_volatility SQL View                                                │
+│ • Partitions by property_id and stay_date                                 │
+│ • Computes latest nightly rate and 7-day rolling trailing average         │
+│ • Calculates percentage deviation: ((rate - avg) / avg) * 100            │
+└───────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│ get_dashboard_kpis() Stored Procedure (RPC)                               │
+│ • Accepts 7 filter arguments (market, platform, bedrooms, stay dates...)  │
+│ • Returns aggregated KPI counters in sub-millisecond JSONB payloads       │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.1. Mathematical Formulation
 
 #### 1. 7-Day Trailing Average Benchmark ($\overline{R_{7d}}$)
-For each listing $p$, the benchmark rate represents the unweighted arithmetic mean of all recorded rates across the preceding 7 calendar days from the scrape timestamp $t$:
+For each listing $p$ and target stay date $d$, the benchmark rate represents the arithmetic mean of all recorded rates across the 7 days preceding timestamp $t$:
 
-$$\overline{R_{7d}}(p, t) = \frac{1}{K} \sum_{k=1}^{K} r_{p, t_k} \quad \text{where } t - 7\text{ days} \le t_k \le t$$
+$$\overline{R_{7d}}(p, d, t) = \frac{1}{K} \sum_{k=1}^{K} r_{p, d, t_k} \quad \text{where } t - 7\text{ days} \le t_k \le t \text{ and } \text{is\_available} = \text{true}$$
 
-#### 2. Percentage Deviation from Trailing Baseline ($\Delta\%$)
-The rate anomaly score measures the divergence of the most recently scraped nightly rate $R_{\text{current}}$ from the historical 7-day trailing average $\overline{R_{7d}}$:
+#### 2. Percentage Divergence ($\Delta\%$)
+The rate anomaly score measures how far the latest nightly rate $R_{\text{current}}$ deviates from its historical baseline:
 
 $$\Delta\% = \left( \frac{R_{\text{current}} - \overline{R_{7d}}}{\overline{R_{7d}}} \right) \times 100$$
 
-#### 3. Spike Alert Threshold
-A property is classified as experiencing an extreme volatility event if the absolute divergence exceeds 25%:
+#### 3. Spike Classification Threshold
+A listing is categorized as experiencing severe market volatility when the rate divergence reaches or exceeds 25%:
 
-$$\text{Spike}(p) = \begin{cases} 
-\text{SURGE}, & \Delta\% \ge +25.0\% \\ 
-\text{DROP}, & \Delta\% \le -25.0\% \\ 
-\text{NORMAL}, & -25.0\% < \Delta\% < +25.0\% 
+$$\text{VolatilityStatus}(p) = \begin{cases} 
+\mathbf{SURGE} \; (+), & \Delta\% \ge +25.0\% \\ 
+\mathbf{DROP} \; (-), & \Delta\% \le -25.0\% \\ 
+\mathbf{STABLE}, & -25.0\% < \Delta\% < +25.0\% 
 \end{cases}$$
 
 #### 4. Effective Market Occupancy Index ($\text{Occ}_{\text{market}}$)
-Given $M$ actively monitored listings in a target market for a specific stay date $D$:
+Calculated across $M$ monitored properties in a target region for a specific check-in date:
 
-$$\text{Occ}_{\text{market}}(D) = \left( 1 - \frac{\sum_{i=1}^M \mathbb{I}(\text{available}_i = \text{true})}{M} \right) \times 100$$
+$$\text{Occ}_{\text{market}} = \left( 1 - \frac{\sum_{i=1}^M \mathbb{I}(\text{is\_available}_i = \text{true})}{M} \right) \times 100$$
 
 ---
 
-### 3.5. Database Architecture & SQL Definitions
+### 1.2. SQL Analytical View: `v_rate_volatility`
 
-The real estate data layer is powered by Supabase PostgreSQL 15, leveraging advanced window functions, CTEs, and parameterized PL/pgSQL procedures.
-
-```mermaid
-erDiagram
-    PROPERTIES ||--o{ RATE_HISTORY : "tracks"
-    PROPERTIES {
-        uuid id PK
-        text property_name
-        text market
-        text platform
-        integer bedrooms
-        numeric latitude
-        numeric longitude
-        numeric rating
-        integer reviews_count
-        boolean is_active
-        timestamp created_at
-    }
-    RATE_HISTORY {
-        uuid id PK
-        uuid property_id FK
-        date stay_date
-        numeric nightly_rate
-        boolean is_available
-        timestamp recorded_at
-    }
-    V_RATE_VOLATILITY {
-        uuid property_id
-        text property_name
-        text market
-        numeric latest_rate
-        numeric trailing_avg_7d
-        numeric pct_change_7d
-        boolean is_available
-        timestamp latest_recorded_at
-    }
-    PROPERTIES ||--|| V_RATE_VOLATILITY : "aggregates"
-    RATE_HISTORY ||--|| V_RATE_VOLATILITY : "computes window"
-```
-
-#### SQL View: `v_rate_volatility`
-Computes running averages, lagged values, and price divergences directly inside PostgreSQL:
+The `v_rate_volatility` view eliminates application-level aggregation by resolving deduplication, window ranking, and rolling averages in a single query:
 
 ```sql
 CREATE OR REPLACE VIEW v_rate_volatility AS
@@ -371,8 +250,11 @@ LEFT JOIN trailing_calculations t
 WHERE r.rn = 1;
 ```
 
-#### Stored Procedure (RPC): `get_dashboard_kpis`
-Pushes multi-select and temporal boundary filters down to the database engine:
+---
+
+### 1.3. Parameterized PL/pgSQL Stored Procedure: `get_dashboard_kpis`
+
+To maintain sub-100ms dashboard re-renders when filters change, the `get_dashboard_kpis` stored procedure executes all multi-select and date-boundary logic server-side:
 
 ```sql
 CREATE OR REPLACE FUNCTION get_dashboard_kpis(
@@ -393,7 +275,6 @@ DECLARE
     v_rate_changes_7d integer;
     v_spikes_7d integer;
 BEGIN
-    -- Query filtered aggregation metrics
     SELECT 
         COUNT(DISTINCT v.property_id),
         COUNT(DISTINCT v.property_id) FILTER (WHERE ABS(v.pct_above_trailing_avg) > 0),
@@ -427,82 +308,113 @@ $$;
 
 ---
 
-### 3.6. AI Intelligence Layer: Pulse Real Estate Assistant
+## 2. AI & Intelligence Layer (The Agent)
 
-Integrated into the bottom-right corner of the dashboard is **Pulse**, an enterprise agentic AI intelligence assistant scoped to real-time market data.
+Embedded directly within the real estate interface is **Pulse**, an agentic conversational assistant powered by the dedicated [joule-dynamics-server](https://github.com/JohnJodinho/joule-dynamics-server) backend.
 
 ![Pulse AI Assistant Interface](public/screenshots/real-estate-pulse-ai.png)
-*Figure 5: Pulse Assistant explaining market averages and rate volatility using real-time database context.*
+*Figure: Pulse Assistant executing database tool calls to synthesize market intelligence.*
 
-![Pulse AI Interactive Chips and Report Export](public/screenshots/real-estate-pulse-ai%20(2).png)
-*Figure 6: Generated report download buttons (Markdown + Client-side synthesized PDF) and interactive follow-up pills.*
+![Pulse AI Report Downloads and Interactive Pills](public/screenshots/real-estate-pulse-ai%20(2).png)
+*Figure: Clean Markdown responses with client-side PDF synthesis and interactive suggestion pills.*
 
-#### Core AI Capabilities & Integration Contracts
+### 2.1. Server-Sent Events (SSE) Streaming Protocol
+The frontend establishes an asynchronous HTTP connection to `POST /api/v1/real-estate/chat/stream`. Responses are streamed using structured SSE events:
 
-1. **Server-Sent Events (SSE) Native Streaming**:
-   - Streams live tokens from the backend endpoint `POST /api/v1/real-estate/chat/stream`.
-   - Employs a custom `TextDecoder` reader loop that updates React state chunk-by-chunk without artificial typing delays.
+| Event Type | Payload Schema | UI Handler & Rendering Behavior |
+|---|---|---|
+| `event: status` | `{"classification": "PATH_A"}` | Triggers the dynamic status pill ("Thinking..."). |
+| `event: tool_call` | `{"tool": "get_market_averages", "args": {...}}` | Maps raw tool names to human-friendly UI labels (e.g. *Fetching market averages...*). |
+| `event: token` | `{"token": "The average rate..."}` | Appends characters directly to the active assistant message buffer without artificial delays. |
+| `event: done` | `{"path_used": "...", "suggested_actions": [...]}` | Finalizes streaming state and renders interactive follow-up prompt chips. |
+| `event: error` | `{"code": "STREAM_ERROR", "message": "..."}` | Gracefully displays inline error banners with retry capability. |
 
-2. **18-Tool Dynamic Status Indicator**:
-   - The backend reasoning loop emits `event: tool_call` with specific tool identifiers.
-   - The UI transforms raw tool invocations into modern, pulsing telemetry indicators:
+### 2.2. 18-Tool Execution Registry
+The agent is equipped with 18 specialized Python tools that execute deterministic queries against the Supabase database:
 
-   ```typescript
-   const TOOL_LABELS: Record<string, string> = {
-     get_dashboard_kpis:            "Loading KPI metrics...",
-     get_market_averages:           "Fetching market averages...",
-     get_market_snapshot:           "Building market snapshot...",
-     get_market_trend:              "Analyzing pricing trends...",
-     get_spike_alerts:              "Checking spike alerts...",
-     get_rate_anomaly_report:       "Scanning for anomalies...",
-     get_most_volatile_properties:  "Finding volatile listings...",
-     get_property_snapshot:         "Loading property profile...",
-     get_property_rate_changes:     "Analyzing rate revisions...",
-     compare_properties:            "Comparing properties...",
-     search_properties:             "Searching listing database...",
-     get_availability_rate:         "Calculating occupancy...",
-     geocode_address:               "Locating address...",
-     get_nearby_properties:         "Finding nearby listings...",
-     get_distance_km:               "Calculating distance...",
-     get_tracked_markets:           "Fetching tracked regions...",
-     get_recently_changed_tracking: "Checking recent tracking...",
-     generate_data_export:          "Preparing your export...",
-     generate_contact_buttons:      "Generating contact options...",
-     suggest_actions:               "Preparing suggested options...",
-   };
-   ```
+```typescript
+const TOOL_LABELS: Record<string, string> = {
+  get_dashboard_kpis:            "Loading KPI metrics...",
+  get_market_averages:           "Fetching market averages...",
+  get_market_snapshot:           "Building market snapshot...",
+  get_market_trend:              "Analyzing pricing trends...",
+  get_spike_alerts:              "Checking spike alerts...",
+  get_rate_anomaly_report:       "Scanning for anomalies...",
+  get_most_volatile_properties:  "Finding volatile listings...",
+  get_property_snapshot:         "Loading property profile...",
+  get_property_rate_changes:     "Analyzing rate revisions...",
+  compare_properties:            "Comparing properties...",
+  search_properties:             "Searching listing database...",
+  get_availability_rate:         "Calculating occupancy...",
+  geocode_address:               "Locating address...",
+  get_nearby_properties:         "Finding nearby listings...",
+  get_distance_km:               "Calculating distance...",
+  get_tracked_markets:           "Fetching tracked regions...",
+  get_recently_changed_tracking: "Checking recent tracking...",
+  generate_data_export:          "Preparing your export...",
+  generate_contact_buttons:      "Generating contact options...",
+  suggest_actions:               "Preparing suggested options...",
+};
+```
 
-3. **Client-Side PDF Compilation (`html2pdf.js`)**:
-   - When the backend generates markdown reports (hosted in Appwrite storage), the UI intercepts `/download` links.
-   - It renders dual action buttons: **MD** (direct raw download) and **PDF** (client-side DOM-to-PDF rendering saving as `Real_Estate_Report_<session_id>.pdf`).
-
-4. **Interactive Action & Clarification Chips**:
-   - Structured follow-up prompts and clarification choices emitted in `suggested_actions` render as interactive pills (`active:scale-95`).
-   - Clicking a chip immediately dispatches the follow-up message into the chat session.
-
-5. **Edge-Case Error Handling & Input Guardrails**:
-   - **Network Reconnection**: Catches mid-stream disconnects and gracefully appends `[Error]` notices without clearing previously streamed text.
-   - **Auto-Expanding Input**: Textarea dynamically expands from `36px` to `140px` with universal `assistant-scrollbar` styling.
-   - **1,000-Character Hard Cap**: Monospace badge warns in amber at 800+ characters and pulses in red at the 1,000-character maximum.
+### 2.3. Enterprise Agent Features
+- **Client-Side PDF Synthesis**: Intercepts generated markdown report links (`/download`), rendering side-by-side **MD** (raw Appwrite download) and **PDF** buttons (client-side DOM vector compilation via `html2pdf.js` with session IDs: `Real_Estate_Report_<session_id>.pdf`).
+- **Interactive Action Pills**: Renders follow-up choices and clarification options as clickable pills with active scaling (`active:scale-95`).
+- **Smart Input Guardrails**: Auto-expanding textarea (`36px` to `140px`) with custom `assistant-scrollbar`, hardcapped at 1,000 characters with progressive visual warning badges (amber at 800+, pulsing red at 1,000 max).
+- **Observability**: Every LLM step, tool call execution, latency measurement, and token cost is tracked via **Langfuse**.
 
 ---
 
-## 4. Technology Stack Matrix
+## 3. The Presentation Layer (Frontend)
 
-| Layer | Technology | Purpose & Selection Rationale |
+Built with **React 19**, **Vite 7**, and **Tailwind CSS v4**, the frontend delivers an industrial dark telemetry interface designed for sub-100ms response times.
+
+![Real Estate Overview](public/screenshots/real-estate.png)
+*Figure: Real Estate Rate Monitor complete telemetry overview.*
+
+### 3.1. Visual System Gallery
+
+| Component View | Screenshot | Technical Highlights |
 |---|---|---|
-| **Frontend Framework** | **React 19** (`react`, `react-dom`) | Concurrent rendering, modern hooks, zero-latency state transitions. |
-| **Build & Tooling** | **Vite 7.3** | Lightning-fast Hot Module Replacement (HMR) and optimized Rollup tree-shaking. |
-| **Styling & Design System** | **Tailwind CSS v4** + CSS Variables | High-performance CSS engine with industrial dark telemetry aesthetics. |
-| **Icons & Micro-UI** | **Lucide React** | Feather-light SVG iconography. |
-| **Charts & Visualizations** | **Recharts** | Declarative SVG-based time-series and area charts. |
-| **Geospatial Mapping** | **Leaflet** + **React Leaflet** | Coordinate plotting, marker clustering, and interactive popups without heavy tile overhead. |
-| **Markdown Rendering** | **React-Markdown** + **Remark-GFM** | Secure, sanitised GitHub-flavored Markdown rendering for AI outputs. |
-| **PDF Synthesis** | **html2pdf.js** (`html2canvas` + `jsPDF`) | Client-side DOM-to-PDF vector generation for analytical reports. |
-| **Database & Auth** | **Supabase (PostgreSQL 15)** | Row-level security, analytical views, stored procedures, and PostgREST. |
-| **AI Inference Backend** | **FastAPI** + **Groq Cloud** | High-throughput async SSE streaming and LLM tool execution ([joule-dynamics-server](https://github.com/JohnJodinho/joule-dynamics-server)). |
-| **LLM Observability** | **Langfuse** | Step-by-step trace telemetry, latency monitoring, and token cost accounting. |
-| **Asset Storage** | **Appwrite Cloud** | Secure storage bucket hosting generated Markdown exports. |
+| **Top KPI & Filters** | ![Top View](public/screenshots/real-estate-page.png) | Searchable checkbox dropdown, market/platform selectors, and 4 top-line aggregation cards. |
+| **Chart & Matrix** | ![Middle View](public/screenshots/real-estate-page2.png) | Time-series rate history chart with solid rate vs. dotted 7D baseline, and market average chips. |
+| **Granular Table** | ![Table View](public/screenshots/real-estate-page3.png) | Tabular listings with inline SVG sparklines, rating badges, and temporal availability chips. |
+| **Geospatial Map** | ![Map View](public/screenshots/real-estate-map-view.png) | Clustered Leaflet map layer with availability pins and dynamic viewport auto-centering. |
+
+---
+
+### 3.2. The Temporal UX State Machine
+
+The interface implements a deterministic **Temporal State Machine** driven by the `stay_date` URL parameter. The entire page dynamically shifts its copy, badges, and rendering logic across three distinct modes:
+
+```
+                                  STAY DATES SELECTION
+                                           │
+         ┌─────────────────────────────────┼─────────────────────────────────┐
+         ▼                                 ▼                                 ▼
+┌───────────────────┐             ┌───────────────────┐             ┌───────────────────┐
+│   PRESENT MODE    │             │  HISTORICAL MODE  │             │    FUTURE MODE    │
+│  (Default / Today)│             │ (All Dates Past)  │             │(All Dates Future) │
+└─────────┬─────────┘             └─────────┬─────────┘             └─────────┬─────────┘
+          │                                 │                                 │
+          ├─► Live health indicator (Green) ├─► Clock context badge (Muted)   ├─► Calendar badge (Sky Blue)
+          ├─► Relative times ("3h ago")     ├─► Absolute dates ("Aug 12")     ├─► Absolute dates ("Nov 04")
+          ├─► Stale warnings (>24h active)  ├─► Stale warnings disabled       ├─► Stale warnings disabled
+          ├─► Badges: "YES" / "NO"          ├─► Badges: "Was Available"       ├─► Badges: "Pre-open"
+          └─► "Rate Volatility Alerts"      └─► "Historical Rate Anomalies"   └─► "Projected Rate Anomalies"
+```
+
+---
+
+## 4. Modular Proof of Concepts (Extensions)
+
+In addition to the Real Estate Rate Monitor, the platform includes modular proof-of-concept intelligence systems demonstrating architectural flexibility:
+
+| System | Route | Data Pipeline & Ingestion | Analytical Engine |
+|---|---|---|---|
+| **Pricing Intelligence Engine** | [`/live-systems#pricing`](https://www.jouledynamics.me/live-systems#pricing) | Hourly e-commerce SKU scraper | `v_category_price_index` rolls pricing into category buckets; `v_price_volatility` isolates stealth markdowns. |
+| **B2B Lead Prospector** | [`/live-systems#leads`](https://www.jouledynamics.me/live-systems#leads) | Automated directory crawler | `v_lead_generation_metrics` calculates enrichment velocity and email verification rates. |
+| **Customer Support Assistant** | [`/live-systems#assistant`](https://www.jouledynamics.me/live-systems#assistant) | Supabase `pgvector` store | Zero-hallucination RAG agent answering from a 15-document enterprise knowledge base. |
 
 ---
 
@@ -511,15 +423,15 @@ Integrated into the bottom-right corner of the dashboard is **Pulse**, an enterp
 ### Prerequisites
 - **Node.js**: `>= 20.10.0`
 - **npm**: `>= 10.0.0`
-- **Supabase Account**: With PostgreSQL views and `get_dashboard_kpis` RPC deployed.
+- **Supabase Account**: With PostgreSQL 15 views and stored procedures deployed.
 
-### 1. Clone & Install Dependencies
+### 1. Clone & Install
 ```bash
 # Clone the repository
 git clone https://github.com/my-dev-team-collab/joule-dynamics.git
 cd joule-dynamics
 
-# Install dependencies cleanly
+# Install frontend dependencies cleanly
 npm install
 ```
 
@@ -527,11 +439,11 @@ npm install
 Create a `.env` file in the root directory:
 
 ```env
-# Supabase Configuration
+# Supabase Data API
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-# Optional Custom Backend URL (defaults to production Hugging Face Space)
+# Intelligence API (FastAPI backend)
 VITE_BACKEND_URL=https://johnjodinho-sentimentscope.hf.space
 ```
 
@@ -539,7 +451,7 @@ VITE_BACKEND_URL=https://johnjodinho-sentimentscope.hf.space
 ```bash
 npm run dev
 ```
-The application will launch on `http://localhost:5173`. Navigate to `http://localhost:5173/real-estate` to view the Real Estate Rate Monitor.
+Navigate to `http://localhost:5173/real-estate` to interact with the Real Estate Rate Monitor.
 
 ### 4. Build for Production
 ```bash
@@ -548,16 +460,15 @@ npm run build
 
 ---
 
-## 6. Repository Links & Related Infrastructure
+## 6. Infrastructure Links
 
-- **Frontend Production URL**: [https://www.jouledynamics.me](https://www.jouledynamics.me)
-- **Real Estate Dashboard**: [https://www.jouledynamics.me/real-estate](https://www.jouledynamics.me/real-estate)
+- **Live Frontend**: [https://www.jouledynamics.me/real-estate](https://www.jouledynamics.me/real-estate)
 - **Backend API Repository**: [https://github.com/JohnJodinho/joule-dynamics-server](https://github.com/JohnJodinho/joule-dynamics-server)
 - **Production Backend Endpoint**: `https://johnjodinho-sentimentscope.hf.space`
 
 ---
 
-## 7. License & Compliance
+## 7. License
 
-Distributed under the MIT License. See `LICENSE` for full details.  
-Built and maintained by the **Joule Dynamics Engineering Team**.
+Distributed under the MIT License. See `LICENSE` for details.  
+Built by the **Joule Dynamics Engineering Team**.
