@@ -25,7 +25,7 @@ import ServiceTierSection from "@/components/solutions/ServiceTierSection";
 import RealEstateChatWidget from "@/components/solutions/RealEstateChatWidget";
 import ScrapeHealthStrip from "@/components/solutions/ScrapeHealthStrip";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { Building2, ChevronDown, Search, Check } from "lucide-react";
+import { ChevronDown, Search, Check, ArrowLeft } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -358,32 +358,37 @@ export default function RealEstatePage() {
       <SystemStatusBar />
 
       {/* Sticky page header */}
-      <div className="sticky top-12 z-40 w-full border-b border-border bg-background/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3">
-          <div className="p-1.5 bg-primary/10 rounded-md">
-            <Building2 className="size-4 text-primary" />
+      <div className="sticky top-12 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <a
+              href="/live-systems"
+              className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors font-medium"
+            >
+              <ArrowLeft className="size-3.5" />
+              <span>Live Systems</span>
+            </a>
+            <span className="text-muted-foreground/40 font-sans">/</span>
+            <span className="text-foreground font-semibold uppercase tracking-wider text-[11px] sm:text-xs truncate max-w-[200px] sm:max-w-none">
+              Real Estate Rate Monitor
+            </span>
           </div>
-          <span className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground">
-            Real Estate Rate Monitor
-          </span>
-          <a
-            href="/live-systems"
-            className="ml-auto text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider"
-          >
-            ← All Live Systems
-          </a>
+          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground bg-muted/40 px-2 py-0.5 rounded border border-border/50">
+            <span className="size-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span>LIVE FEED</span>
+          </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 space-y-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-28 sm:pb-20 space-y-8 sm:space-y-12">
 
         {/* Header */}
-        <div className="max-w-3xl pt-4">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl flex items-center gap-3">
-            <LogoIcon className="h-7 w-auto shrink-0" />
+        <div className="max-w-3xl pt-2 sm:pt-4">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-4xl flex items-center gap-3">
+            <LogoIcon className="h-6 sm:h-7 w-auto shrink-0" />
             Real Estate Rate Monitor
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
+          <p className="mt-3 sm:mt-4 text-sm sm:text-lg text-muted-foreground leading-relaxed">
             Live nightly rate intelligence across short-term rental markets.
             We track competitor pricing, detect rate volatility, and surface booking availability in real time by checking each listing up to 4× daily.
             Built to track NYC and Miami rate dynamics ahead of the 2026 World Cup Final. Expanding to new markets is a config change and not a full rebuild.
@@ -391,24 +396,26 @@ export default function RealEstatePage() {
         </div>
 
         {/* Global Filters */}
-        <div className="flex flex-col gap-2 p-4 border border-border bg-card/50 rounded-lg shadow-sm">
+        <div className="flex flex-col gap-2.5 p-3.5 sm:p-4 border border-border bg-card/50 rounded-lg shadow-sm">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Global Filters</span>
-          <div className="flex flex-wrap gap-3 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap gap-2.5 sm:gap-3 items-end">
 
             {/* ── Multi-select property filter (Parent) ── */}
             {allProperties.length > 0 && (
-              <PropertyMultiSelect
-                allProperties={allProperties}
-                selectedIds={filterPropertyIds}
-                onChange={setPropertyFilter}
-              />
+              <div className="w-full sm:w-auto">
+                <PropertyMultiSelect
+                  allProperties={allProperties}
+                  selectedIds={filterPropertyIds}
+                  onChange={setPropertyFilter}
+                />
+              </div>
             )}
 
             {markets.length > 1 && (
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 w-full sm:w-auto">
                 <label className="text-[10px] text-muted-foreground">Market</label>
                 <select
-                  className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   value={filterMarket || "all"}
                   onChange={e => setFilter("market", e.target.value)}
                 >
@@ -419,10 +426,10 @@ export default function RealEstatePage() {
             )}
 
             {platforms.length > 1 && (
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 w-full sm:w-auto">
                 <label className="text-[10px] text-muted-foreground">Platform</label>
                 <select
-                  className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   value={filterPlatform}
                   onChange={e => setFilter("platform", e.target.value)}
                 >
@@ -432,10 +439,10 @@ export default function RealEstatePage() {
               </div>
             )}
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 w-full sm:w-auto">
               <label className="text-[10px] text-muted-foreground">Status</label>
               <select
-                className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 value={filterTracked}
                 onChange={e => setFilter("tracked", e.target.value)}
               >
@@ -446,10 +453,10 @@ export default function RealEstatePage() {
             </div>
 
             {bedroomOptions.length > 1 && (
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 w-full sm:w-auto">
                 <label className="text-[10px] text-muted-foreground">Bedrooms</label>
                 <select
-                  className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   value={filterBedrooms}
                   onChange={e => setFilter("bedrooms", e.target.value)}
                 >
@@ -459,20 +466,19 @@ export default function RealEstatePage() {
               </div>
             )}
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 w-full sm:w-auto col-span-1 sm:col-span-2 md:col-span-1">
               <label className="text-[10px] text-muted-foreground">Stay Dates</label>
-              <div className="flex items-center gap-1">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-1.5">
                 <input
                   type="date"
-                  className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary min-w-0"
                   value={filterStartDate || ""}
                   onChange={e => setFilter("start", e.target.value || null)}
                   title="Start Date"
                 />
-                <span className="text-muted-foreground text-xs">to</span>
                 <input
                   type="date"
-                  className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary min-w-0"
                   value={filterEndDate || ""}
                   onChange={e => setFilter("end", e.target.value || null)}
                   title="End Date"
@@ -481,9 +487,9 @@ export default function RealEstatePage() {
             </div>
 
             {hasActiveFilters && (
-              <div className="flex flex-col gap-1 justify-end">
+              <div className="flex flex-col gap-1 justify-end w-full sm:w-auto">
                 <button
-                  className="text-[10px] text-muted-foreground hover:text-foreground transition-colors border border-border rounded-md px-2 py-1 h-[26px]"
+                  className="w-full sm:w-auto text-[10px] text-muted-foreground hover:text-foreground transition-colors border border-border rounded-md px-2.5 py-1 h-[28px] font-medium"
                   onClick={clearAllFilters}
                 >
                   Clear filters
@@ -496,24 +502,27 @@ export default function RealEstatePage() {
         {/* KPI Cards */}
         <ErrorBoundary fallbackMessage="Failed to load Real Estate KPIs.">
           {loading || !kpis ? renderSkeleton(4) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
               <KPICard label="Properties Tracked" value={kpis.properties_tracked} />
               <KPICard label="Rate Changes (7d)"  value={kpis.rate_changes_7d} />
               <KPICard label="25%+ Spikes (7d)"   value={kpis.spikes_7d} />
 
               {/* Per-platform scrape status */}
-              <div className="flex flex-col p-4 bg-card border border-border rounded-lg shadow-sm">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Scrape Status</span>
-                <div className="flex flex-col gap-1 mt-1">
+              <div className="flex flex-col p-3 sm:p-4 bg-card border border-border rounded-lg shadow-sm justify-center">
+                <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Scrape Status</span>
+                <div className="flex flex-col gap-1 mt-0.5">
                   {kpis.last_scrape_status && Object.keys(kpis.last_scrape_status).length > 0 ? (
                     Object.entries(kpis.last_scrape_status).map(([platform, status]) => (
-                      <div key={platform} className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground capitalize">{platform}</span>
-                        <span className={`text-sm font-semibold ${statusColor(status)}`}>{status}</span>
+                      <div key={platform} className="flex items-center justify-between gap-1">
+                        <span className="text-[11px] sm:text-xs text-muted-foreground capitalize truncate">{platform.replace(/_/g, ' ')}</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className={`size-1.5 rounded-full ${status === 'success' || status === 'completed' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                          <span className={`text-xs font-semibold ${statusColor(status)}`}>{status}</span>
+                        </div>
                       </div>
                     ))
                   ) : (
-                    <span className="text-2xl font-semibold text-muted-foreground">Pending</span>
+                    <span className="text-lg sm:text-xl font-bold text-muted-foreground">Pending</span>
                   )}
                 </div>
               </div>
@@ -560,9 +569,9 @@ export default function RealEstatePage() {
 
 function KPICard({ label, value, valueClass = "" }: { label: string; value: string | number; valueClass?: string }) {
   return (
-    <div className="p-4 border border-border bg-card/50 rounded-lg flex flex-col justify-center shadow-sm">
-      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</span>
-      <span className={`text-xl font-bold text-foreground capitalize ${valueClass}`}>{value}</span>
+    <div className="p-3 sm:p-4 border border-border bg-card/50 rounded-lg flex flex-col justify-center shadow-sm">
+      <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</span>
+      <span className={`text-lg sm:text-2xl font-bold text-foreground capitalize ${valueClass}`}>{value}</span>
     </div>
   );
 }

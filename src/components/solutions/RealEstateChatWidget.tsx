@@ -31,6 +31,42 @@ interface Message {
   isStreaming?: boolean;
 }
 
+/** Sanitize raw JSON action blocks from LLM prose and extract into clickable action chips */
+function extractActionsAndCleanText(rawText: string, existingActions?: string[]): { cleanedText: string; actions: string[] } {
+  let text = rawText;
+  const extracted: string[] = existingActions ? [...existingActions] : [];
+
+  const jsonRegex = /(?:```(?:json)?\s*)?\{\s*"actions"\s*:\s*\[([\s\S]*?)\]\s*\}(?:\s*```)?/gi;
+  let match;
+  while ((match = jsonRegex.exec(text)) !== null) {
+    try {
+      const arrayStr = `[${match[1]}]`;
+      const parsed = JSON.parse(arrayStr);
+      if (Array.isArray(parsed)) {
+        for (const act of parsed) {
+          if (typeof act === 'string' && act.trim() && !extracted.includes(act.trim())) {
+            extracted.push(act.trim());
+          }
+        }
+      }
+    } catch {
+      const itemRegex = /"([^"]+)"/g;
+      let itemMatch;
+      while ((itemMatch = itemRegex.exec(match[1])) !== null) {
+        if (itemMatch[1].trim() && !extracted.includes(itemMatch[1].trim())) {
+          extracted.push(itemMatch[1].trim());
+        }
+      }
+    }
+  }
+
+  // Strip JSON blocks and optional preceding headers
+  text = text.replace(/(?:\*{1,2})?(?:Choose an action|Suggested actions|Next steps)(?:\*{1,2})?:?\s*(?:```(?:json)?\s*)?\{\s*"actions"\s*:\s*\[[\s\S]*?\]\s*\}(?:\s*```)?/gi, '');
+  text = text.replace(/(?:```(?:json)?\s*)?\{\s*"actions"\s*:\s*\[[\s\S]*?\]\s*\}(?:\s*```)?/gi, '');
+
+  return { cleanedText: text.trim(), actions: extracted };
+}
+
 const MessageBubble = ({
   msg,
   isLastMessage,
@@ -46,13 +82,15 @@ const MessageBubble = ({
   markdownComponents: Components;
   id?: string;
 }) => {
-  const displayedText = msg.text;
   const isComplete = !msg.isStreaming;
+  const { cleanedText, actions } = (msg.sender === 'assistant' && !msg.isError)
+    ? extractActionsAndCleanText(msg.text, msg.suggested_actions)
+    : { cleanedText: msg.text, actions: msg.suggested_actions || [] };
 
   return (
     <div id={id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
       <div
-        className={`max-w-[90%] p-3 rounded-xl text-sm ${
+        className={`max-w-[92%] sm:max-w-[90%] p-3 rounded-xl text-sm ${
           msg.sender === 'user'
             ? 'bg-secondary text-secondary-foreground font-medium rounded-br-sm'
             : msg.isError
@@ -65,7 +103,7 @@ const MessageBubble = ({
             <div className="flex flex-col gap-2">
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                <p className="whitespace-pre-wrap">{displayedText}</p>
+                <p className="whitespace-pre-wrap">{cleanedText}</p>
               </div>
               {msg.retryable && (
                 <button 
@@ -82,7 +120,7 @@ const MessageBubble = ({
                 remarkPlugins={[remarkGfm]}
                 components={markdownComponents}
               >
-                {displayedText}
+                {cleanedText}
               </ReactMarkdown>
               {!isComplete && <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />}
             </div>
@@ -92,14 +130,14 @@ const MessageBubble = ({
         )}
       </div>
       
-      {msg.sender === 'assistant' && msg.suggested_actions && msg.suggested_actions.length > 0 && isLastMessage && isComplete && (
-        <div className="flex flex-wrap gap-2 mt-3 max-w-[90%]">
-          {msg.suggested_actions.map((action, actionIdx) => (
+      {msg.sender === 'assistant' && actions.length > 0 && isLastMessage && isComplete && (
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2.5 max-w-[95%]">
+          {actions.map((action, actionIdx) => (
             <button
               key={actionIdx}
               onClick={() => handleSend(action)}
               disabled={loading}
-              className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-primary dark:text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-full shadow-sm transition-all duration-150 active:scale-95 disabled:opacity-50 text-left"
+              className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs font-medium text-primary dark:text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-full shadow-sm transition-all duration-150 active:scale-95 disabled:opacity-50 text-left"
             >
               {action}
             </button>
@@ -400,10 +438,10 @@ export default function RealEstateChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-[60] p-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-full shadow-lg flex items-center gap-2 transition-all"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 p-3 sm:p-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-full shadow-lg flex items-center gap-2 transition-all active:scale-95"
           aria-label="Toggle Intelligence Assistant"
         >
-          <Bot className="w-6 h-6" />
+          <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
           {/* Hide text on small screens for responsiveness */}
           <span className="hidden sm:inline-block text-sm font-semibold pr-1">Ask Pulse</span>
         </button>
@@ -411,15 +449,15 @@ export default function RealEstateChatWidget() {
 
       {/* Slide-over Drawer Panel */}
       {isOpen && (
-        <div className={`fixed top-12 bottom-0 right-0 z-40 bg-background border-l border-border shadow-2xl flex flex-col transition-all duration-200 ${
+        <div className={`fixed inset-y-0 right-0 z-50 bg-background border-l border-border shadow-2xl flex flex-col transition-all duration-200 ${
           isMaximized 
             ? "left-0 w-full" 
-            : "w-full sm:w-[400px] md:max-w-md"
+            : "w-full sm:w-[420px] md:max-w-md"
         }`}>
           {/* Header */}
-          <div className="p-4 border-b border-border flex justify-between items-center bg-card shrink-0">
+          <div className="p-3.5 sm:p-4 border-b border-border flex justify-between items-center bg-card shrink-0">
             <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-primary" />
+              <Activity className="w-5 h-5 text-primary shrink-0" />
               <div>
                 <h3 className="text-sm font-bold text-foreground">Pulse — Real Estate Intelligence</h3>
                 <p className="text-xs text-muted-foreground">Scoped to Rate Monitor</p>
@@ -445,15 +483,15 @@ export default function RealEstateChatWidget() {
           {/* Centered Content Column */}
           <div className={`flex flex-col flex-1 overflow-hidden ${isMaximized ? 'max-w-4xl mx-auto w-full' : 'w-full'}`}>
             {/* Read-Only Scope Notice */}
-            <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <span className="leading-snug">Answers grounded live from page data and methodology context.</span>
-          </div>
+            <div className="px-3.5 sm:px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 shrink-0">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span className="leading-snug text-[11px] sm:text-xs">Answers grounded live from page data and methodology context.</span>
+            </div>
 
-          {/* Messages Feed */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 relative assistant-scrollbar">
-            {messages.map((msg, idx) => {
-              const isLastMessage = idx === messages.length - 1;
+            {/* Messages Feed */}
+            <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-4 relative assistant-scrollbar">
+              {messages.map((msg, idx) => {
+                const isLastMessage = idx === messages.length - 1;
               
               // Format data and dates
               let formattedText = msg.text;

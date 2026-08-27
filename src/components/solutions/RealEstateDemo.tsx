@@ -415,10 +415,12 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
       {/* ── Volatility Alert Panel ── */}
       {spikes.length > 0 && (
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="size-4 text-amber-500" />
-            <h4 className="font-semibold text-foreground">{alertsTitle}</h4>
-            <span className="text-muted-foreground font-normal text-xs">{alertsSubtitle}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="size-4 text-amber-500 shrink-0" />
+              <h4 className="font-semibold text-foreground text-sm sm:text-base">{alertsTitle}</h4>
+            </div>
+            <span className="text-muted-foreground font-normal text-[11px] sm:text-xs">{alertsSubtitle}</span>
           </div>
           <p className="text-[10px] text-muted-foreground -mt-1">{alertsDescription}</p>
           <div className="flex flex-col gap-2">
@@ -433,29 +435,30 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
               return (
                 <div
                   key={spike.property_id}
-                  className={`flex items-start justify-between rounded-md border ${borderColor} ${bgColor} p-3 border-l-2 ${leftBorderColor}`}
+                  onClick={() => handleUserSelectProperty(spike.property_id)}
+                  className={`flex items-start justify-between gap-3 rounded-md border ${borderColor} ${bgColor} p-3 border-l-2 ${leftBorderColor} cursor-pointer hover:bg-muted/20 transition-colors`}
                 >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-medium text-foreground text-sm flex items-center gap-1.5">
-                      <span className="truncate max-w-[180px] sm:max-w-xs" title={spike.property_name}>{spike.property_name}</span>
+                  <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                    <span className="font-medium text-foreground text-sm flex items-center gap-1.5 min-w-0">
+                      <span className="truncate" title={spike.property_name}>{spike.property_name}</span>
                       {spike.url && (
                         <a href={spike.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-muted-foreground hover:text-primary transition-colors shrink-0" title="View listing">
                           <ExternalLink className="size-3" />
                         </a>
                       )}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[11px] sm:text-xs text-muted-foreground truncate">
                       {spike.market} · {spike.platform}
                       <span className="mx-1 opacity-40">·</span>
                       Stay: {new Date(spike.stay_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                     </span>
                   </div>
-                  <div className="flex flex-col items-end gap-0.5 shrink-0">
+                  <div className="flex flex-col items-end gap-1 shrink-0">
                     <span className={`font-bold ${textColor} text-sm`}>
                       {spike.currency === "USD" ? "$" : spike.currency}{spike.nightly_rate?.toFixed(0) ?? "N/A"}
-                      <span className="text-[10px] font-normal text-muted-foreground ml-1">/ night</span>
+                      <span className="text-[10px] font-normal text-muted-foreground ml-0.5">/nt</span>
                     </span>
-                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${badgeBorderColor} ${textColor} font-mono`}>
+                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${badgeBorderColor} ${textColor} font-mono shrink-0`}>
                       {spike.pct_above_trailing_avg && spike.pct_above_trailing_avg > 0 ? "+" : ""}{spike.pct_above_trailing_avg?.toFixed(1)}% vs avg
                     </Badge>
                   </div>
@@ -470,19 +473,16 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <h4 className="font-semibold text-foreground">{chartTitle}</h4>
-            <span className="text-[10px] text-muted-foreground sm:hidden flex items-center gap-1">
-              Swipe <ArrowRight className="size-3" />
-            </span>
+            <h4 className="font-semibold text-foreground text-sm sm:text-base">{chartTitle}</h4>
           </div>
           {uniqueProperties.length > 0 && (
             isSinglePropertyLocked ? (
-              <span className="text-xs font-medium text-foreground truncate max-w-[220px]" title={uniqueProperties[0].name}>
+              <span className="text-xs font-medium text-foreground truncate max-w-full sm:max-w-[240px]" title={uniqueProperties[0].name}>
                 {uniqueProperties[0].name}
               </span>
             ) : (
               <select
-                className="rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary max-w-[220px] truncate"
+                className="w-full sm:w-auto rounded-md border border-border bg-background px-2.5 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary max-w-full sm:max-w-[260px] truncate"
                 value={selectedPropertyId ?? ""}
                 onChange={(e) => handleUserSelectProperty(e.target.value)}
               >
@@ -496,14 +496,14 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
 
         {chartData.length > 0 ? (
           <div className="relative w-full border border-border/50 rounded-lg bg-card/50 overflow-hidden">
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none sm:hidden z-10" />
-            <div className="w-full overflow-x-auto">
-              <div className="h-64 min-w-[600px] w-full p-4 pr-6">
+            <div className="w-full overflow-x-auto assistant-scrollbar">
+              <div className="h-64 min-w-[500px] w-full p-4 pr-6">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} opacity={0.5} />
                     <XAxis
                       dataKey="dateShort"
+                      interval="preserveStartEnd"
                       tick={(props: any) => {
                         const { x, y, index } = props;
                         const dataPoint = chartData[index];
@@ -530,8 +530,8 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                       dx={-5}
                     />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "var(--color-card)", borderColor: "var(--color-border)", borderRadius: "6px" }}
-                      itemStyle={{ fontSize: "12px" }}
+                      contentStyle={{ backgroundColor: "var(--color-card)", borderColor: "var(--color-border)", borderRadius: "6px", maxWidth: "240px", padding: "8px" }}
+                      itemStyle={{ fontSize: "11px" }}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       formatter={((value: unknown, name: unknown) => [
                         value != null ? `$${Number(value).toFixed(0)}/night` : "N/A",
@@ -543,7 +543,7 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                         }
                         return label;
                       }}
-                      labelStyle={{ color: "var(--color-muted-foreground)", fontSize: "11px" }}
+                      labelStyle={{ color: "var(--color-muted-foreground)", fontSize: "10px", marginBottom: "4px" }}
                     />
                     <Legend
                       iconType="line"
@@ -597,12 +597,12 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
         </div>
       )}
 
-      {/* ── Property Rate Snapshot Table ── */}
+      {/* ── Property Rate Snapshot Table & Mobile Card View ── */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h4 className="font-semibold text-foreground">Property Rate Snapshot</h4>
-            <span className="text-[10px] text-muted-foreground sm:hidden flex items-center gap-1">
+            <h4 className="font-semibold text-foreground text-sm sm:text-base">Property Rate Snapshot</h4>
+            <span className="text-[10px] text-muted-foreground hidden sm:flex md:hidden items-center gap-1">
               Swipe <ArrowRight className="size-3" />
             </span>
           </div>
@@ -610,132 +610,241 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
         </div>
 
         {latestPerProperty.length > 0 ? (
-          <div className="relative w-full rounded-md border border-border shadow-sm overflow-hidden">
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none sm:hidden z-10" />
-            <div className="w-full overflow-x-auto">
-              <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="border-b border-border bg-muted/30 text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-2.5 font-medium">Property</th>
-                    <th className="px-4 py-2.5 font-medium">Market</th>
-                    <th className="px-4 py-2.5 font-medium">Platform</th>
-                    <th className="px-4 py-2.5 font-medium">Beds / Rating</th>
-                    <th className="px-4 py-2.5 font-medium">Stay Date</th>
-                    <th className="px-4 py-2.5 font-medium">Rate</th>
-                    <th className="px-4 py-2.5 font-medium">vs 7d Avg</th>
-                    <th className="px-4 py-2.5 font-medium">Avail.</th>
-                    <th className="px-4 py-2.5 font-medium">
-                      {temporalContext === "present" ? "Last Checked" : "Recorded"}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
-                  {latestPerProperty.map((row) => {
-                    const pct = row.pct_above_trailing_avg;
-                    const pctColor =
-                      pct === null        ? "text-muted-foreground"
-                      : pct >= 25         ? "text-amber-400 font-semibold"
-                      : pct > 0           ? "text-green-500"
-                      : "text-red-400";
+          <>
+            {/* Mobile Card List (block md:hidden) */}
+            <div className="block md:hidden space-y-2.5">
+              {latestPerProperty.map((row) => {
+                const pct = row.pct_above_trailing_avg;
+                const pctColor =
+                  pct === null        ? "text-muted-foreground"
+                  : pct >= 25         ? "text-amber-400 font-semibold"
+                  : pct > 0           ? "text-green-500"
+                  : "text-red-400";
 
-                    const hoursSince = (Date.now() - new Date(row.recorded_at).getTime()) / (1000 * 60 * 60);
-                    // Staleness only applies in present mode — historical/future data
-                    // are always "old" by clock but that's expected.
-                    const isStale = temporalContext === "present" && hoursSince > 24;
-                    const isPriced = row.nightly_rate !== null;
+                const hoursSince = (Date.now() - new Date(row.recorded_at).getTime()) / (1000 * 60 * 60);
+                const isStale = temporalContext === "present" && hoursSince > 24;
+                const isPriced = row.nightly_rate !== null;
+                const { text: availText, className: availClass } = availLabel(row.is_available, isStale);
 
-                    const { text: availText, className: availClass } = availLabel(row.is_available, isStale);
+                const recentPriced = data
+                  .filter(r => r.property_id === row.property_id && r.nightly_rate !== null)
+                  .sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime())
+                  .slice(0, 5)
+                  .reverse();
 
-                    // Last 5 priced readings for sparkline (unavailable rows)
-                    const recentPriced = data
-                      .filter(r => r.property_id === row.property_id && r.nightly_rate !== null)
-                      .sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime())
-                      .slice(0, 5)
-                      .reverse();
+                const isSelected = row.property_id === selectedPropertyId;
 
-                    let rateDisplay: React.ReactNode;
-                    if (isPriced) {
-                      rateDisplay = formatRate(row);
-                    } else {
-                      const sparkPrices = recentPriced.map(r => r.nightly_rate!);
-                      const lastKnown   = recentPriced[recentPriced.length - 1];
-                      rateDisplay = (
-                        <span className="flex flex-col gap-0.5">
-                          <span className="font-medium flex items-center gap-1 text-muted-foreground">
-                            Unavailable
-                            <span title="Reflects a 2-night stay starting today rather than the property's full calendar. Other dates may still be bookable.">
-                              <Info className="size-3 opacity-60 cursor-help" />
-                            </span>
-                          </span>
-                          {lastKnown && (
-                            <span className="flex items-center gap-1.5">
-                              <Sparkline prices={sparkPrices} />
-                              <span className="text-muted-foreground/70 text-[10px]">
-                                last ${lastKnown.nightly_rate?.toFixed(0)} · {new Date(lastKnown.recorded_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                              </span>
-                            </span>
-                          )}
+                return (
+                  <div
+                    key={row.property_id}
+                    onClick={() => handleUserSelectProperty(row.property_id)}
+                    className={`p-3 rounded-lg border transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-primary/80 bg-primary/5 shadow-sm"
+                        : "border-border bg-card/60 hover:bg-card"
+                    } ${isStale ? "opacity-70" : ""}`}
+                  >
+                    {/* Top Line: Name + Rate + Avail */}
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <span className="font-semibold text-foreground text-sm truncate" title={row.property_name}>
+                          {row.property_name}
                         </span>
-                      );
-                    }
+                        {row.url && (
+                          <a
+                            href={row.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-muted-foreground hover:text-primary transition-colors shrink-0"
+                            title="View listing"
+                          >
+                            <ExternalLink className="size-3" />
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="font-bold text-foreground text-sm">
+                          {isPriced ? formatRate(row) : <span className="text-xs text-muted-foreground font-normal">Unavailable</span>}
+                        </span>
+                        <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded border border-border/50 ${availClass}`}>
+                          {availText}
+                        </span>
+                      </div>
+                    </div>
 
-                    // Last Checked column: relative in present, absolute always in historical/future
-                    const lastCheckedDisplay = temporalContext === "present" && !isStale
-                      ? timeAgo(row.recorded_at)
-                      : new Date(row.recorded_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+                    {/* Meta Line: Market · Platform · Beds · Rating */}
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-1.5">
+                      <div className="flex items-center gap-2 truncate">
+                        <span>{row.market || "—"}</span>
+                        <span className="opacity-40">·</span>
+                        <span className="capitalize">{row.platform || "—"}</span>
+                        {row.bedrooms != null && (
+                          <>
+                            <span className="opacity-40">·</span>
+                            <span className="flex items-center gap-0.5"><Bed className="size-3 opacity-70" />{row.bedrooms} BR</span>
+                          </>
+                        )}
+                        {row.avg_rating != null && (
+                          <>
+                            <span className="opacity-40">·</span>
+                            <span className="flex items-center gap-0.5 text-amber-400 font-medium">
+                              <Star className="size-3 fill-amber-400/20" />{row.avg_rating.toFixed(1)}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
 
-                    return (
-                      <tr
-                        key={row.property_id}
-                        className={`hover:bg-muted/30 transition-colors cursor-pointer ${row.property_id === selectedPropertyId ? "bg-muted/20" : ""} ${isStale ? "opacity-60" : ""}`}
-                        onClick={() => handleUserSelectProperty(row.property_id)}
-                      >
-                        <td className="px-4 py-3 font-medium text-foreground">
-                          <span className="flex items-center gap-1.5">
-                            <span className="max-w-[140px] truncate" title={row.property_name}>{row.property_name}</span>
-                            {row.url && (
-                              <a href={row.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-muted-foreground hover:text-primary transition-colors shrink-0" title="View listing">
-                                <ExternalLink className="size-3" />
-                              </a>
-                            )}
+                    {/* Bottom Line: vs 7D Avg + Stay Date + Last Checked / Sparkline */}
+                    <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-border/40 text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <span>Stay: {new Date(row.stay_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                        {pct !== null && (
+                          <span className={`font-mono font-medium ${pctColor}`}>
+                            {pct > 0 ? "+" : ""}{pct.toFixed(1)}% vs 7d
                           </span>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">{row.market || "—"}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{row.platform || "—"}</td>
-                        <td className="px-4 py-3 text-muted-foreground">
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {!isPriced && recentPriced.length > 1 && (
+                          <Sparkline prices={recentPriced.map(r => r.nightly_rate!)} />
+                        )}
+                        <span>
+                          {temporalContext === "present" && !isStale
+                            ? timeAgo(row.recorded_at)
+                            : new Date(row.recorded_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View (hidden md:block) */}
+            <div className="hidden md:block relative w-full rounded-md border border-border shadow-sm overflow-hidden">
+              <div className="w-full overflow-x-auto assistant-scrollbar">
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="border-b border-border bg-muted/30 text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-2.5 font-medium">Property</th>
+                      <th className="px-4 py-2.5 font-medium">Market</th>
+                      <th className="px-4 py-2.5 font-medium">Platform</th>
+                      <th className="px-4 py-2.5 font-medium">Beds / Rating</th>
+                      <th className="px-4 py-2.5 font-medium">Stay Date</th>
+                      <th className="px-4 py-2.5 font-medium">Rate</th>
+                      <th className="px-4 py-2.5 font-medium">vs 7d Avg</th>
+                      <th className="px-4 py-2.5 font-medium">Avail.</th>
+                      <th className="px-4 py-2.5 font-medium">
+                        {temporalContext === "present" ? "Last Checked" : "Recorded"}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {latestPerProperty.map((row) => {
+                      const pct = row.pct_above_trailing_avg;
+                      const pctColor =
+                        pct === null        ? "text-muted-foreground"
+                        : pct >= 25         ? "text-amber-400 font-semibold"
+                        : pct > 0           ? "text-green-500"
+                        : "text-red-400";
+
+                      const hoursSince = (Date.now() - new Date(row.recorded_at).getTime()) / (1000 * 60 * 60);
+                      const isStale = temporalContext === "present" && hoursSince > 24;
+                      const isPriced = row.nightly_rate !== null;
+
+                      const { text: availText, className: availClass } = availLabel(row.is_available, isStale);
+
+                      const recentPriced = data
+                        .filter(r => r.property_id === row.property_id && r.nightly_rate !== null)
+                        .sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime())
+                        .slice(0, 5)
+                        .reverse();
+
+                      let rateDisplay: React.ReactNode;
+                      if (isPriced) {
+                        rateDisplay = formatRate(row);
+                      } else {
+                        const sparkPrices = recentPriced.map(r => r.nightly_rate!);
+                        const lastKnown   = recentPriced[recentPriced.length - 1];
+                        rateDisplay = (
                           <span className="flex flex-col gap-0.5">
-                            {row.bedrooms != null && (
-                              <span className="flex items-center gap-1"><Bed className="size-3 opacity-60" />{row.bedrooms}</span>
-                            )}
-                            {row.avg_rating != null && row.review_count !== 0 && (
-                              <span className="flex items-center gap-1">
-                                <Star className="size-3 opacity-60" />{row.avg_rating.toFixed(1)}
-                                {row.review_count != null && <span className="opacity-60">({row.review_count})</span>}
+                            <span className="font-medium flex items-center gap-1 text-muted-foreground">
+                              Unavailable
+                              <span title="Reflects a 2-night stay starting today rather than the property's full calendar. Other dates may still be bookable.">
+                                <Info className="size-3 opacity-60 cursor-help" />
+                              </span>
+                            </span>
+                            {lastKnown && (
+                              <span className="flex items-center gap-1.5">
+                                <Sparkline prices={sparkPrices} />
+                                <span className="text-muted-foreground/70 text-[10px]">
+                                  last ${lastKnown.nightly_rate?.toFixed(0)} · {new Date(lastKnown.recorded_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                                </span>
                               </span>
                             )}
-                            {row.bedrooms == null && row.avg_rating == null && "—"}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {new Date(row.stay_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                        </td>
-                        <td className="px-4 py-3 font-medium text-foreground">{rateDisplay}</td>
-                        <td className={`px-4 py-3 ${pctColor}`}>
-                          {pct !== null ? `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%` : "—"}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`font-mono text-[10px] ${availClass}`}>{availText}</span>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground" title={new Date(row.recorded_at).toLocaleString()}>
-                          {lastCheckedDisplay}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        );
+                      }
+
+                      const lastCheckedDisplay = temporalContext === "present" && !isStale
+                        ? timeAgo(row.recorded_at)
+                        : new Date(row.recorded_at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+                      return (
+                        <tr
+                          key={row.property_id}
+                          className={`hover:bg-muted/30 transition-colors cursor-pointer ${row.property_id === selectedPropertyId ? "bg-muted/20" : ""} ${isStale ? "opacity-60" : ""}`}
+                          onClick={() => handleUserSelectProperty(row.property_id)}
+                        >
+                          <td className="px-4 py-3 font-medium text-foreground">
+                            <span className="flex items-center gap-1.5">
+                              <span className="max-w-[200px] truncate" title={row.property_name}>{row.property_name}</span>
+                              {row.url && (
+                                <a href={row.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-muted-foreground hover:text-primary transition-colors shrink-0" title="View listing">
+                                  <ExternalLink className="size-3" />
+                                </a>
+                              )}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">{row.market || "—"}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{row.platform || "—"}</td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            <span className="flex flex-col gap-0.5">
+                              {row.bedrooms != null && (
+                                <span className="flex items-center gap-1"><Bed className="size-3 opacity-60" />{row.bedrooms}</span>
+                              )}
+                              {row.avg_rating != null && row.review_count !== 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Star className="size-3 opacity-60" />{row.avg_rating.toFixed(1)}
+                                  {row.review_count != null && <span className="opacity-60">({row.review_count})</span>}
+                                </span>
+                              )}
+                              {row.bedrooms == null && row.avg_rating == null && "—"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {new Date(row.stay_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-foreground">{rateDisplay}</td>
+                          <td className={`px-4 py-3 ${pctColor}`}>
+                            {pct !== null ? `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%` : "—"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`font-mono text-[10px] ${availClass}`}>{availText}</span>
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground" title={new Date(row.recorded_at).toLocaleString()}>
+                            {lastCheckedDisplay}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          </>
         ) : (
           <div className="flex h-32 w-full flex-col items-center justify-center rounded-md border border-border bg-card/50">
             <span className="text-xl opacity-40 mb-2">🏠</span>
