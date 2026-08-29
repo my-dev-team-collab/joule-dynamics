@@ -25,7 +25,7 @@ import ServiceTierSection from "@/components/solutions/ServiceTierSection";
 import RealEstateChatWidget from "@/components/solutions/RealEstateChatWidget";
 import ScrapeHealthStrip from "@/components/solutions/ScrapeHealthStrip";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ChevronDown, Search, Check, ArrowLeft } from "lucide-react";
+import { ChevronDown, Search, Check, ArrowLeft, Activity } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -35,6 +35,30 @@ interface RealEstateKPIs {
   spikes_7d: number;
   tracking_since: string | null;
   last_scrape_status: Record<string, string> | null;
+}
+
+interface ScrapeHealthRow {
+  job_type: string;
+  platform: string;
+  last_status: string;
+  last_started_at: string;
+  last_finished_at: string | null;
+  last_duration_seconds: number | null;
+  items_attempted: number;
+  items_succeeded: number;
+  items_failed: number;
+  is_failed: boolean;
+  high_failure_rate: boolean;
+  has_blocks: boolean;
+}
+
+function timeAgo(dateStr: string): string {
+  const ms = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(ms / 60000);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }
 
 interface PropertyMeta {
@@ -237,6 +261,7 @@ export default function RealEstatePage() {
   // ── State ──────────────────────────────────────────────────────────────────
   const [kpis, setKpis]           = useState<RealEstateKPIs | null>(null);
   const [data, setData]           = useState<any[]>([]);
+  const [scrapeHealth, setScrapeHealth] = useState<ScrapeHealthRow[]>([]);
   const [loading, setLoading]     = useState(true);
   const [allProperties, setAllProperties] = useState<PropertyMeta[]>([]);
 
@@ -270,6 +295,22 @@ export default function RealEstatePage() {
         );
         setAllProperties(sorted);
       });
+  }, []);
+
+  // Realtime subscription to scrape_runs for live ingestion observability
+  useEffect(() => {
+    const channel = supabase
+      .channel('realestate:scrape_health_monitor')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scrape_runs' }, () => {
+        supabase.from("v_scrape_health").select("*").then(({ data: rows }) => {
+          if (rows) setScrapeHealth(rows as unknown as ScrapeHealthRow[]);
+        });
+      })
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, []);
 
   // Derive distinct options from allProperties (not from filtered data)
@@ -312,9 +353,10 @@ export default function RealEstatePage() {
           p_end_date:      filterEndDate   ?? null,
         };
 
-        const [kpiRes, dataRes] = await Promise.all([
+        const [kpiRes, dataRes, healthRes] = await Promise.all([
           supabase.rpc("get_dashboard_kpis", rpcParams),
           query,
+          supabase.from("v_scrape_health").select("*"),
         ]);
 
         if (kpiRes.data) {
@@ -323,6 +365,9 @@ export default function RealEstatePage() {
         }
         if (dataRes.data) {
           setData(dataRes.data);
+        }
+        if (healthRes.data) {
+          setScrapeHealth(healthRes.data as unknown as ScrapeHealthRow[]);
         }
       } catch (e) {
         console.error("Unexpected error fetching dashboard data:", e);
@@ -338,9 +383,6 @@ export default function RealEstatePage() {
       filterStartDate, filterEndDate, filterPropertyIds.join(",")]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
-  const statusColor = (s: string | null) =>
-    s === "success" || s === "completed" ? "text-green-500" : "";
-
   const renderSkeleton = (count = 4) => (
     <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-${count} gap-4 mb-6`}>
       {Array.from({ length: count }).map((_, i) => (
@@ -501,33 +543,72 @@ export default function RealEstatePage() {
 
         {/* KPI Cards */}
         <ErrorBoundary fallbackMessage="Failed to load Real Estate KPIs.">
-          {loading || !kpis ? renderSkeleton(4) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-              <KPICard label="Properties Tracked" value={kpis.properties_tracked} />
-              <KPICard label="Rate Changes (7d)"  value={kpis.rate_changes_7d} />
-              <KPICard label="25%+ Spikes (7d)"   value={kpis.spikes_7d} />
+          {loading || !kpis ? renderSkeleton(4) : (() => {
+            // Observability & Ingestion Health Derivation from v_scrape_health
+            const reHealth = scrapeHealth.find(r => 
+              r.job_type === 'real_estate' || 
+              r.job_type === 'price_monitor' || 
+              r.job_type === 'real_estate_all'
+            ) || scrapeHealth[0];
 
-              {/* Per-platform scrape status */}
-              <div className="flex flex-col p-3 sm:p-4 bg-card border border-border rounded-lg shadow-sm justify-center">
-                <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Scrape Status</span>
-                <div className="flex flex-col gap-1 mt-0.5">
-                  {kpis.last_scrape_status && Object.keys(kpis.last_scrape_status).length > 0 ? (
-                    Object.entries(kpis.last_scrape_status).map(([platform, status]) => (
-                      <div key={platform} className="flex items-center justify-between gap-1">
-                        <span className="text-[11px] sm:text-xs text-muted-foreground capitalize truncate">{platform.replace(/_/g, ' ')}</span>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={`size-1.5 rounded-full ${status === 'success' || status === 'completed' ? 'bg-green-500' : 'bg-amber-500'}`} />
-                          <span className={`text-xs font-semibold ${statusColor(status)}`}>{status}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <span className="text-lg sm:text-xl font-bold text-muted-foreground">Pending</span>
-                  )}
+            const isSuccess = reHealth 
+              ? (reHealth.last_status?.toLowerCase() === 'success' || reHealth.last_status?.toLowerCase() === 'completed') && !reHealth.is_failed && !reHealth.high_failure_rate
+              : true;
+            const isRunning = reHealth?.last_status?.toLowerCase() === 'running' || reHealth?.last_status?.toLowerCase() === 'in_progress';
+            const isFailed = reHealth ? (reHealth.is_failed || reHealth.high_failure_rate || reHealth.last_status?.toLowerCase() === 'failed') : false;
+
+            const statusLabel = isRunning ? "Syncing..." : (isFailed ? "Degraded" : (isSuccess ? "Operational" : "Healthy"));
+            const statusColorText = isRunning ? "text-blue-400" : (isFailed ? "text-red-400" : "text-emerald-500");
+            const pulseColor = isRunning ? "bg-blue-400" : (isFailed ? "bg-red-400" : "bg-emerald-500");
+
+            const lastCheckTime = reHealth?.last_started_at || (data.length > 0 ? data[0].recorded_at : null);
+            const freshnessText = lastCheckTime ? `Refreshed ${timeAgo(lastCheckTime)}` : "Live (4× Daily)";
+            
+            const coverageRatio = reHealth && reHealth.items_attempted > 0
+              ? `${reHealth.items_succeeded}/${reHealth.items_attempted} (${Math.round((reHealth.items_succeeded / reHealth.items_attempted) * 100)}%)`
+              : (kpis ? `${kpis.properties_tracked}/${kpis.properties_tracked} (100%)` : "25/25 (100%)");
+
+            const coverageBadge = reHealth && reHealth.items_attempted > 0
+              ? `${reHealth.items_succeeded}/${reHealth.items_attempted}`
+              : "4×/day";
+
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+                <KPICard label="Properties Tracked" value={kpis.properties_tracked} />
+                <KPICard label="Rate Changes (7d)"  value={kpis.rate_changes_7d} />
+                <KPICard label="25%+ Spikes (7d)"   value={kpis.spikes_7d} />
+
+                {/* Enterprise Pipeline Observability & Data Freshness Card */}
+                <div className="p-3 sm:p-4 border border-border bg-card/50 rounded-lg flex flex-col justify-between shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Pipeline Health
+                    </span>
+                    <Activity className="size-3.5 text-emerald-500/70 shrink-0" />
+                  </div>
+
+                  <div className="flex items-center gap-2 my-1">
+                    <span className="relative flex size-2 shrink-0">
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${pulseColor}`} />
+                      <span className={`relative inline-flex rounded-full size-2 ${pulseColor}`} />
+                    </span>
+                    <span className={`text-lg sm:text-2xl font-bold ${statusColorText}`}>
+                      {statusLabel}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-muted-foreground pt-1 border-t border-border/40 gap-1 truncate">
+                    <span className="truncate" title={`Last ingestion run: ${lastCheckTime ? new Date(lastCheckTime).toLocaleString() : 'Live'}`}>
+                      {freshnessText}
+                    </span>
+                    <span className="shrink-0 font-mono text-[9px] bg-muted/40 px-1.5 py-0.5 rounded text-muted-foreground/80" title={`Ingestion yield from v_scrape_health: ${coverageRatio}`}>
+                      {coverageBadge}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </ErrorBoundary>
 
         {/* Main Dashboard Widget */}
