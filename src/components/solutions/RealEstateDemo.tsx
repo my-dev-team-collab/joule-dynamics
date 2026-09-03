@@ -480,11 +480,13 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
           <div className="flex flex-col gap-2">
             {spikes.map((spike) => {
               const isDrop = spike.pct_above_trailing_avg !== null && spike.pct_above_trailing_avg < 0;
-              const borderColor      = isDrop ? "border-green-500/30" : "border-amber-500/30";
-              const leftBorderColor  = isDrop ? "border-l-green-500" : "border-l-amber-500";
-              const bgColor          = isDrop ? "bg-green-500/5"     : "bg-amber-500/5";
-              const textColor        = isDrop ? "text-green-500"     : "text-amber-400";
-              const badgeBorderColor = isDrop ? "border-green-500/40": "border-amber-500/40";
+              const borderColor      = isDrop ? "border-emerald-500/30" : "border-amber-500/30";
+              const leftBorderColor  = isDrop ? "border-l-emerald-500" : "border-l-amber-500";
+              const bgColor          = isDrop ? "bg-emerald-500/5"     : "bg-amber-500/5";
+              const textColor        = isDrop ? "text-emerald-500"     : "text-amber-400";
+              const badgeBorderColor = isDrop ? "border-emerald-500/40": "border-amber-500/40";
+              const directionIcon    = isDrop ? "▼" : "▲";
+              const directionTag     = isDrop ? "DROP" : "SURGE";
 
               return (
                 <div
@@ -512,8 +514,10 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                       {spike.currency === "USD" ? "$" : spike.currency}{spike.nightly_rate?.toFixed(0) ?? "N/A"}
                       <span className="text-[10px] font-normal text-muted-foreground ml-0.5">/nt</span>
                     </span>
-                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${badgeBorderColor} ${textColor} font-mono shrink-0`}>
-                      {spike.pct_above_trailing_avg && spike.pct_above_trailing_avg > 0 ? "+" : ""}{spike.pct_above_trailing_avg?.toFixed(1)}% vs avg
+                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0.5 ${badgeBorderColor} ${textColor} font-mono shrink-0 font-medium flex items-center gap-1`}>
+                      <span>{directionIcon}</span>
+                      <span>{spike.pct_above_trailing_avg && spike.pct_above_trailing_avg > 0 ? "+" : ""}{spike.pct_above_trailing_avg?.toFixed(1)}% vs avg</span>
+                      <span className="font-sans font-bold text-[8px] uppercase tracking-wider px-1 py-0.2 rounded bg-current/10 ml-0.5">{directionTag}</span>
                     </Badge>
                   </div>
                 </div>
@@ -629,14 +633,14 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-0.5">
             <h4 className="font-semibold text-foreground text-xs uppercase tracking-wider text-muted-foreground">Market Averages</h4>
-            <p className="text-[10px] text-muted-foreground">{marketAvgSubtitle}</p>
+            <span className="text-[10px] text-muted-foreground">{marketAvgSubtitle}</span>
           </div>
-          <div className="flex flex-wrap gap-2 mt-1">
-            {marketSummary.map(({ market, avg, count }) => (
-              <div key={market} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-muted/20 text-xs">
-                <span className="font-medium text-foreground">{market}</span>
-                <span className="text-muted-foreground">avg ${avg.toFixed(0)}/night</span>
-                <span className="text-muted-foreground/50">({count})</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {marketSummary.map((m) => (
+              <div key={m.market} className="p-2.5 rounded border border-border/60 bg-card/40 flex flex-col gap-0.5">
+                <span className="text-xs text-muted-foreground truncate capitalize">{m.market}</span>
+                <span className="text-sm font-bold text-foreground">${m.avg.toFixed(0)}<span className="text-[10px] font-normal text-muted-foreground">/nt</span></span>
+                <span className="text-[10px] text-muted-foreground/80 font-mono">{m.count} {m.count === 1 ? "listing" : "listings"} priced</span>
               </div>
             ))}
           </div>
@@ -645,8 +649,8 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
 
       {/* ── Property Rate Snapshot Table & Mobile Card View ── */}
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
             <h4 className="font-semibold text-foreground text-sm sm:text-base">Property Rate Snapshot</h4>
             <span className="text-[10px] text-muted-foreground hidden sm:flex md:hidden items-center gap-1">
               Swipe <ArrowRight className="size-3" />
@@ -661,11 +665,14 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
             <div className="block md:hidden space-y-2.5">
               {latestPerProperty.map((row) => {
                 const pct = row.pct_above_trailing_avg;
+                const isSurge = pct !== null && pct >= 25;
+                const isDrop = pct !== null && pct <= -25;
                 const pctColor =
                   pct === null        ? "text-muted-foreground"
-                  : pct >= 25         ? "text-amber-400 font-semibold"
-                  : pct > 0           ? "text-green-500"
-                  : "text-red-400";
+                  : isSurge           ? "text-amber-400 font-semibold"
+                  : pct > 0           ? "text-amber-400/80 font-medium"
+                  : isDrop            ? "text-emerald-500 font-semibold"
+                  : "text-emerald-500/80 font-medium";
 
                 const hoursSince = (Date.now() - new Date(row.recorded_at).getTime()) / (1000 * 60 * 60);
                 const isStale = temporalContext === "present" && hoursSince > 24;
@@ -747,8 +754,10 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                       <div className="flex items-center gap-2">
                         <span>Stay: {new Date(row.stay_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
                         {pct !== null && (
-                          <span className={`font-mono font-medium ${pctColor}`}>
-                            {pct > 0 ? "+" : ""}{pct.toFixed(1)}% vs 7d
+                          <span className={`font-mono text-[11px] inline-flex items-center gap-1 ${pctColor}`}>
+                            <span>{pct > 0 ? "▲ +" : (pct < 0 ? "▼ " : "")}{pct.toFixed(1)}% vs 7d</span>
+                            {isSurge && <span className="text-[8px] font-sans font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-amber-500/10 border border-amber-500/30">SURGE</span>}
+                            {isDrop && <span className="text-[8px] font-sans font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/30">DROP</span>}
                           </span>
                         )}
                       </div>
@@ -790,11 +799,14 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                   <tbody className="divide-y divide-border/60">
                     {latestPerProperty.map((row) => {
                       const pct = row.pct_above_trailing_avg;
+                      const isSurge = pct !== null && pct >= 25;
+                      const isDrop = pct !== null && pct <= -25;
                       const pctColor =
                         pct === null        ? "text-muted-foreground"
-                        : pct >= 25         ? "text-amber-400 font-semibold"
-                        : pct > 0           ? "text-green-500"
-                        : "text-red-400";
+                        : isSurge           ? "text-amber-400 font-semibold"
+                        : pct > 0           ? "text-amber-400/80 font-medium"
+                        : isDrop            ? "text-emerald-500 font-semibold"
+                        : "text-emerald-500/80 font-medium";
 
                       const hoursSince = (Date.now() - new Date(row.recorded_at).getTime()) / (1000 * 60 * 60);
                       const isStale = temporalContext === "present" && hoursSince > 24;
@@ -874,8 +886,14 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                             {new Date(row.stay_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                           </td>
                           <td className="px-4 py-3 font-medium text-foreground">{rateDisplay}</td>
-                          <td className={`px-4 py-3 ${pctColor}`}>
-                            {pct !== null ? `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%` : "—"}
+                          <td className="px-4 py-3">
+                            {pct !== null ? (
+                              <span className={`font-mono text-xs inline-flex items-center gap-1.5 ${pctColor}`}>
+                                <span>{pct > 0 ? "▲ +" : (pct < 0 ? "▼ " : "")}{pct.toFixed(1)}%</span>
+                                {isSurge && <span className="text-[9px] font-sans font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-amber-500/10 border border-amber-500/30">SURGE</span>}
+                                {isDrop && <span className="text-[9px] font-sans font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/30">DROP</span>}
+                              </span>
+                            ) : "—"}
                           </td>
                           <td className="px-4 py-3">
                             <span className={`font-mono text-[10px] ${availClass}`}>{availText}</span>

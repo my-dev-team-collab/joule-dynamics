@@ -572,11 +572,18 @@ export default function RealEstatePage() {
               ? `${reHealth.items_succeeded}/${reHealth.items_attempted}`
               : "4×/day";
 
+            const surgesCount = data.filter(r => r.pct_above_trailing_avg !== null && r.pct_above_trailing_avg >= 25).length;
+            const dropsCount  = data.filter(r => r.pct_above_trailing_avg !== null && r.pct_above_trailing_avg <= -25).length;
+
             return (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-                <KPICard label="Properties Tracked" value={kpis.properties_tracked} />
-                <KPICard label="Rate Changes (7d)"  value={kpis.rate_changes_7d} />
-                <KPICard label="25%+ Spikes (7d)"   value={kpis.spikes_7d} />
+                <KPICard label="Properties Tracked" value={kpis.properties_tracked} subtext="Active short-term rentals" />
+                <KPICard label="Rate Changes (7d)"  value={kpis.rate_changes_7d} subtext="Historical pricing events" />
+                <KPICard 
+                  label="25%+ Spikes (7d)"   
+                  value={kpis.spikes_7d} 
+                  subtext={surgesCount > 0 || dropsCount > 0 ? `${surgesCount} Surges ▲ · ${dropsCount} Drops ▼` : "Volatility anomalies"}
+                />
 
                 {/* Enterprise Pipeline Observability & Data Freshness Card */}
                 <div className="p-3 sm:p-4 border border-border bg-card/50 rounded-lg flex flex-col justify-between shadow-sm">
@@ -648,11 +655,16 @@ export default function RealEstatePage() {
   );
 }
 
-function KPICard({ label, value, valueClass = "" }: { label: string; value: string | number; valueClass?: string }) {
+function KPICard({ label, value, valueClass = "", subtext }: { label: string; value: string | number; valueClass?: string; subtext?: string }) {
   return (
-    <div className="p-3 sm:p-4 border border-border bg-card/50 rounded-lg flex flex-col justify-center shadow-sm">
+    <div className="p-3 sm:p-4 border border-border bg-card/50 rounded-lg flex flex-col justify-between shadow-sm">
       <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</span>
-      <span className={`text-lg sm:text-2xl font-bold text-foreground capitalize ${valueClass}`}>{value}</span>
+      <span className={`text-lg sm:text-2xl font-bold text-foreground capitalize my-0.5 ${valueClass}`}>{value}</span>
+      {subtext && (
+        <span className="text-[10px] sm:text-[11px] text-muted-foreground pt-1 border-t border-border/40 truncate">
+          {subtext}
+        </span>
+      )}
     </div>
   );
 }

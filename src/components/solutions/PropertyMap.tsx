@@ -104,8 +104,12 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
     markersRef.current = [];
 
     properties.forEach((prop: PropertyPoint) => {
-      const isSpike = prop.pct_above_trailing_avg !== null && prop.pct_above_trailing_avg >= 25;
+      const isSurge = prop.pct_above_trailing_avg !== null && prop.pct_above_trailing_avg >= 25;
+      const isDrop  = prop.pct_above_trailing_avg !== null && prop.pct_above_trailing_avg <= -25;
       const isUnavailable = !prop.is_available;
+
+      const markerColor = isSurge ? "#f59e0b" : (isDrop ? "#10b981" : (isUnavailable ? "#6b7280" : "#f97316"));
+      const markerBg = isSurge ? "rgba(245,158,11,0.15)" : (isDrop ? "rgba(16,185,129,0.15)" : (isUnavailable ? "rgba(107,114,128,0.15)" : "rgba(249,115,22,0.15)"));
 
       // Wrapper with 0 width/height ensures Mapbox calculates 0 offset,
       // and we manually position the marker center using left/top on the inner container.
@@ -134,12 +138,12 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid ${isSpike ? "#f59e0b" : isUnavailable ? "#6b7280" : "var(--color-primary, #f97316)"};
-        background: ${isSpike ? "rgba(245,158,11,0.15)" : isUnavailable ? "rgba(107,114,128,0.15)" : "rgba(249,115,22,0.15)"};
+        border: 2px solid ${markerColor};
+        background: ${markerBg};
         box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         transition: transform 0.15s ease-out;
       `;
-      inner.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="${isSpike ? "#f59e0b" : isUnavailable ? "#6b7280" : "#f97316"}"><circle cx="12" cy="12" r="6"/></svg>`;
+      inner.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="${markerColor}"><circle cx="12" cy="12" r="6"/></svg>`;
       
       markerContainer.appendChild(inner);
       el.appendChild(markerContainer);
@@ -151,8 +155,14 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
       const rateStr = prop.nightly_rate != null
         ? `${prop.currency === "USD" ? "$" : prop.currency}${prop.nightly_rate.toFixed(0)}/night`
         : "Rate unavailable";
+      
+      const pctColor = isSurge ? "#fbbf24" : (isDrop ? "#34d399" : "#9ca3af");
+      const pctBadge = isSurge ? "▲ SURGE" : (isDrop ? "▼ DROP" : "");
       const pctStr = prop.pct_above_trailing_avg != null
-        ? `${prop.pct_above_trailing_avg > 0 ? "+" : ""}${prop.pct_above_trailing_avg.toFixed(1)}% vs 7d avg`
+        ? `<div style="color:${pctColor};font-size:11px;margin-bottom:4px;display:flex;align-items:center;gap:4px">
+            <span>${prop.pct_above_trailing_avg > 0 ? "▲ +" : (prop.pct_above_trailing_avg < 0 ? "▼ " : "")}${prop.pct_above_trailing_avg.toFixed(1)}% vs 7d avg</span>
+            ${pctBadge ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;background:rgba(255,255,255,0.1);border:1px solid currentColor">${pctBadge}</span>` : ""}
+          </div>`
         : "";
 
       const popup = new mapboxgl.Popup({ offset: 16, closeButton: true, maxWidth: "260px" })
@@ -160,8 +170,8 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
           <div style="font-family:system-ui,sans-serif;font-size:12px;padding:4px 0;color:#e5e7eb">
             <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:#9ca3af">${prop.property_name}</div>
             <div style="color:#9ca3af;margin-bottom:6px">${prop.market} · ${prop.platform}</div>
-            <div style="font-weight:700;font-size:14px;color:${isSpike ? "#f59e0b" : "#9ca3af"};margin-bottom:2px">${rateStr}</div>
-            ${pctStr ? `<div style="color:${isSpike ? "#fbbf24" : "#9ca3af"};font-size:11px;margin-bottom:4px">${pctStr}</div>` : ""}
+            <div style="font-weight:700;font-size:14px;color:${isSurge ? "#f59e0b" : isDrop ? "#10b981" : "#9ca3af"};margin-bottom:2px">${rateStr}</div>
+            ${pctStr}
             <div style="color:${prop.is_available ? "#4ade80" : "#9ca3af"};font-size:11px">${prop.is_available ? "✓ Available" : "Unavailable"}</div>
             ${prop.url ? `<a href="${prop.url}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:6px;color:#f97316;font-size:11px;text-decoration:none">View listing →</a>` : ""}
           </div>
