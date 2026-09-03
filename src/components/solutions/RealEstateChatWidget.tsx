@@ -31,42 +31,6 @@ interface Message {
   isStreaming?: boolean;
 }
 
-/** Sanitize raw JSON action blocks from LLM prose and extract into clickable action chips */
-function extractActionsAndCleanText(rawText: string, existingActions?: string[]): { cleanedText: string; actions: string[] } {
-  let text = rawText;
-  const extracted: string[] = existingActions ? [...existingActions] : [];
-
-  const jsonRegex = /(?:```(?:json)?\s*)?\{\s*"actions"\s*:\s*\[([\s\S]*?)\]\s*\}(?:\s*```)?/gi;
-  let match;
-  while ((match = jsonRegex.exec(text)) !== null) {
-    try {
-      const arrayStr = `[${match[1]}]`;
-      const parsed = JSON.parse(arrayStr);
-      if (Array.isArray(parsed)) {
-        for (const act of parsed) {
-          if (typeof act === 'string' && act.trim() && !extracted.includes(act.trim())) {
-            extracted.push(act.trim());
-          }
-        }
-      }
-    } catch {
-      const itemRegex = /"([^"]+)"/g;
-      let itemMatch;
-      while ((itemMatch = itemRegex.exec(match[1])) !== null) {
-        if (itemMatch[1].trim() && !extracted.includes(itemMatch[1].trim())) {
-          extracted.push(itemMatch[1].trim());
-        }
-      }
-    }
-  }
-
-  // Strip JSON blocks and optional preceding headers
-  text = text.replace(/(?:\*{1,2})?(?:Choose an action|Suggested actions|Next steps)(?:\*{1,2})?:?\s*(?:```(?:json)?\s*)?\{\s*"actions"\s*:\s*\[[\s\S]*?\]\s*\}(?:\s*```)?/gi, '');
-  text = text.replace(/(?:```(?:json)?\s*)?\{\s*"actions"\s*:\s*\[[\s\S]*?\]\s*\}(?:\s*```)?/gi, '');
-
-  return { cleanedText: text.trim(), actions: extracted };
-}
-
 const MessageBubble = ({
   msg,
   isLastMessage,
@@ -83,9 +47,7 @@ const MessageBubble = ({
   id?: string;
 }) => {
   const isComplete = !msg.isStreaming;
-  const { cleanedText, actions } = (msg.sender === 'assistant' && !msg.isError)
-    ? extractActionsAndCleanText(msg.text, msg.suggested_actions)
-    : { cleanedText: msg.text, actions: msg.suggested_actions || [] };
+  const actions = msg.suggested_actions || [];
 
   return (
     <div id={id} className={`flex flex-col w-full min-w-0 ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
@@ -103,7 +65,7 @@ const MessageBubble = ({
             <div className="flex flex-col gap-2 min-w-0">
               <div className="flex items-start gap-2 min-w-0">
                 <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                <p className="whitespace-pre-wrap break-words min-w-0">{cleanedText}</p>
+                <p className="whitespace-pre-wrap break-words min-w-0">{msg.text}</p>
               </div>
               {msg.retryable && (
                 <button 
@@ -120,7 +82,7 @@ const MessageBubble = ({
                 remarkPlugins={[remarkGfm]}
                 components={markdownComponents}
               >
-                {cleanedText}
+                {msg.text}
               </ReactMarkdown>
               {!isComplete && <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />}
             </div>
@@ -130,7 +92,8 @@ const MessageBubble = ({
         )}
       </div>
       
-      {msg.sender === 'assistant' && actions.length > 0 && isLastMessage && isComplete && (
+      {/* Action pill buttons container: only rendered when suggested_actions exists and is non-empty */}
+      {msg.sender === 'assistant' && actions && actions.length > 0 && isLastMessage && isComplete && (
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2.5 max-w-[95%] w-full min-w-0">
           {actions.map((action, actionIdx) => (
             <button
@@ -176,6 +139,29 @@ const TOOL_LABELS: Record<string, string> = {
   generate_contact_buttons:      "Generating contact options...",
   suggest_actions:               "Preparing suggested options...",
 };
+
+function formatToolLabel(tool: string, args?: Record<string, any>): string {
+  if (args) {
+    const market = args.market || args.p_market;
+    const property = args.property_name || args.name;
+    const query = args.query;
+
+    if (market) {
+      if (tool.includes("trend") || tool === "get_market_trend") return `Checking ${market} trends...`;
+      if (tool.includes("average") || tool === "get_market_averages") return `Analyzing ${market} averages...`;
+      if (tool.includes("snapshot") || tool === "get_market_snapshot") return `Loading ${market} snapshot...`;
+      return `Checking ${market} data...`;
+    }
+    if (property) {
+      return `Checking ${property}...`;
+    }
+    if (query) {
+      return `Searching "${query}"...`;
+    }
+  }
+
+  return TOOL_LABELS[tool] || "Querying database...";
+}
 
 export default function RealEstateChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -329,10 +315,10 @@ export default function RealEstateChatWidget() {
               const payload = JSON.parse(line.slice(6));
               switch (currentEvent) {
                 case "status":
-                  setLoadingStatus("Thinking...");
+                  setLoadingStatus(payload.classification ? `Status: ${payload.classification}` : "Thinking...");
                   break;
                 case "tool_call":
-                  setLoadingStatus(TOOL_LABELS[payload.tool] ?? "Fetching data...");
+                  setLoadingStatus(formatToolLabel(payload.tool, payload.args));
                   break;
                 case "token":
                   setLoadingStatus(null);
@@ -354,7 +340,7 @@ export default function RealEstateChatWidget() {
                         ...newMsgs[lastIdx], 
                         isStreaming: false,
                         path: payload.path_used,
-                        suggested_actions: payload.suggested_actions
+                        suggested_actions: Array.isArray(payload.suggested_actions) ? payload.suggested_actions : []
                       };
                     }
                     return newMsgs;
