@@ -37,14 +37,16 @@ const MessageBubble = ({
   handleSend,
   loading,
   markdownComponents,
-  id
+  id,
+  index
 }: {
   msg: Message;
   isLastMessage: boolean;
-  handleSend: (text?: string) => void;
+  handleSend: (text?: string, retryIndex?: number) => void;
   loading: boolean;
   markdownComponents: Components;
   id?: string;
+  index: number;
 }) => {
   const isComplete = !msg.isStreaming;
   const actions = msg.suggested_actions || [];
@@ -69,8 +71,9 @@ const MessageBubble = ({
               </div>
               {msg.retryable && (
                 <button 
-                  onClick={() => handleSend()} 
-                  className="self-start mt-1 text-xs px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-600 dark:text-red-400 rounded-md transition-colors font-medium"
+                  onClick={() => handleSend(undefined, index)} 
+                  disabled={loading}
+                  className="self-start mt-1 text-xs px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-600 dark:text-red-400 rounded-md transition-colors font-medium disabled:opacity-50 cursor-pointer"
                 >
                   Try again
                 </button>
@@ -226,18 +229,52 @@ export default function RealEstateChatWidget() {
     return () => window.removeEventListener('open-pulse', handleOpenPulse);
   }, []);
 
-  const handleSend = async (queryToSend?: string) => {
+  const handleSend = async (queryToSend?: string, retryIndex?: number) => {
     let text = queryToSend || input;
-    
-    // Find the last user message if we're retrying (no input, no queryToSend)
+    let targetErrorIndex = retryIndex;
+
+    // Detect if this is a retry invocation (no text provided or explicit retryIndex)
     if (!text.trim()) {
-      const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
-      if (lastUserMsg) text = lastUserMsg.text;
+      if (targetErrorIndex === undefined) {
+        // Find the last error message if retryIndex was not explicitly provided
+        for (let i = messages.length - 1; i >= 0; i--) {
+          if (messages[i].isError) {
+            targetErrorIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (targetErrorIndex !== undefined && targetErrorIndex >= 0 && targetErrorIndex < messages.length) {
+        // Find the user prompt that this error was responding to
+        const precedingUserMsg = [...messages.slice(0, targetErrorIndex)].reverse().find(m => m.sender === 'user');
+        if (precedingUserMsg) {
+          text = precedingUserMsg.text;
+        }
+      }
+
+      // Fallback: look for the last user message anywhere
+      if (!text.trim()) {
+        const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
+        if (lastUserMsg) text = lastUserMsg.text;
+      }
     }
     
     if (!text.trim() || loading) return;
 
-    if (!queryToSend && text === input) {
+    // If retrying an error message, remove that error bubble from history so it disappears immediately on retry
+    if (targetErrorIndex !== undefined) {
+      setMessages((prev) => {
+        if (prev[targetErrorIndex]?.isError) {
+          return prev.filter((_, idx) => idx !== targetErrorIndex);
+        }
+        const lastErrIdx = [...prev].map(m => !!m.isError).lastIndexOf(true);
+        if (lastErrIdx !== -1) {
+          return prev.filter((_, idx) => idx !== lastErrIdx);
+        }
+        return prev;
+      });
+    } else if (!queryToSend && text === input) {
       const userMsg: Message = { sender: 'user', text };
       setMessages((prev) => [...prev, userMsg]);
       setInput('');
@@ -362,15 +399,25 @@ export default function RealEstateChatWidget() {
         throw { message: "Connection to Pulse was interrupted mid-stream. Please check your network and try again.", retryable: true };
       }
     } catch (err: any) {
-      let errorMessage = err.message || "An unexpected error occurred. Please try again later.";
-      let isRetryable = err.retryable !== false;
+      let errorMessage = typeof err === 'string'
+        ? err
+        : (err.message || err.error || "An unexpected error occurred. Please try again later.");
+      let isRetryable = typeof err === 'object' && err !== null && err.retryable !== undefined
+        ? Boolean(err.retryable)
+        : true;
 
-      // Handle native network failures
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      // Handle native network failures across all browsers (Chrome, Safari, Firefox)
+      if (
+        (err.name === 'TypeError' && (err.message?.includes('fetch') || err.message?.includes('Failed to fetch') || err.message?.includes('Load failed'))) ||
+        err.message?.toLowerCase().includes('failed to fetch') ||
+        err.message?.toLowerCase().includes('networkerror') ||
+        err.message?.toLowerCase().includes('load failed')
+      ) {
         errorMessage = "Failed to connect to the server. Please check your internet connection.";
         isRetryable = true;
       } else if (err.name === 'AbortError') {
         errorMessage = "Request was cancelled.";
+        isRetryable = false;
       }
 
       setMessages((prev) => {
@@ -389,16 +436,28 @@ export default function RealEstateChatWidget() {
            return newMsgs;
         }
         
-        // If it was already streaming text and got interrupted, just append the error text
+        // If it was already streaming text and got interrupted, append the error text
         if (newMsgs[lastIdx] && newMsgs[lastIdx].sender === 'assistant' && newMsgs[lastIdx].isStreaming) {
            newMsgs[lastIdx] = {
              ...newMsgs[lastIdx],
              text: newMsgs[lastIdx].text + `\n\n**[Error]** ${errorMessage}`,
-             isError: true, // We could flag it as error, but we want to keep the text it already streamed. We'll just style it via markdown.
+             isError: true,
              retryable: isRetryable,
              isStreaming: false
            };
            return newMsgs;
+        }
+
+        // If the last message is already an error message, replace it instead of stacking duplicates
+        if (newMsgs[lastIdx] && newMsgs[lastIdx].sender === 'assistant' && newMsgs[lastIdx].isError) {
+          newMsgs[lastIdx] = {
+            sender: 'assistant',
+            text: errorMessage,
+            isError: true,
+            retryable: isRetryable,
+            isStreaming: false
+          };
+          return newMsgs;
         }
         
         return [
@@ -568,6 +627,7 @@ export default function RealEstateChatWidget() {
                 <MessageBubble
                   key={idx}
                   id={`msg-${idx}`}
+                  index={idx}
                   msg={formattedMsg}
                   isLastMessage={isLastMessage}
                   handleSend={handleSend}

@@ -26,6 +26,10 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("Uncaught error:", error, errorInfo);
   }
 
+  public handleReset = () => {
+    this.setState({ hasError: false, error: null });
+  };
+
   public render() {
     if (this.state.hasError) {
       return (
@@ -38,6 +42,12 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="mt-4 p-2 bg-destructive/10 text-destructive text-xs font-mono rounded max-w-full overflow-hidden text-ellipsis">
             {this.state.error?.message}
           </div>
+          <button
+            onClick={this.handleReset}
+            className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-md transition-colors shadow-sm"
+          >
+            Try again
+          </button>
         </div>
       );
     }
