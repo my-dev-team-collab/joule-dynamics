@@ -321,16 +321,27 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
 
   // ── Market averages ────────────────────────────────────────────────────────
   const marketSummary = useMemo(() => {
-    const map: Record<string, { sum: number; count: number }> = {};
+    const map: Record<string, { sum: number; count: number; total: number }> = {};
     latestPerProperty.forEach(r => {
-      if (!r.market || r.nightly_rate === null) return;
-      if (!map[r.market]) map[r.market] = { sum: 0, count: 0 };
-      map[r.market].sum += r.nightly_rate;
-      map[r.market].count += 1;
+      if (!r.market) return;
+      if (!map[r.market]) map[r.market] = { sum: 0, count: 0, total: 0 };
+      map[r.market].total += 1;
+      if (r.nightly_rate !== null && r.is_available) {
+        map[r.market].sum += r.nightly_rate;
+        map[r.market].count += 1;
+      }
     });
-    return Object.entries(map).map(([market, { sum, count }]) => ({
-      market, avg: sum / count, count,
-    })).sort((a, b) => b.avg - a.avg);
+    return Object.entries(map).map(([market, { sum, count, total }]) => ({
+      market,
+      avg: count > 0 ? sum / count : null,
+      count,
+      total,
+    })).sort((a, b) => {
+      if (a.avg !== null && b.avg !== null) return b.avg - a.avg;
+      if (a.avg !== null) return -1;
+      if (b.avg !== null) return 1;
+      return a.market.localeCompare(b.market);
+    });
   }, [latestPerProperty]);
 
   // ── Market averages grouped by country for N-market scaling ──────────────────
@@ -661,8 +672,15 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
                   {markets.map((m) => (
                     <div key={m.market} className="p-2.5 rounded border border-border/60 bg-card/40 flex flex-col gap-0.5 hover:border-border transition-colors">
                       <span className="text-xs text-muted-foreground truncate capitalize">{m.market}</span>
-                      <span className="text-sm font-bold text-foreground">${m.avg.toFixed(0)}<span className="text-[10px] font-normal text-muted-foreground">/nt</span></span>
-                      <span className="text-[10px] text-muted-foreground/80 font-mono">{m.count} {m.count === 1 ? "listing" : "listings"} priced</span>
+                      <span className="text-sm font-bold text-foreground">
+                        {m.avg !== null ? `$${m.avg.toFixed(0)}` : <span className="text-xs font-semibold text-muted-foreground">Fully Booked</span>}
+                        {m.avg !== null && <span className="text-[10px] font-normal text-muted-foreground">/nt</span>}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/80 font-mono">
+                        {m.count > 0 
+                          ? `${m.count} of ${m.total} available`
+                          : `0 of ${m.total} available`}
+                      </span>
                     </div>
                   ))}
                 </div>

@@ -306,6 +306,8 @@ export default function RealEstatePage() {
     supabase
       .from("v_rate_volatility")
       .select("property_id, property_name, market, platform, bedrooms, is_active")
+      .order("recorded_at", { ascending: false })
+      .limit(2500)
       // No is_active filter here — dropdown options should show ALL properties
       // (active and previously tracked) so Status filter works correctly.
       .then(({ data: rows }) => {
@@ -376,7 +378,8 @@ export default function RealEstatePage() {
           .from("v_rate_volatility")
           .select("*")
           .order("recorded_at", { ascending: false })
-          .order("stay_date",   { ascending: false });
+          .order("stay_date",   { ascending: false })
+          .limit(2500);
 
         const countryMarkets = filterCountry !== "all"
           ? [...new Set(allProperties.filter(p => getMarketCountry(p.market) === filterCountry).map(p => p.market))]
@@ -648,11 +651,13 @@ export default function RealEstatePage() {
         <ErrorBoundary fallbackMessage="Failed to load Real Estate KPIs.">
           {loading || !kpis ? renderSkeleton(4) : (() => {
             // Observability & Ingestion Health Derivation strictly for REAL_ESTATE_MONITOR
-            const reHealth = scrapeHealth.find(r => 
+            const reHealthCandidates = scrapeHealth.filter(r => 
               r.job_type === 'REAL_ESTATE_MONITOR' ||
-              r.job_type?.toUpperCase().includes('REAL_ESTATE') || 
-              r.platform?.toLowerCase().includes('real_estate')
+              r.job_type?.toUpperCase().includes('REAL_ESTATE')
             );
+            const reHealth = reHealthCandidates.sort((a, b) => 
+              new Date(b.last_started_at).getTime() - new Date(a.last_started_at).getTime()
+            )[0];
 
             const lastCompletedRun = recentRuns.find(r => 
               (r.status === 'SUCCESS' || r.finished_at !== null) &&
