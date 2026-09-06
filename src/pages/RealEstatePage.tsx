@@ -26,7 +26,8 @@ import RealEstateChatWidget from "@/components/solutions/RealEstateChatWidget";
 import ScrapeHealthStrip from "@/components/solutions/ScrapeHealthStrip";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ChevronDown, Search, Check, ArrowLeft, Activity } from "lucide-react";
-import { getMarketCountry, getCountryFlag, getMarketFlag } from "@/lib/marketConfig";
+import { getMarketCountry } from "@/lib/marketConfig";
+import HierarchicalMarketSelect from "@/components/solutions/HierarchicalMarketSelect";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -239,17 +240,17 @@ export default function RealEstatePage() {
     });
   }, [setSearchParams]);
 
-  const handleCountryChange = useCallback((country: string) => {
+  const handleHierarchySelect = useCallback((country: string, market: string) => {
     setSearchParams(prev => {
       if (country === "all") {
         prev.delete("country");
       } else {
         prev.set("country", country);
-        // If current selected market does not belong to the selected country, clear market
-        const currentMarket = prev.get("market");
-        if (currentMarket && getMarketCountry(currentMarket) !== country) {
-          prev.delete("market");
-        }
+      }
+      if (market === "all") {
+        prev.delete("market");
+      } else {
+        prev.set("market", market);
       }
       return prev;
     });
@@ -358,11 +359,6 @@ export default function RealEstatePage() {
   }, []);
 
   // Derive distinct options dynamically from allProperties (not from filtered data)
-  const countries = [...new Set(allProperties.map(p => getMarketCountry(p.market)).filter(c => c && c !== "Other"))].sort();
-  const markets   = [...new Set(allProperties.map(p => p.market).filter(Boolean))].sort();
-  const visibleMarkets = filterCountry !== "all"
-    ? markets.filter(m => getMarketCountry(m) === filterCountry)
-    : markets;
   const platforms      = [...new Set(allProperties.map(p => p.platform).filter(Boolean))].sort();
   const bedroomOptions = [...new Set(
     allProperties.map(p => p.bedrooms).filter((b): b is number => b !== null)
@@ -531,45 +527,15 @@ export default function RealEstatePage() {
               </div>
             )}
 
-            {/* ── Country filter ── */}
-            {countries.length > 1 && (
-              <div className="flex flex-col gap-1 w-full sm:w-auto">
-                <label className="text-[10px] text-muted-foreground">Country</label>
-                <select
-                  id="country-filter-select"
-                  className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  value={filterCountry}
-                  onChange={e => handleCountryChange(e.target.value)}
-                >
-                  <option value="all">All Countries</option>
-                  {countries.map(c => (
-                    <option key={c} value={c}>
-                      {getCountryFlag(c)} {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* ── Market filter ── */}
-            {markets.length > 1 && (
-              <div className="flex flex-col gap-1 w-full sm:w-auto">
-                <label className="text-[10px] text-muted-foreground">Market</label>
-                <select
-                  id="market-filter-select"
-                  className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  value={filterMarket || "all"}
-                  onChange={e => setFilter("market", e.target.value)}
-                >
-                  <option value="all">
-                    {filterCountry !== "all" ? `All ${filterCountry} Markets` : "All Markets"}
-                  </option>
-                  {visibleMarkets.map(m => (
-                    <option key={m} value={m}>
-                      {getMarketFlag(m)} {m}
-                    </option>
-                  ))}
-                </select>
+            {/* ── Combined Country & Market Hierarchical Matrix Filter (Power BI style) ── */}
+            {allProperties.length > 0 && (
+              <div className="w-full sm:w-auto">
+                <HierarchicalMarketSelect
+                  allProperties={allProperties}
+                  selectedCountry={filterCountry}
+                  selectedMarket={filterMarket}
+                  onSelect={handleHierarchySelect}
+                />
               </div>
             )}
 
