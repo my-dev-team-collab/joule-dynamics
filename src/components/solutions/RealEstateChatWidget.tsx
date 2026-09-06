@@ -179,6 +179,38 @@ function formatToolLabel(tool: string, args?: Record<string, any>): string {
   return TOOL_LABELS[tool] || "Querying database...";
 }
 
+function repairBrokenMarkdownTable(text: string): string {
+  // Only apply when a markdown table delimiter pattern exists (such as |---| or |:---|)
+  const hasDelimiter = /\|(?:\s*:?-{2,}:?\s*\|)+/.test(text);
+  if (!hasDelimiter) {
+    return text;
+  }
+
+  // Detect broken formatting: collapsed rows on same line, or delimiter directly attached without newline
+  const hasCollapsedRows = /\|\s*\|\s*(?=[A-Za-z0-9:_\-*₹$])/.test(text);
+  const hasInlineDelimiter = /[^\n]\s*\|(?:\s*:?-{2,}:?\s*\|)+/.test(text);
+
+  if (!hasCollapsedRows && !hasInlineDelimiter) {
+    return text;
+  }
+
+  let repaired = text;
+
+  // 1. Separate delimiter row if joined inline to header row without newline
+  repaired = repaired.replace(/([^\n])\s*(\|(?:\s*:?-{2,}:?\s*\|)+)/g, '$1\n$2');
+
+  // 2. Separate collapsed rows: '| |' or '||' followed by cell content into a newline
+  repaired = repaired.replace(/\|\s*\|\s*(?=[A-Za-z0-9:_\-*₹$])/g, '|\n| ');
+
+  // 3. Ensure a blank line before table if preceded by text
+  repaired = repaired.replace(/([^\n])\n(\|[^\n]+\|[\r\n]+\s*\|(?:\s*:?-{2,}:?\s*\|)+)/g, '$1\n\n$2');
+
+  // 4. Ensure a blank line after table if followed immediately by text
+  repaired = repaired.replace(/(\|[^\n]+\|)\n([^\n|#\s])/g, '$1\n\n$2');
+
+  return repaired;
+}
+
 export default function RealEstateChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -556,6 +588,9 @@ export default function RealEstateChatWidget() {
               // Format data and dates
               let formattedText = msg.text;
               if (msg.sender === 'assistant' && !msg.isError) {
+                // Auto-repair markdown table only if broken patterns exist
+                formattedText = repairBrokenMarkdownTable(formattedText);
+
                 formattedText = formattedText.replace(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?\b/g, (_match) => {
                   try {
                     return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(_match));
