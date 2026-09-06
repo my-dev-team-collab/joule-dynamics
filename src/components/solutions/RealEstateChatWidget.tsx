@@ -120,36 +120,49 @@ const STARTER_QUESTIONS = [
   "Explain how the 7-day trailing average works."
 ];
 
+const STATUS_LABELS: Record<string, string> = {
+  PATH_A:             "Searching live market data...",
+  PATH_B:             "Consulting analytics methodology...",
+  BOTH:               "Analyzing market data & system logic...",
+  COMMERCIAL_HANDOFF: "Connecting with Joule Dynamics team...",
+  GREETING:           "Thinking...",
+  OUT_OF_SCOPE:       "Checking real estate scope...",
+};
+
 const TOOL_LABELS: Record<string, string> = {
-  get_dashboard_kpis:            "Loading KPI metrics...",
+  get_market_rate_changes:       "Analyzing market rate changes...",
+  get_real_estate_kpis:          "Loading portfolio KPI metrics...",
+  get_dashboard_kpis:            "Loading portfolio KPI metrics...",
   get_market_averages:           "Fetching market averages...",
   get_market_snapshot:           "Building market snapshot...",
   get_market_trend:              "Analyzing pricing trends...",
-  get_spike_alerts:              "Checking spike alerts...",
-  get_rate_anomaly_report:       "Scanning for anomalies...",
-  get_most_volatile_properties:  "Finding volatile listings...",
-  get_property_snapshot:         "Loading property profile...",
+  get_spike_alerts:              "Scanning for rate spikes...",
+  get_rate_anomaly_report:       "Scanning for price anomalies...",
+  get_most_volatile_properties:  "Detecting volatile listings...",
+  get_property_snapshot:         "Loading listing profile...",
+  get_property_detail:           "Loading property details...",
   get_property_rate_changes:     "Analyzing rate revisions...",
-  compare_properties:            "Comparing properties...",
-  search_properties:             "Searching listing database...",
-  get_availability_rate:         "Calculating occupancy...",
-  geocode_address:               "Locating address...",
+  compare_properties:            "Comparing property listings...",
+  search_properties:             "Searching property listings...",
+  get_availability_rate:         "Calculating market availability...",
+  geocode_address:               "Locating address on map...",
   get_nearby_properties:         "Finding nearby listings...",
   get_distance_km:               "Calculating distance...",
-  get_tracked_markets:           "Fetching tracked regions...",
-  get_recently_changed_tracking: "Checking recent tracking...",
-  generate_data_export:          "Preparing your export...",
+  get_tracked_markets:           "Retrieving active markets...",
+  get_recently_changed_tracking: "Checking tracking updates...",
+  generate_data_export:          "Preparing downloadable export...",
   generate_contact_buttons:      "Generating contact options...",
-  suggest_actions:               "Preparing suggested options...",
+  suggest_actions:               "Preparing suggested actions...",
 };
 
 function formatToolLabel(tool: string, args?: Record<string, any>): string {
   if (args) {
     const market = args.market || args.p_market;
-    const property = args.property_name || args.name;
-    const query = args.query;
+    const property = args.property_name || args.name || args.p_property_name;
+    const query = args.query || args.p_query;
 
     if (market) {
+      if (tool === "get_market_rate_changes") return `Analyzing ${market} rate changes...`;
       if (tool.includes("trend") || tool === "get_market_trend") return `Checking ${market} trends...`;
       if (tool.includes("average") || tool === "get_market_averages") return `Analyzing ${market} averages...`;
       if (tool.includes("snapshot") || tool === "get_market_snapshot") return `Loading ${market} snapshot...`;
@@ -287,6 +300,7 @@ export default function RealEstateChatWidget() {
 
     // Capture URL SearchParam Filters to send to backend
     const activeFilters = {
+      country: searchParams.get('country') || 'all',
       market: searchParams.get('market') || 'all',
       platform: searchParams.get('platform') || 'all',
       bedrooms: searchParams.get('bedrooms') || 'all',
@@ -309,6 +323,7 @@ export default function RealEstateChatWidget() {
         body: JSON.stringify({
           message: text,
           session_id: sessionId,
+          context: activeFilters,
           client_context: activeFilters
         })
       });
@@ -352,7 +367,7 @@ export default function RealEstateChatWidget() {
               const payload = JSON.parse(line.slice(6));
               switch (currentEvent) {
                 case "status":
-                  setLoadingStatus(payload.classification ? `Status: ${payload.classification}` : "Thinking...");
+                  setLoadingStatus(STATUS_LABELS[payload.classification] || "Thinking...");
                   break;
                 case "tool_call":
                   setLoadingStatus(formatToolLabel(payload.tool, payload.args));
