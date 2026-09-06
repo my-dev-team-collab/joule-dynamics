@@ -17,7 +17,7 @@
 
 **Joule Dynamics** is an enterprise-grade data engineering and agentic intelligence platform designed for automated web-scale ingestion, statistical anomaly detection, and real-time conversational analysis.
 
-The platform is anchored around its flagship production infrastructure: the **Real Estate Rate Monitor** ([Live Dashboard](https://www.jouledynamics.me/real-estate) | [Backend Repository](https://github.com/JohnJodinho/joule-dynamics-server)). The system monitors high-volatility short-term rental markets (Airbnb/Vrbo) in major metropolitan areas, continuously computing rolling pricing benchmarks, isolating rate surges, and providing natural language data synthesis through an autonomous AI reasoning loop.
+The platform is anchored around its flagship production infrastructure: the **Real Estate Rate Monitor** ([Live Dashboard](https://www.jouledynamics.me/real-estate) | [Backend Repository](https://github.com/JohnJodinho/joule-dynamics-server)). Originally built to monitor NYC and Miami pricing during the 2026 World Cup, the platform now monitors global markets across the United States (NYC/NJ Metro, Miami) and Nigeria (Lagos, Abuja) tracking 65 active listings. The architecture is engineered for N-market scale, proving that expanding to new global regions requires only a configuration change rather than an infrastructure rebuild.
 
 Joule Dynamics decouples compute and presentation across a high-performance **Dual-API Architecture**:
 1. **The Data API (Supabase PostgreSQL 15)**: Handles automated batch ingestion, statistical window functions, time-series rolling averages, and sub-millisecond server-side parameterized filtering via custom PL/pgSQL RPCs.
@@ -121,7 +121,8 @@ Explore how Joule Dynamics demonstrates production-grade engineering across spec
 ### For Software Engineers
 - **Reactive State Management**: Built with **React 19** and **Vite 7**, leveraging URL parameters as the single source of truth (`useSearchParams`) for shareable, reproducible dashboard states.
 - **Temporal UX State Machine**: Deterministically switches UI components, timestamp formatting, badges, and terminology across **Present**, **Historical**, and **Future** date contexts.
-- **Geospatial Clustering**: Interactive **Leaflet** map engine supporting dynamic viewport re-centering, coordinate grouping, and availability status pins.
+- **Geospatial Multi-Market Mapping**: Interactive **Mapbox GL** vector map engine featuring dynamic `fitBounds` coordinate wrapping and regional jump pills so no international market renders off-screen.
+- **Multi-Market Scaling Architecture**: Engineered for N-market scale across countries and continents (US and Nigeria), featuring dynamic country clustering, cascading dropdown filters, and modular regional metadata registries.
 - **Client-Side Synthesis**: Converts streaming Markdown reports into vector PDF documents on the fly using `html2pdf.js` with zero server-side rendering bottlenecks.
 
 ---
@@ -387,7 +388,7 @@ Built with **React 19**, **Vite 7**, and **Tailwind CSS v4**, the frontend deliv
 | **Top KPI & Filters** | ![Top View](public/screenshots/real-estate-page.png) | Searchable checkbox dropdown, market/platform selectors, and 4 top-line aggregation cards. |
 | **Chart & Matrix** | ![Middle View](public/screenshots/real-estate-page2.png) | Time-series rate history chart with solid rate vs. dotted 7D baseline, and market average chips. |
 | **Granular Table** | ![Table View](public/screenshots/real-estate-page3.png) | Tabular listings with inline SVG sparklines, rating badges, and temporal availability chips. |
-| **Geospatial Map** | ![Map View](public/screenshots/real-estate-map-view.png) | Clustered Leaflet map layer with availability pins and dynamic viewport auto-centering. |
+| **Geospatial Map** | ![Map View](public/screenshots/real-estate-map-view.png) | Mapbox GL vector map layer with availability pins, dynamic fitBounds auto-centering, and regional quick-jump controls. |
 
 ---
 
@@ -411,6 +412,17 @@ The interface implements a deterministic **Temporal State Machine** driven by th
           ├─► Badges: "YES" / "NO"          ├─► Badges: "Was Available"       ├─► Badges: "Pre-open"
           └─► "Rate Volatility Alerts"      └─► "Historical Rate Anomalies"   └─► "Projected Rate Anomalies"
 ```
+
+---
+
+### 3.3. Multi-Market Scaling Architecture (N-Markets)
+
+The frontend is built to scale to N markets dynamically across countries and continents without manual code refactoring:
+- **Modular Regional Registry (`marketConfig.ts`)**: Centralizes regional boundaries, country associations, and country flags.
+- **Dynamic Viewport Auto-Fitting (`fitBounds`)**: Automatically computes bounding boxes for all active properties across North America and Africa, preventing pins from rendering off-screen.
+- **Regional Focus Controls**: One-click quick jump pills (`Fit All`, `🇺🇸 United States`, `🇳🇬 Nigeria`) let users quickly navigate between continents.
+- **Cascading Global Filters**: Selecting a Country instantly filters the Market dropdown options to that country's markets, maintaining URL query synchronization.
+- **Regional Market Clustering**: The Market Averages section automatically organizes market cards into regional country clusters with listing counts and average rates.
 
 ---
 

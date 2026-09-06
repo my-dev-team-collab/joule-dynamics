@@ -2,11 +2,12 @@
  * PropertyMap.tsx
  * Pattern: useRef + useEffect (official Mapbox React pattern from skill).
  */
-import { useRef, useEffect, useState, useMemo } from "react";
+import { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { MapPin } from "lucide-react";
 import { useTheme } from "../theme-provider";
+import { getMarketCountry, getCountryFlag } from "@/lib/marketConfig";
 
 interface PropertyPoint {
   property_id: string;
@@ -26,9 +27,11 @@ interface PropertyMapProps {
   data: PropertyPoint[];
   loading: boolean;
   totalProperties?: number;
+  activeMarket?: string;
+  activeCountry?: string;
 }
 
-export default function PropertyMap({ data, loading, totalProperties }: PropertyMapProps) {
+export default function PropertyMap({ data, loading, totalProperties, activeMarket, activeCountry }: PropertyMapProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -49,6 +52,41 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
     return unique;
   }, [data]);
 
+  // Distinct countries represented in current mapped properties
+  const availableCountries = useMemo(() => {
+    const countries = new Set<string>();
+    properties.forEach(p => {
+      const c = getMarketCountry(p.market);
+      if (c && c !== "Other") countries.add(c);
+    });
+    return Array.from(countries).sort();
+  }, [properties]);
+
+  // ── Dynamic bounds-fitting (prevents any market from rendering off-screen) ──
+  const fitMapToProperties = useCallback((targetProps: PropertyPoint[]) => {
+    if (!mapRef.current || targetProps.length === 0) return;
+
+    if (targetProps.length === 1) {
+      mapRef.current.flyTo({
+        center: [targetProps[0].longitude, targetProps[0].latitude],
+        zoom: 12,
+        duration: 800
+      });
+      return;
+    }
+
+    const bounds = new mapboxgl.LngLatBounds();
+    targetProps.forEach((p: PropertyPoint) => {
+      bounds.extend([p.longitude, p.latitude]);
+    });
+
+    mapRef.current.fitBounds(bounds, {
+      padding: { top: 50, bottom: 50, left: 50, right: 50 },
+      maxZoom: 13,
+      duration: 800
+    });
+  }, []);
+
   // ── Initialise Mapbox map ────────────────────────────────────────────────
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -63,12 +101,13 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
       ? "mapbox://styles/mapbox/light-v11" 
       : "mapbox://styles/mapbox/dark-v11";
 
+    // Initial center is neutral global Atlantic view before fitBounds takes over
     mapRef.current = new mapboxgl.Map({
       accessToken: token,
       container: mapContainerRef.current,
       style: initialStyle,
-      center: [-74.006, 40.7128], // NYC default
-      zoom: 9,
+      center: [-30, 25],
+      zoom: 2.5,
     });
 
     mapRef.current.addControl(new mapboxgl.NavigationControl(), "top-right");
@@ -185,27 +224,55 @@ export default function PropertyMap({ data, loading, totalProperties }: Property
       markersRef.current.push(marker);
     });
 
-    // Auto-fit bounds to all markers
-    if (properties.length > 1) {
-      const bounds = new mapboxgl.LngLatBounds();
-      properties.forEach((p: PropertyPoint) => bounds.extend([p.longitude, p.latitude]));
-      mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 800 });
-    } else if (properties.length === 1) {
-      mapRef.current.flyTo({ center: [properties[0].longitude, properties[0].latitude], zoom: 12 });
-    }
-  }, [mapReady, properties]);
+    // Auto-fit bounds dynamically so no market is ever off-screen
+    fitMapToProperties(properties);
+  }, [mapReady, properties, activeMarket, activeCountry, fitMapToProperties]);
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <MapPin className="size-4 text-primary" />
-        <h4 className="font-semibold text-foreground">Property Locations</h4>
-        {!loading && properties.length > 0 && (
-          <span className="text-xs text-muted-foreground ml-1">
-            {totalProperties && totalProperties > properties.length 
-              ? `${properties.length} of ${totalProperties} mapped (${totalProperties - properties.length} missing location data)`
-              : `${properties.length} tracked ${properties.length === 1 ? "property" : "properties"}`}
-          </span>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <MapPin className="size-4 text-primary shrink-0" />
+          <h4 className="font-semibold text-foreground">Property Locations</h4>
+          {!loading && properties.length > 0 && (
+            <span className="text-xs text-muted-foreground ml-1">
+              {totalProperties && totalProperties > properties.length 
+                ? `${properties.length} of ${totalProperties} mapped (${totalProperties - properties.length} missing location data)`
+                : `${properties.length} tracked ${properties.length === 1 ? "property" : "properties"}`}
+            </span>
+          )}
+        </div>
+
+        {/* Quick Region Jump Pills */}
+        {availableCountries.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => fitMapToProperties(properties)}
+              className="text-[10px] px-2 py-0.5 rounded border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors font-medium cursor-pointer"
+              title="Fit all mapped properties into view"
+            >
+              Fit All ({properties.length})
+            </button>
+            {availableCountries.map((c) => {
+              const count = properties.filter(p => getMarketCountry(p.market) === c).length;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => {
+                    const countryProps = properties.filter(p => getMarketCountry(p.market) === c);
+                    fitMapToProperties(countryProps);
+                  }}
+                  className="text-[10px] px-2 py-0.5 rounded border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors font-medium flex items-center gap-1 cursor-pointer"
+                  title={`Focus on ${c} (${count} properties)`}
+                >
+                  <span>{getCountryFlag(c)}</span>
+                  <span>{c} ({count})</span>
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
       <p className="text-[10px] text-muted-foreground -mt-1">

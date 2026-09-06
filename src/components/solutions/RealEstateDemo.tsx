@@ -25,6 +25,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { TrendingUp, ArrowRight, ExternalLink, Star, Bed, Info, Clock, Calendar } from "lucide-react";
+import { getMarketCountry, getCountryFlag } from "@/lib/marketConfig";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -332,6 +333,17 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
     })).sort((a, b) => b.avg - a.avg);
   }, [latestPerProperty]);
 
+  // ── Market averages grouped by country for N-market scaling ──────────────────
+  const marketsByCountry = useMemo(() => {
+    const groups: Record<string, typeof marketSummary> = {};
+    for (const m of marketSummary) {
+      const country = getMarketCountry(m.market);
+      if (!groups[country]) groups[country] = [];
+      groups[country].push(m);
+    }
+    return groups;
+  }, [marketSummary]);
+
   const formatRate = (r: RateRow) =>
     `${r.currency === "USD" ? "$" : r.currency}${r.nightly_rate?.toFixed(0) ?? "N/A"}/night`;
 
@@ -628,19 +640,32 @@ export default function RealEstateDemo({ data, loading, startDate, endDate }: Re
         )}
       </div>
 
-      {/* ── Per-Market Summary ── */}
+      {/* ── Per-Market Summary (Country Clusters) ── */}
       {marketSummary.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-0.5">
             <h4 className="font-semibold text-foreground text-xs uppercase tracking-wider text-muted-foreground">Market Averages</h4>
             <span className="text-[10px] text-muted-foreground">{marketAvgSubtitle}</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {marketSummary.map((m) => (
-              <div key={m.market} className="p-2.5 rounded border border-border/60 bg-card/40 flex flex-col gap-0.5">
-                <span className="text-xs text-muted-foreground truncate capitalize">{m.market}</span>
-                <span className="text-sm font-bold text-foreground">${m.avg.toFixed(0)}<span className="text-[10px] font-normal text-muted-foreground">/nt</span></span>
-                <span className="text-[10px] text-muted-foreground/80 font-mono">{m.count} {m.count === 1 ? "listing" : "listings"} priced</span>
+          <div className="space-y-3">
+            {Object.entries(marketsByCountry).map(([country, markets]) => (
+              <div key={country} className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground/90">
+                  <span>{getCountryFlag(country)}</span>
+                  <span>{country}</span>
+                  <span className="text-[10px] text-muted-foreground font-mono font-normal">
+                    ({markets.length} {markets.length === 1 ? "market" : "markets"})
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                  {markets.map((m) => (
+                    <div key={m.market} className="p-2.5 rounded border border-border/60 bg-card/40 flex flex-col gap-0.5 hover:border-border transition-colors">
+                      <span className="text-xs text-muted-foreground truncate capitalize">{m.market}</span>
+                      <span className="text-sm font-bold text-foreground">${m.avg.toFixed(0)}<span className="text-[10px] font-normal text-muted-foreground">/nt</span></span>
+                      <span className="text-[10px] text-muted-foreground/80 font-mono">{m.count} {m.count === 1 ? "listing" : "listings"} priced</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

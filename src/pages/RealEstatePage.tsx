@@ -26,6 +26,7 @@ import RealEstateChatWidget from "@/components/solutions/RealEstateChatWidget";
 import ScrapeHealthStrip from "@/components/solutions/ScrapeHealthStrip";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ChevronDown, Search, Check, ArrowLeft, Activity } from "lucide-react";
+import { getMarketCountry, getCountryFlag, getMarketFlag } from "@/lib/marketConfig";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -50,6 +51,18 @@ interface ScrapeHealthRow {
   is_failed: boolean;
   high_failure_rate: boolean;
   has_blocks: boolean;
+}
+
+interface RecentRunRow {
+  id: string;
+  job_type: string;
+  status: string;
+  started_at: string;
+  finished_at: string | null;
+  items_attempted: number;
+  items_succeeded: number;
+  items_failed: number;
+  error_summary: string | null;
 }
 
 function timeAgo(dateStr: string): string {
@@ -203,6 +216,7 @@ export default function RealEstatePage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // ── Read filter state from URL ─────────────────────────────────────────────
+  const filterCountry     = searchParams.get("country") || "all";
   const filterPlatform    = searchParams.get("platform") || "all";
   const filterMarket      = searchParams.get("market") || "all";
   const filterTracked     = searchParams.get("tracked") || "tracked";
@@ -225,6 +239,22 @@ export default function RealEstatePage() {
     });
   }, [setSearchParams]);
 
+  const handleCountryChange = useCallback((country: string) => {
+    setSearchParams(prev => {
+      if (country === "all") {
+        prev.delete("country");
+      } else {
+        prev.set("country", country);
+        // If current selected market does not belong to the selected country, clear market
+        const currentMarket = prev.get("market");
+        if (currentMarket && getMarketCountry(currentMarket) !== country) {
+          prev.delete("market");
+        }
+      }
+      return prev;
+    });
+  }, [setSearchParams]);
+
   const setPropertyFilter = useCallback((ids: string[]) => {
     setSearchParams(prev => {
       if (ids.length === 0) {
@@ -238,6 +268,7 @@ export default function RealEstatePage() {
 
   const clearAllFilters = useCallback(() => {
     setSearchParams(prev => {
+      prev.delete("country");
       prev.delete("market");
       prev.delete("platform");
       prev.delete("bedrooms");
@@ -250,6 +281,7 @@ export default function RealEstatePage() {
   }, [setSearchParams]);
 
   const hasActiveFilters =
+    filterCountry !== "all" ||
     filterPlatform !== "all" ||
     filterMarket !== "all" ||
     filterBedrooms !== "all" ||
@@ -262,6 +294,7 @@ export default function RealEstatePage() {
   const [kpis, setKpis]           = useState<RealEstateKPIs | null>(null);
   const [data, setData]           = useState<any[]>([]);
   const [scrapeHealth, setScrapeHealth] = useState<ScrapeHealthRow[]>([]);
+  const [recentRuns, setRecentRuns]     = useState<RecentRunRow[]>([]);
   const [loading, setLoading]     = useState(true);
   const [allProperties, setAllProperties] = useState<PropertyMeta[]>([]);
 
@@ -305,6 +338,15 @@ export default function RealEstatePage() {
         supabase.from("v_scrape_health").select("*").then(({ data: rows }) => {
           if (rows) setScrapeHealth(rows as unknown as ScrapeHealthRow[]);
         });
+        supabase
+          .from("v_recent_runs")
+          .select("*")
+          .ilike("job_type", "%REAL_ESTATE%")
+          .order("started_at", { ascending: false })
+          .limit(5)
+          .then(({ data: rows }) => {
+            if (rows) setRecentRuns(rows as unknown as RecentRunRow[]);
+          });
       })
       .subscribe();
 
@@ -313,8 +355,12 @@ export default function RealEstatePage() {
     };
   }, []);
 
-  // Derive distinct options from allProperties (not from filtered data)
-  const markets        = [...new Set(allProperties.map(p => p.market).filter(Boolean))].sort();
+  // Derive distinct options dynamically from allProperties (not from filtered data)
+  const countries = [...new Set(allProperties.map(p => getMarketCountry(p.market)).filter(c => c && c !== "Other"))].sort();
+  const markets   = [...new Set(allProperties.map(p => p.market).filter(Boolean))].sort();
+  const visibleMarkets = filterCountry !== "all"
+    ? markets.filter(m => getMarketCountry(m) === filterCountry)
+    : markets;
   const platforms      = [...new Set(allProperties.map(p => p.platform).filter(Boolean))].sort();
   const bedroomOptions = [...new Set(
     allProperties.map(p => p.bedrooms).filter((b): b is number => b !== null)
@@ -332,12 +378,34 @@ export default function RealEstatePage() {
           .order("recorded_at", { ascending: false })
           .order("stay_date",   { ascending: false });
 
-        if (filterMarket !== "all")          query = query.eq("market",   filterMarket);
+        const countryMarkets = filterCountry !== "all"
+          ? [...new Set(allProperties.filter(p => getMarketCountry(p.market) === filterCountry).map(p => p.market))]
+          : [];
+
+        // Determine effective property IDs for RPC and filtering
+        let effectivePropertyIds: string[] | null = filterPropertyIds.length > 0 ? filterPropertyIds : null;
+        if (filterCountry !== "all" && filterMarket === "all") {
+          const countryPropIds = allProperties
+            .filter(p => getMarketCountry(p.market) === filterCountry)
+            .map(p => p.id);
+          effectivePropertyIds = effectivePropertyIds
+            ? effectivePropertyIds.filter(id => countryPropIds.includes(id))
+            : countryPropIds;
+        }
+
+        if (filterMarket !== "all") {
+          query = query.eq("market", filterMarket);
+        } else if (filterCountry !== "all" && countryMarkets.length > 0) {
+          query = query.in("market", countryMarkets);
+        }
+
         if (filterPlatform !== "all")        query = query.eq("platform", filterPlatform);
         if (filterBedrooms !== "all")        query = query.eq("bedrooms", Number(filterBedrooms));
         if (filterTracked === "tracked")     query = query.eq("is_active", true);
         if (filterTracked === "untracked")   query = query.eq("is_active", false);
-        if (filterPropertyIds.length > 0)   query = query.in("property_id", filterPropertyIds);
+        if (effectivePropertyIds && effectivePropertyIds.length > 0) {
+          query = query.in("property_id", effectivePropertyIds);
+        }
         if (filterStartDate)                 query = query.gte("stay_date", filterStartDate);
         if (filterEndDate)                   query = query.lte("stay_date", filterEndDate);
 
@@ -348,15 +416,21 @@ export default function RealEstatePage() {
           p_bedrooms:      filterBedrooms !== "all"      ? Number(filterBedrooms) : null,
           p_is_active:     filterTracked === "all"       ? null
                          : filterTracked === "tracked"   ? true : false,
-          p_property_ids:  filterPropertyIds.length > 0  ? filterPropertyIds  : null,
+          p_property_ids:  effectivePropertyIds,
           p_start_date:    filterStartDate ?? null,
           p_end_date:      filterEndDate   ?? null,
         };
 
-        const [kpiRes, dataRes, healthRes] = await Promise.all([
+        const [kpiRes, dataRes, healthRes, runsRes] = await Promise.all([
           supabase.rpc("get_dashboard_kpis", rpcParams),
           query,
           supabase.from("v_scrape_health").select("*"),
+          supabase
+            .from("v_recent_runs")
+            .select("*")
+            .ilike("job_type", "%REAL_ESTATE%")
+            .order("started_at", { ascending: false })
+            .limit(5),
         ]);
 
         if (kpiRes.data) {
@@ -369,6 +443,9 @@ export default function RealEstatePage() {
         if (healthRes.data) {
           setScrapeHealth(healthRes.data as unknown as ScrapeHealthRow[]);
         }
+        if (runsRes.data) {
+          setRecentRuns(runsRes.data as unknown as RecentRunRow[]);
+        }
       } catch (e) {
         console.error("Unexpected error fetching dashboard data:", e);
       } finally {
@@ -379,7 +456,7 @@ export default function RealEstatePage() {
     void fetchData();
     // Stringify array to get a stable dependency value
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterMarket, filterPlatform, filterBedrooms, filterTracked,
+  }, [filterCountry, filterMarket, filterPlatform, filterBedrooms, filterTracked,
       filterStartDate, filterEndDate, filterPropertyIds.join(",")]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -431,9 +508,7 @@ export default function RealEstatePage() {
             Real Estate Rate Monitor
           </h1>
           <p className="mt-3 sm:mt-4 text-sm sm:text-lg text-muted-foreground leading-relaxed">
-            Live nightly rate intelligence across short-term rental markets.
-            We track competitor pricing, detect rate volatility, and surface booking availability in real time by checking each listing up to 4× daily.
-            Built to track NYC and Miami rate dynamics ahead of the 2026 World Cup Final. Expanding to new markets is a config change and not a full rebuild.
+            Live nightly rate intelligence across short-term rental markets worldwide. Tracking competitor pricing, detecting rate volatility, and surfacing booking availability in real time by checking each listing up to 4 times daily. Originally built to monitor NYC and Miami pricing during the 2026 World Cup, the platform now monitors global markets including Lagos and Abuja, proving that expanding to new regions requires only a configuration change rather than an infrastructure rebuild.
           </p>
         </div>
 
@@ -453,16 +528,44 @@ export default function RealEstatePage() {
               </div>
             )}
 
+            {/* ── Country filter ── */}
+            {countries.length > 1 && (
+              <div className="flex flex-col gap-1 w-full sm:w-auto">
+                <label className="text-[10px] text-muted-foreground">Country</label>
+                <select
+                  id="country-filter-select"
+                  className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  value={filterCountry}
+                  onChange={e => handleCountryChange(e.target.value)}
+                >
+                  <option value="all">All Countries</option>
+                  {countries.map(c => (
+                    <option key={c} value={c}>
+                      {getCountryFlag(c)} {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* ── Market filter ── */}
             {markets.length > 1 && (
               <div className="flex flex-col gap-1 w-full sm:w-auto">
                 <label className="text-[10px] text-muted-foreground">Market</label>
                 <select
+                  id="market-filter-select"
                   className="w-full sm:w-auto rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   value={filterMarket || "all"}
                   onChange={e => setFilter("market", e.target.value)}
                 >
-                  <option value="all">All Markets</option>
-                  {markets.map(m => <option key={m} value={m}>{m}</option>)}
+                  <option value="all">
+                    {filterCountry !== "all" ? `All ${filterCountry} Markets` : "All Markets"}
+                  </option>
+                  {visibleMarkets.map(m => (
+                    <option key={m} value={m}>
+                      {getMarketFlag(m)} {m}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}
@@ -544,33 +647,55 @@ export default function RealEstatePage() {
         {/* KPI Cards */}
         <ErrorBoundary fallbackMessage="Failed to load Real Estate KPIs.">
           {loading || !kpis ? renderSkeleton(4) : (() => {
-            // Observability & Ingestion Health Derivation from v_scrape_health
+            // Observability & Ingestion Health Derivation strictly for REAL_ESTATE_MONITOR
             const reHealth = scrapeHealth.find(r => 
-              r.job_type === 'real_estate' || 
-              r.job_type === 'price_monitor' || 
-              r.job_type === 'real_estate_all'
-            ) || scrapeHealth[0];
+              r.job_type === 'REAL_ESTATE_MONITOR' ||
+              r.job_type?.toUpperCase().includes('REAL_ESTATE') || 
+              r.platform?.toLowerCase().includes('real_estate')
+            );
 
-            const isSuccess = reHealth 
-              ? (reHealth.last_status?.toLowerCase() === 'success' || reHealth.last_status?.toLowerCase() === 'completed') && !reHealth.is_failed && !reHealth.high_failure_rate
-              : true;
-            const isRunning = reHealth?.last_status?.toLowerCase() === 'running' || reHealth?.last_status?.toLowerCase() === 'in_progress';
-            const isFailed = reHealth ? (reHealth.is_failed || reHealth.high_failure_rate || reHealth.last_status?.toLowerCase() === 'failed') : false;
+            const lastCompletedRun = recentRuns.find(r => 
+              (r.status === 'SUCCESS' || r.finished_at !== null) &&
+              r.job_type?.toUpperCase().includes('REAL_ESTATE')
+            );
 
-            const statusLabel = isRunning ? "Syncing..." : (isFailed ? "Degraded" : (isSuccess ? "Operational" : "Healthy"));
+            const activeRun = recentRuns.find(r => 
+              r.status === 'RUNNING' &&
+              r.job_type?.toUpperCase().includes('REAL_ESTATE')
+            );
+
+            const isRunning = activeRun !== undefined || reHealth?.last_status?.toUpperCase() === 'RUNNING';
+            const isFailed = (reHealth?.is_failed || reHealth?.high_failure_rate || lastCompletedRun?.status === 'FAILED') ?? false;
+
+            const statusLabel = isRunning ? "Syncing..." : (isFailed ? "Degraded" : "Operational");
             const statusColorText = isRunning ? "text-blue-400" : (isFailed ? "text-red-400" : "text-emerald-500");
             const pulseColor = isRunning ? "bg-blue-400" : (isFailed ? "bg-red-400" : "bg-emerald-500");
 
-            const lastCheckTime = reHealth?.last_started_at || (data.length > 0 ? data[0].recorded_at : null);
-            const freshnessText = lastCheckTime ? `Refreshed ${timeAgo(lastCheckTime)}` : "Live (4× Daily)";
-            
-            const coverageRatio = reHealth && reHealth.items_attempted > 0
-              ? `${reHealth.items_succeeded}/${reHealth.items_attempted} (${Math.round((reHealth.items_succeeded / reHealth.items_attempted) * 100)}%)`
-              : (kpis ? `${kpis.properties_tracked}/${kpis.properties_tracked} (100%)` : "25/25 (100%)");
+            const lastCheckTime = activeRun?.started_at || lastCompletedRun?.finished_at || lastCompletedRun?.started_at || reHealth?.last_started_at || (data.length > 0 ? data[0].recorded_at : null);
+            const freshnessText = isRunning
+              ? (activeRun?.started_at ? `Syncing (started ${timeAgo(activeRun.started_at)})` : "Sync in progress")
+              : (lastCompletedRun?.finished_at ? `Refreshed ${timeAgo(lastCompletedRun.finished_at)}` : (lastCheckTime ? `Refreshed ${timeAgo(lastCheckTime)}` : "Live (4× Daily)"));
 
-            const coverageBadge = reHealth && reHealth.items_attempted > 0
-              ? `${reHealth.items_succeeded}/${reHealth.items_attempted}`
-              : "4×/day";
+            // Dynamic properties count derived live from RPC & recent scraper runs
+            const totalTracked = kpis?.properties_tracked || lastCompletedRun?.items_attempted || 0;
+            const attempted = (reHealth && reHealth.items_attempted > 0)
+              ? reHealth.items_attempted
+              : (lastCompletedRun && lastCompletedRun.items_attempted > 0 ? lastCompletedRun.items_attempted : totalTracked);
+            const succeeded = (reHealth && reHealth.items_attempted > 0)
+              ? reHealth.items_succeeded
+              : (lastCompletedRun && lastCompletedRun.items_attempted > 0 ? lastCompletedRun.items_succeeded : attempted);
+            const failed = (reHealth && reHealth.items_attempted > 0)
+              ? reHealth.items_failed
+              : (lastCompletedRun ? lastCompletedRun.items_failed : 0);
+
+            const syncSuccessPct = attempted > 0 ? Math.round((succeeded / attempted) * 100) : 100;
+            const syncBadgeText = attempted > 0 ? `${succeeded}/${attempted} synced` : "Synced";
+
+            const syncTooltip = isRunning
+              ? `${succeeded} of ${attempted} property listings synced in last cycle (active sync in progress)`
+              : (failed > 0
+                  ? `${succeeded} of ${attempted} property listings updated (${failed} failed to refresh)`
+                  : `${succeeded} of ${attempted} property listings successfully updated (${syncSuccessPct}% sync rate)`);
 
             const surgesCount = data.filter(r => r.pct_above_trailing_avg !== null && r.pct_above_trailing_avg >= 25).length;
             const dropsCount  = data.filter(r => r.pct_above_trailing_avg !== null && r.pct_above_trailing_avg <= -25).length;
@@ -605,11 +730,14 @@ export default function RealEstatePage() {
                   </div>
 
                   <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-muted-foreground pt-1 border-t border-border/40 gap-1 truncate">
-                    <span className="truncate" title={`Last ingestion run: ${lastCheckTime ? new Date(lastCheckTime).toLocaleString() : 'Live'}`}>
+                    <span className="truncate" title={`Last sync run: ${lastCheckTime ? new Date(lastCheckTime).toLocaleString() : 'Live'}`}>
                       {freshnessText}
                     </span>
-                    <span className="shrink-0 font-mono text-[9px] bg-muted/40 px-1.5 py-0.5 rounded text-muted-foreground/80" title={`Ingestion yield from v_scrape_health: ${coverageRatio}`}>
-                      {coverageBadge}
+                    <span 
+                      className="shrink-0 font-medium text-[9px] sm:text-[10px] bg-muted/50 px-1.5 py-0.5 rounded text-muted-foreground hover:text-foreground transition-colors cursor-help" 
+                      title={syncTooltip}
+                    >
+                      {syncBadgeText}
                     </span>
                   </div>
                 </div>
@@ -636,6 +764,8 @@ export default function RealEstatePage() {
             data={data}
             loading={loading}
             totalProperties={kpis?.properties_tracked}
+            activeMarket={filterMarket}
+            activeCountry={filterCountry}
           />
         </ErrorBoundary>
 
