@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare, FileText, Database } from 'lucide-react';
+import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare, FileText, Database, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -48,11 +48,22 @@ const MessageBubble = ({
   id?: string;
   index: number;
 }) => {
+  const [copied, setCopied] = useState(false);
   const isComplete = !msg.isStreaming;
   const actions = msg.suggested_actions || [];
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(msg.text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy message:', err);
+    }
+  };
+
   return (
-    <div id={id} className={`flex flex-col w-full min-w-0 ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+    <div id={id} className={`group flex flex-col w-full min-w-0 ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
       <div
         className={`max-w-[92%] sm:max-w-[90%] p-3 rounded-xl text-sm break-words overflow-hidden ${
           msg.sender === 'user'
@@ -94,6 +105,35 @@ const MessageBubble = ({
           <p className="whitespace-pre-wrap break-words">{msg.text}</p>
         )}
       </div>
+
+      {/* Copy button (visible on bubble hover or when copied) */}
+      {!msg.isError && (
+        <div
+          className={`flex items-center mt-1 px-1 transition-opacity duration-150 ${
+            copied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'
+          }`}
+        >
+          <button
+            type="button"
+            onClick={handleCopy}
+            title={copied ? "Copied to clipboard" : "Copy markdown"}
+            aria-label={copied ? "Copied to clipboard" : "Copy message"}
+            className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground py-0.5 px-1.5 rounded hover:bg-muted/60 transition-colors"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3 h-3 text-emerald-500" />
+                <span className="text-emerald-500 font-medium">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                <span className="text-[10px]">Copy</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
       
       {/* Action pill buttons container: only rendered when suggested_actions exists and is non-empty */}
       {msg.sender === 'assistant' && actions && actions.length > 0 && isLastMessage && isComplete && (
