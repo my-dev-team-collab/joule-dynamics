@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare, FileText, Sparkles } from 'lucide-react';
+import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare, FileText, Database } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -576,7 +576,8 @@ export default function RealEstateChatWidget() {
           <div className={`flex flex-col flex-1 overflow-hidden ${isMaximized ? 'max-w-4xl mx-auto w-full' : 'w-full'}`}>
             {/* Intelligence Grounding Notice */}
             <div className="px-3.5 sm:px-4 py-2 bg-primary/10 border-b border-primary/20 flex items-center gap-2 text-xs text-primary dark:text-cyan-400 shrink-0">
-              <Sparkles className="w-4 h-4 shrink-0 text-primary dark:text-cyan-400" />
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <Database className="w-3.5 h-3.5 shrink-0 text-primary dark:text-cyan-400" />
               <span className="leading-snug text-[11px] sm:text-xs">Answers grounded live from page data and methodology context.</span>
             </div>
 
