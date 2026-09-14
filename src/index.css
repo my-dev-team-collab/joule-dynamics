@@ -53,22 +53,22 @@
 
   .dark {
     /* Dark Mode: Telemetry Dashboard */
-    --background: hsl(240 10% 4%);
+    --background: hsl(240 5% 10%);
     --foreground: hsl(0 0% 98%);
-    --card: hsl(240 10% 6%);
+    --card: hsl(240 5% 13%);
     --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(240 10% 4%);
+    --popover: hsl(240 5% 12%);
     --popover-foreground: hsl(0 0% 98%);
     --primary: hsl(199 89% 48%);
     --primary-foreground: hsl(0 0% 100%);
-    --secondary: hsl(240 4% 16%);
+    --secondary: hsl(240 4% 18%);
     --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(240 5% 26%);
+    --muted: hsl(240 4% 20%);
     --muted-foreground: hsl(240 5% 65%);
     --accent: hsl(24 95% 53%);
     --accent-foreground: hsl(0 0% 98%);
-    --border: hsl(240 6% 15%);
-    --input: hsl(240 6% 15%);
+    --border: hsl(240 5% 18%);
+    --input: hsl(240 5% 18%);
     --ring: hsl(199 89% 48%);
   }
 

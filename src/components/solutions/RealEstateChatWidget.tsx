@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare, FileText } from 'lucide-react';
+import { Bot, X, AlertCircle, Activity, Loader2, Maximize2, Minimize2, MessageSquarePlus, ArrowUp, Download, Mail, ExternalLink, MessageSquare, FileText, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -551,8 +551,8 @@ export default function RealEstateChatWidget() {
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary shrink-0" />
               <div>
-                <h3 className="text-sm font-bold text-foreground">Pulse — Real Estate Intelligence</h3>
-                <p className="text-xs text-muted-foreground">Scoped to Rate Monitor</p>
+                <h3 className="text-sm font-bold text-foreground">Pulse - Real Estate Intelligence</h3>
+                <p className="text-xs text-muted-foreground">Live Short-Term Rental Rate Intelligence</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -574,9 +574,9 @@ export default function RealEstateChatWidget() {
 
           {/* Centered Content Column */}
           <div className={`flex flex-col flex-1 overflow-hidden ${isMaximized ? 'max-w-4xl mx-auto w-full' : 'w-full'}`}>
-            {/* Read-Only Scope Notice */}
-            <div className="px-3.5 sm:px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 shrink-0">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            {/* Intelligence Grounding Notice */}
+            <div className="px-3.5 sm:px-4 py-2 bg-primary/10 border-b border-primary/20 flex items-center gap-2 text-xs text-primary dark:text-cyan-400 shrink-0">
+              <Sparkles className="w-4 h-4 shrink-0 text-primary dark:text-cyan-400" />
               <span className="leading-snug text-[11px] sm:text-xs">Answers grounded live from page data and methodology context.</span>
             </div>
 
