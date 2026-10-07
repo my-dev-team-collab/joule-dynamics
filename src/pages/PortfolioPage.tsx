@@ -26,13 +26,19 @@ export default function PortfolioPage() {
     return (config.projects as PortfolioProject[]) || [];
   }, []);
 
-  const categories = [
-    "All",
-    "Agentic RAG",
-    "Model Training & Fine-Tuning",
-    "Data & Web Intelligence",
-    "Embedded & Robotics"
-  ];
+  const categories = useMemo(() => {
+    const rawCategories = [
+      "All",
+      "Agentic RAG",
+      "Model Training & Fine-Tuning",
+      "Data & Web Intelligence",
+      "Embedded & Robotics"
+    ];
+    return rawCategories.filter((cat) => {
+      if (cat === "All") return true;
+      return projects.some((p) => p.category === cat);
+    });
+  }, [projects]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
@@ -55,6 +61,14 @@ export default function PortfolioPage() {
         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-mono font-medium tracking-wide text-emerald-500 ring-1 ring-inset ring-emerald-500/20">
           <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Live System
+        </span>
+      );
+    }
+    if (status === "Live Pilot") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/10 px-2 py-0.5 text-[10px] font-mono font-medium tracking-wide text-teal-400 ring-1 ring-inset ring-teal-500/20">
+          <span className="size-1.5 rounded-full bg-teal-400 animate-pulse" />
+          Live Pilot
         </span>
       );
     }
@@ -108,8 +122,8 @@ export default function PortfolioPage() {
           </div>
           <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
             <span className="inline-block size-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="hidden sm:inline">10 VERIFIED PROJECTS</span>
-            <span className="sm:hidden">10 PROJECTS</span>
+            <span className="hidden sm:inline">{projects.length} PROJECTS · PUBLIC CODE & BENCHMARKS</span>
+            <span className="sm:hidden">{projects.length} PROJECTS</span>
           </div>
         </div>
       </div>
@@ -125,26 +139,30 @@ export default function PortfolioPage() {
             Engineering Portfolio & Technical Builds
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Ten production-tested systems, fine-tuned transformer models, agentic RAG architectures, and distributed data pipelines built by John Albarka Ibrahim. Each build addresses real operational friction with verifiable benchmarks and clean code.
+            Ten production systems, fine-tuned transformer models, agentic RAG architectures, and distributed data pipelines built by John Albarka Ibrahim. Each build addresses real operational friction with verifiable benchmarks and public code.
           </p>
 
           {/* Quick Metrics Strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
             <div className="p-3 rounded-lg border border-border bg-card/50">
-              <span className="text-xl font-bold text-foreground">10</span>
-              <p className="text-[11px] text-muted-foreground font-mono uppercase mt-0.5">Ranked Builds</p>
+              <span className="text-xl font-bold text-foreground">{projects.length}</span>
+              <p className="text-[11px] text-muted-foreground font-mono uppercase mt-0.5">Engineered Builds</p>
             </div>
             <div className="p-3 rounded-lg border border-border bg-card/50">
-              <span className="text-xl font-bold text-foreground">4</span>
+              <span className="text-xl font-bold text-foreground">
+                {projects.filter((p) => p.category === "Agentic RAG").length}
+              </span>
               <p className="text-[11px] text-muted-foreground font-mono uppercase mt-0.5">Agentic RAG</p>
             </div>
             <div className="p-3 rounded-lg border border-border bg-card/50">
-              <span className="text-xl font-bold text-foreground">2</span>
+              <span className="text-xl font-bold text-foreground">
+                {projects.filter((p) => p.category === "Model Training & Fine-Tuning").length}
+              </span>
               <p className="text-[11px] text-muted-foreground font-mono uppercase mt-0.5">Trained Models</p>
             </div>
             <div className="p-3 rounded-lg border border-border bg-card/50">
               <span className="text-xl font-bold text-foreground">100%</span>
-              <p className="text-[11px] text-muted-foreground font-mono uppercase mt-0.5">Code & Data</p>
+              <p className="text-[11px] text-muted-foreground font-mono uppercase mt-0.5">Public Repositories</p>
             </div>
           </div>
         </div>
@@ -220,17 +238,17 @@ export default function PortfolioPage() {
                 onClick={() => setSelectedProject(project)}
                 className="rounded-xl border border-border bg-card/40 hover:bg-card/90 p-5 flex flex-col justify-between transition-all duration-200 group cursor-pointer shadow-sm hover:shadow-md hover:border-primary/40"
               >
-                {/* Card Top: Rank + Status + Fit */}
+                {/* Card Top: Status + Category + Highlight Metric */}
                 <div className="space-y-3.5">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                        #{project.rank}
-                      </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {getStatusBadge(project.status)}
+                      <span className="text-[10px] font-mono text-muted-foreground uppercase px-1.5 py-0.5 rounded bg-muted/60 border border-border/40">
+                        {project.category}
+                      </span>
                     </div>
-                    <span className="text-[11px] font-mono text-muted-foreground">
-                      Fit: {project.fitScore}
+                    <span className="text-[10px] font-mono font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 shrink-0">
+                      {project.highlightMetric}
                     </span>
                   </div>
 

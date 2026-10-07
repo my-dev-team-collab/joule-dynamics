@@ -283,47 +283,47 @@
   "links": [
     {
       "id": "solutions",
-      "label": "NAV // SOLUTIONS",
+      "label": "Solutions",
       "href": "/#solutions"
     },
     {
       "id": "portfolio",
-      "label": "NAV // PORTFOLIO",
+      "label": "Portfolio",
       "href": "/portfolio"
     },
     {
       "id": "how-it-works",
-      "label": "NAV // HOW IT WORKS",
+      "label": "How It Works",
       "href": "/#how-it-works"
     },
     {
       "id": "live-systems",
-      "label": "NAV // LIVE SYSTEMS",
+      "label": "Live Systems",
       "href": "/live-systems"
     },
     {
       "id": "about",
-      "label": "NAV // ABOUT",
+      "label": "About",
       "href": "/#about"
     },
     {
       "id": "contact",
-      "label": "NAV // GET AUDIT",
+      "label": "Get Audit",
       "href": "/#contact"
     },
     {
       "id": "whatsapp",
-      "label": "INITIATE_CONTACT // WHATSAPP",
+      "label": "WhatsApp",
       "href": "https://wa.me/2348101344101"
     },
     {
       "id": "linkedin",
-      "label": "VERIFY_PROFILE // LINKEDIN",
+      "label": "LinkedIn",
       "href": "https://www.linkedin.com/in/john-albarka-ibrahim/"
     },
     {
       "id": "email",
-      "label": "CONTACT // EMAIL",
+      "label": "Email",
       "href": "mailto:john@jouledynamics.me"
     }
   ],
@@ -335,7 +335,7 @@
       "subtitle": "Turning chaotic multi-language chat exports into structured sentiment intelligence and hallucination-free answers.",
       "category": "Agentic RAG",
       "status": "Production",
-      "fitScore": "10/10",
+      "highlightMetric": "Sub-10ms CPU Inference",
       "githubUrl": "https://github.com/JohnJodinho/whatsapp-sentiment-backend",
       "liveUrl": "https://whatsapp-sentiment-frontend.vercel.app",
       "techStack": ["FastAPI", "Python", "ChromaDB", "PostgreSQL", "Celery", "Redis", "ONNX Runtime", "Groq", "Docker", "React"],
@@ -350,9 +350,10 @@
       "results": [
         "4-tier query routing reduces unnecessary LLM API calls and prevents hallucination",
         "Local 384-dimensional embeddings and ChromaDB vector search for context retrieval",
-        "Sub-10ms sentiment inference via INT8 ONNX CPU execution without cloud GPU costs",
+        "Sub-10ms sentiment inference measured on INT8 ONNX single-sample CPU execution without GPU dependency",
         "Hardened with AST-level SQL validation, tenant isolation, and token-by-token SSE streaming"
-      ]
+      ],
+      "architectureDiagram": "[WhatsApp .txt/.zip Export]\n          |\n          v\n[Pre-Processor & Entity Masking]\n          |\n          v\n[Query Classifier & Router] <---> [AST SQL Validator]\n     /              \\                    |\n    v                v                   v\n[ChromaDB 384D]  [Postgres Analytics]  [INT8 ONNX Model]\n(Dense Vector)    (Relational Facts)    (Sub-10ms CPU)\n     \\              /                    |\n      v            v                     v\n    [Grounded Synthesis] <---------------+ \n          |\n          v\n[SSE Token Stream with Exact Message Citations]"
     },
     {
       "id": "joule-dynamics",
@@ -360,8 +361,8 @@
       "title": "Joule Dynamics: Agentic Real Estate Market Intelligence",
       "subtitle": "Translating natural real estate questions into automated database queries, pricing alerts, and market benchmarks.",
       "category": "Agentic RAG",
-      "status": "Live System",
-      "fitScore": "9.8/10",
+      "status": "Live Pilot",
+      "highlightMetric": "18-Tool Dynamic Gating",
       "githubUrl": "https://github.com/JohnJodinho/joule-dynamics-server",
       "liveUrl": "/real-estate",
       "techStack": ["FastAPI", "PostgreSQL", "pgvector", "Supabase", "Groq", "Langfuse", "OpenTelemetry", "SSE Streaming", "Docker"],
@@ -375,10 +376,11 @@
       "resultsLabel": "KEY OUTCOMES & METRICS",
       "results": [
         "18 specialized tools covering geospatial search, volatility baselines, and CMA generation",
-        "Dynamic tool discovery via local embeddings cuts prompt tokens by over 75%",
+        "Dynamic tool discovery cuts prompt tokens by over 75% compared to injecting all 18 tool schemas per query",
         "Full telemetry observability with Langfuse and OpenTelemetry tracking token spend and latency",
-        "Live tracking across 65+ listings in New York, Miami, Lagos, and Abuja"
-      ]
+        "Live pilot monitoring 65+ listings across New York, Miami, Lagos, and Abuja with 25% price spike alerts against rolling 7-day baselines"
+      ],
+      "architectureDiagram": "[User Natural Language Query]\n               |\n               v\n[Semantic Tool Router & Gating]\n (Filters 18 tools down to <=4 via local embeddings)\n               |\n   +-----------+-----------+\n   |                       |                       |\n   v                       v                       v\n[PostGIS Geospatial] [Market Volatility Engine] [pgvector Embeddings]\n   |                       |                       |\n   +-----------+-----------+\n               |\n               v\n[Langfuse Tracing & OpenTelemetry Span Logger]\n               |\n               v\n[Real-Time Pricing Alert / SSE Answer Delivery]"
     },
     {
       "id": "homa-afrique-gemma",
@@ -387,7 +389,7 @@
       "subtitle": "Supervised fine-tuning of a 4B parameter model for Nigerian farmers across four indigenous languages.",
       "category": "Model Training & Fine-Tuning",
       "status": "Fine-Tuned Model",
-      "fitScore": "9.7/10",
+      "highlightMetric": "4B Gemma SFT / Q4 GGUF",
       "githubUrl": "https://huggingface.co/fallback-ai/Homa-Afrique-Gemma-4B",
       "liveUrl": "https://huggingface.co/fallback-ai/Homa-Afrique-Gemma-4B",
       "techStack": ["PyTorch", "Hugging Face TRL", "LoRA", "Gemma-3 4B", "GGUF", "llama.cpp", "Python"],
@@ -404,7 +406,8 @@
         "Evaluated on held-out test sets with 71.5% token prediction accuracy",
         "Merged and quantized to GGUF Q4_K_M for offline execution via llama.cpp and Ollama",
         "Built-in out-of-domain guardrails to refuse unsafe medical or non-farming queries"
-      ]
+      ],
+      "architectureDiagram": "[Curated Agronomy Dataset (5,500+ Pairs)]\n  (English, Hausa, Igbo, Yoruba)\n               |\n               v\n[Afrique-Gemma-4B Base Weights]\n               |\n               v\n[LoRA Rank=16 Target Modules]\n (q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj)\n               |\n               v\n[Evaluation: 71.5% Token Accuracy on Held-Out Prompts]\n               |\n               v\n[Weight Merging & GGUF Q4_K_M Quantization]\n               |\n               v\n[Offline Edge Inference via llama.cpp & Ollama]"
     },
     {
       "id": "afroxlmr-mini",
@@ -413,7 +416,7 @@
       "subtitle": "End-to-end transformer fine-tuning and INT8 quantization for sub-10ms CPU inference.",
       "category": "Model Training & Fine-Tuning",
       "status": "Fine-Tuned Model",
-      "fitScore": "9.5/10",
+      "highlightMetric": "94.29% Macro F1 / 8.2ms INT8",
       "githubUrl": "https://github.com/JohnJodinho/afroxlmr-mini-nigerian-sentiment",
       "liveUrl": "https://huggingface.co/JohnAlbarkaIbrahim/afroxlmr-mini-nigerian-sentiment",
       "techStack": ["PyTorch", "Hugging Face Transformers", "Afro-XLMR", "ONNX Runtime", "Python", "INT8 Quantization"],
@@ -430,7 +433,8 @@
         "94.29% accuracy and 96.25% Macro F1 on Nigerian Pidgin test splits",
         "Storage reduced from 469.9 MB to 112.9 MB (76% reduction) via dynamic INT8 quantization",
         "Single-sample CPU inference latency dropped from 42ms to 8.2ms"
-      ]
+      ],
+      "architectureDiagram": "[140,256 Multilingual Samples] -> [Stage 1: Base Pre-Training]\n                                                |\n                                                v\n[1,058 Real WhatsApp Chats]    -> [Stage 2: Domain Adaptation]\n(English, Pidgin, Hausa)                        |\n                                                v\n                                     [PyTorch Float32 Classifier]\n                                     (94.29% Accuracy / 470 MB)\n                                                |\n                                                v\n                                     [Dynamic INT8 Quantization]\n                                     (112.9 MB / 8.2ms CPU Latency)"
     },
     {
       "id": "gemini-rag",
@@ -439,7 +443,7 @@
       "subtitle": "Accurate Q&A over complex PDF manuals, technical drawings, and data tables with source citations.",
       "category": "Agentic RAG",
       "status": "Open Source",
-      "fitScore": "8.8/10",
+      "highlightMetric": "Multi-Modal FAISS Retrieval",
       "githubUrl": "https://github.com/JohnJodinho/google-gemini-rag-app",
       "techStack": ["Google Gemini API", "FAISS", "PyMuPDF", "Python", "Embeddings", "Streamlit"],
       "challenge": "Real-world engineering documents and technical reports pack crucial data into charts, schematics, and multi-column tables that basic text extractors mangle into gibberish.",
@@ -455,7 +459,8 @@
         "FAISS vector indexing with persistent storage for rapid local retrieval",
         "Strict citation and attribution rules to suppress hallucination",
         "Fuzzy matching engine to handle misspelled queries and document titles"
-      ]
+      ],
+      "architectureDiagram": "[PDF Technical Manuals & Schematics]\n                 |\n                 v\n      [PyMuPDF Parser & OCR Engine]\n      (Extracts Text, Tables & Images)\n                 |\n                 v\n      [Multi-Modal Chunking & Hashing]\n                 |\n                 v\n      [FAISS Local Vector Store & Index]\n                 |\n                 v\n      [Google Gemini Synthesizer & Verifier]\n                 |\n      [Cited Answer with Confidence Score & Page Ref]"
     },
     {
       "id": "nexus-audit-crawler",
@@ -464,7 +469,7 @@
       "subtitle": "High-throughput distributed crawling paired with Model Context Protocol tools for AI agents.",
       "category": "Data & Web Intelligence",
       "status": "Open Source",
-      "fitScore": "8.2/10",
+      "highlightMetric": "106 Automated Tests / MCP",
       "githubUrl": "https://github.com/JohnJodinho/nexus-audit-crawler",
       "techStack": ["Python", "AsyncIO", "Redis Streams", "PostgreSQL", "Playwright", "MCP", "Docker", "Pytest"],
       "challenge": "Deep technical website audits require crawling thousands of dynamic pages without getting blocked, while giving AI agents a clean way to inspect audit findings programmatically.",
@@ -480,7 +485,8 @@
         "Dual-engine architecture with automatic escalation to headless browser execution",
         "Redis Streams coordination with token-bucket rate limiting and stale-task reclamation",
         "106 automated tests ensuring zero crawl state corruption or worker dropouts"
-      ]
+      ],
+      "architectureDiagram": "[Autonomous AI Agent / MCP Host]\n                 |\n                 v\n    [Nexus 6-Tool MCP Adapter Server]\n                 |\n                 v\n    [Redis Streams Event Queue]\n    (Consumer Groups, Leases, Dead-Letter Recovery)\n                 |\n      +----------+----------+\n      |                     |\n      v (Static URLs)       v (Dynamic JS)\n[Async HTTP Worker]   [Playwright Headless Pool]\n      |                     |\n      +----------+----------+\n                 |\n                 v\n    [PostgreSQL Structured Audit Lake]\n    (106 Automated Tests Passing)"
     },
     {
       "id": "price-monitor-lead-gen",
@@ -489,7 +495,7 @@
       "subtitle": "Cost-efficient tiered extraction combining deterministic scraping with LLM fallback across three specialized engines.",
       "category": "Data & Web Intelligence",
       "status": "Production",
-      "fitScore": "7.8/10",
+      "highlightMetric": ">90% Token Reduction / Tiered",
       "githubUrl": "https://github.com/JohnJodinho/price_monitor_lead_gen",
       "techStack": ["Python", "SQLAlchemy Async", "PostgreSQL", "curl_cffi", "Scrapling", "Groq", "GitHub Actions"],
       "challenge": "Web scraping pipelines break whenever websites update their layout. Sending every scraped page to an LLM for parsing fixes the breakage, but it explodes API bills.",
@@ -505,7 +511,8 @@
         "Three distinct engines: retail price tracking, booking rate monitoring, and B2B prospecting",
         "Stealthy HTTP fetching using curl_cffi and Scrapling to evade bot detection",
         "Serverless cron execution powered by scheduled GitHub Actions workflows writing to PostgreSQL"
-      ]
+      ],
+      "architectureDiagram": "[Scheduled GitHub Actions Runner]\n                 |\n                 v\n[StealthyFetcher (curl_cffi + Scrapling Session)]\n                 |\n                 v\n[Tier-1: Deterministic Selector & Regex Engine]\n         /                            \\\n   (Match Success: >90%)        (DOM Mutated / Zero Match)\n       /                                \\\n      v                                  v\n[Structured Dict]            [Tier-2: Groq LLaMA-3 Parsing]\n      |                                  |\n      +----------------+-----------------+\n                       |\n                       v\n         [Async SQLAlchemy PostgreSQL Mart]"
     },
     {
       "id": "smart-image-gallery",
@@ -514,7 +521,7 @@
       "subtitle": "Semantic image discovery and similarity retrieval integrated into live e-commerce.",
       "category": "Agentic RAG",
       "status": "Production",
-      "fitScore": "7.2/10",
+      "highlightMetric": "512D CLIP / HNSW Vectors",
       "githubUrl": "https://github.com/JohnJodinho/smart_image_gallery",
       "techStack": ["FastAPI", "CLIP", "HNSW Vector Index", "Python", "Docker"],
       "challenge": "Traditional keyword search on e-commerce sites fails when shoppers describe visual styles (such as vintage denim jacket with brass buttons) instead of typing exact catalog titles.",
@@ -530,7 +537,8 @@
         "HNSW vector indexing delivering sub-second similarity matching across catalog items",
         "Dual persistence model with JSONL ground truth to prevent index desynchronization",
         "Directly integrated into a live production store catalog"
-      ]
+      ],
+      "architectureDiagram": "[Store Catalog Inventory]         [User Query (Text or Photo)]\n           |                                    |\n           v                                    v\n[OpenAI CLIP Vision Encoder]       [CLIP Dual Text/Vision Encoder]\n           |                                    |\n           v (512D Vectors)                     v (512D Vector Query)\n[HNSW Graph-Based Index] <----------------------+\n           |\n           v (Sub-second K-NN Graph Traversal)\n[JSONL Persistence Ground Truth]\n           |\n           v\n[FastAPI Response -> Live Production Catalog]"
     },
     {
       "id": "nigeria-humanitarian-platform",
@@ -539,7 +547,7 @@
       "subtitle": "Automated ETL and spatial data engineering for crisis response and resource allocation across Nigeria.",
       "category": "Data & Web Intelligence",
       "status": "Open Source",
-      "fitScore": "6.8/10",
+      "highlightMetric": "PostGIS 37 States / 774 LGAs",
       "githubUrl": "https://github.com/JohnJodinho/nigeria-humanitarian-intelligence-platform",
       "liveUrl": "https://app.powerbi.com/view?r=eyJrIjoiMjYwNWNkMGQtMmQ3NS00OTI2LThkODktNDYyZDhhNGYxMmEwIiwidCI6ImRhOWM1Yzg5LWI2MmEtNDdhNC05MmEyLTY4Y2FjNjFmYTg1YyIsImMiOjh9&pageName=ad3927a0e6f554a8cdb5",
       "techStack": ["Python 3.12", "PostgreSQL 17", "PostGIS 3.4", "Pydantic", "GitHub Actions", "Power BI Service"],
@@ -556,7 +564,34 @@
         "Automated daily ETL pipeline extracting from UN OCHA HDX HAPI v2 via GitHub Actions",
         "Spatial data normalization using PostGIS across all 37 States and 774 Nigerian LGAs",
         "Pydantic data contract validation preventing malformed or duplicated crisis records"
-      ]
+      ],
+      "architectureDiagram": "[UN OCHA HDX HAPI v2 REST API]\n               |\n               v (GitHub Actions Daily Runner)\n[Pydantic v2 Schema Validation & Cleaners]\n               |\n               v\n[PostGIS Spatial Harmonization (37 States / 774 LGAs)]\n               |\n               v\n[Supabase PostgreSQL 17 Relational Fact Marts]\n               |\n               v\n[Live Power BI Service Interactive Cloud Reports]"
+    },
+    {
+      "id": "assistive-wheelchair",
+      "rank": 10,
+      "title": "Smart Assistive Wheelchair: Microcontroller Sensor Fusion & Edge Obstacle Avoidance",
+      "subtitle": "Multi-sensor collision avoidance, embedded firmware, and physical chassis engineering for mobility assistance.",
+      "category": "Embedded & Robotics",
+      "status": "Applied Research",
+      "highlightMetric": "100kg Chassis / <50ms Sensing",
+      "githubUrl": "https://github.com/JohnJodinho/smart-assistive-wheelchair",
+      "techStack": ["C++", "Arduino / ATmega", "Ultrasonic Arrays", "Infrared Sensors", "H-Bridge Motor Control", "Mechanical CAD", "Welded Steel Fabrication"],
+      "challenge": "Mobility-impaired individuals face high risks of collisions and steep costs for imported assistive equipment, lacking localized solutions tailored to rugged terrain and everyday obstacles.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Engineered a powered smart wheelchair integrating ultrasonic distance arrays, infrared proximity sensors, and an embedded microcontroller. Authored deterministic C++ firmware for real-time obstacle avoidance with sub-50ms reaction times, paired with a custom welded steel chassis and dual high-torque DC motor drive.",
+      "beforeAfter": {
+        "before": "fragile imported wheelchairs cost thousands of dollars with zero collision awareness, causing frequent accidents in tight corridors.",
+        "after": "a durable, locally fabricated chassis with autonomous obstacle sensing and automatic emergency braking."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "Multi-sensor array delivering sub-50ms obstacle detection and automatic deceleration",
+        "Custom welded steel chassis designed and load-tested for up to 100kg passenger weight",
+        "Dual high-torque 12V DC motor drive powered by an H-bridge PWM motor controller",
+        "Complete mechanical engineering documentation including stress analysis and wiring schematics"
+      ],
+      "architectureDiagram": "[Ultrasonic Sensor Array] + [Infrared Proximity Sensors]\n                   \\         /\n                    v       v\n       [Embedded Microcontroller Unit]\n       (Sub-50ms Deterministic C++ Firmware)\n                    |\n                    v\n       [Dynamic Collision Avoidance & Safety State]\n       (Perimeter Scan -> Emergency Braking)\n                    |\n                    v\n       [High-Torque PWM Motor Drivers]\n                    |\n       [100kg Rated Structural Steel Chassis]"
     }
   ]
 }

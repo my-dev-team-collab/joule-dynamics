@@ -92,12 +92,12 @@ export default function CredentialFooter() {
         </div>
 
         {/* ── Bottom SYS bar ── */}
-        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest">
-            SYS // JOULE-DYNAMICS-V2.0.0 · STACK: REACT 19 · VITE · TAILWIND V4 · SHADCN · POSTGRES · SUPABASE · FASTAPI · GROQ MODELS · LANGFUSE
+        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-[10px]">
+          <p className="font-mono text-muted-foreground tracking-wider leading-relaxed break-words">
+            SYS // JOULE-DYNAMICS-V2.0.0 · STACK: REACT 19 · VITE · TAILWIND V4 · POSTGRES · FASTAPI · GROQ · LANGFUSE
           </p>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest">
-            🔧 ACTIVE DEVELOPMENT HUB — VERCEL
+          <p className="font-mono text-muted-foreground tracking-wider shrink-0">
+            Active Development Hub : Vercel
           </p>
         </div>
       </div>

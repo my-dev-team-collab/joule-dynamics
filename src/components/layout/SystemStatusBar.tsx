@@ -45,12 +45,12 @@ export function SystemStatusBar() {
   }, []);
 
   const navLinks = [
-    { label: "// SOLUTIONS", href: "/#solutions" },
-    { label: "// PORTFOLIO", href: "/portfolio" },
-    { label: "// LIVE SYSTEMS", href: "/live-systems" },
-    { label: "// HOW IT WORKS", href: "/#how-it-works" },
-    { label: "// ABOUT", href: "/#about" },
-    { label: "// GET AUDIT", href: "/#contact" },
+    { label: "SOLUTIONS", href: "/#solutions" },
+    { label: "PORTFOLIO", href: "/portfolio" },
+    { label: "LIVE SYSTEMS", href: "/live-systems" },
+    { label: "HOW IT WORKS", href: "/#how-it-works" },
+    { label: "ABOUT", href: "/#about" },
+    { label: "GET AUDIT", href: "/#contact" },
   ];
 
   return (

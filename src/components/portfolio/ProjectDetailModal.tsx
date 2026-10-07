@@ -45,6 +45,7 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
 
   const getStatusColor = (status: string) => {
     if (status === "Live System") return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    if (status === "Live Pilot") return "bg-teal-500/10 text-teal-400 border-teal-500/20";
     if (status === "Production") return "bg-cyan-500/10 text-cyan-500 border-cyan-500/20";
     if (status === "Fine-Tuned Model") return "bg-purple-500/10 text-purple-500 border-purple-500/20";
     if (status === "Open Source") return "bg-blue-500/10 text-blue-500 border-blue-500/20";
@@ -53,17 +54,17 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
 
   const Content = () => (
     <div className="flex flex-col gap-6 text-sm py-2">
-      {/* Top Badges and Fit Score */}
+      {/* Top Badges and Highlight Metric */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-            Rank #{project.rank}
-          </span>
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={`font-mono text-[10px] tracking-wider uppercase rounded-full ${getStatusColor(project.status)}`}>
             {project.status}
           </Badge>
-          <span className="text-xs text-muted-foreground font-mono">
-            Role Fit: {project.fitScore}
+          <Badge variant="outline" className="font-mono text-[10px] tracking-wider uppercase rounded-full bg-primary/10 text-primary border-primary/25">
+            {project.highlightMetric}
+          </Badge>
+          <span className="text-[11px] font-mono text-muted-foreground hidden sm:inline">
+            {project.category}
           </span>
         </div>
 
@@ -135,6 +136,20 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
           </div>
         </div>
       </div>
+
+      {/* System Architecture & Flow */}
+      {project.architectureDiagram && (
+        <div className="flex flex-col gap-2">
+          <h4 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+            System Architecture & Flow
+          </h4>
+          <div className="p-3.5 rounded-lg bg-zinc-950/80 dark:bg-black/80 border border-border/80 overflow-x-auto assistant-scrollbar">
+            <pre className="font-mono text-[11px] sm:text-xs text-primary leading-relaxed select-text">
+              {project.architectureDiagram}
+            </pre>
+          </div>
+        </div>
+      )}
 
       {/* Key Outcomes & Metrics */}
       <div className="flex flex-col gap-2">

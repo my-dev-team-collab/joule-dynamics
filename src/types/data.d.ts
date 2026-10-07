@@ -36,8 +36,8 @@ export interface PortfolioProject {
   title: string;
   subtitle: string;
   category: "Agentic RAG" | "Model Training & Fine-Tuning" | "Data & Web Intelligence" | "Embedded & Robotics";
-  status: "Live System" | "Production" | "Fine-Tuned Model" | "Open Source" | "Applied Research";
-  fitScore: string;
+  status: "Live System" | "Live Pilot" | "Production" | "Fine-Tuned Model" | "Open Source" | "Applied Research";
+  highlightMetric: string;
   githubUrl: string;
   liveUrl?: string;
   techStack: string[];
@@ -50,6 +50,7 @@ export interface PortfolioProject {
   };
   resultsLabel: string;
   results: string[];
+  architectureDiagram?: string;
 }
 
 export interface LinkNode {
