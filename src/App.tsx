@@ -11,12 +11,13 @@ import AboutSection from "@/components/sections/AboutSection";
 import NotFound from "@/components/sections/NotFound";
 import LiveSystems from "@/pages/LiveSystems";
 import RealEstatePage from "@/pages/RealEstatePage";
+import PortfolioPage from "@/pages/PortfolioPage";
 
 /**
- * Root page — single-page layout, section-only composition.
- * Render order: Dev Hub badge (SystemStatusBar) → Hero → Solutions Showcase
- *   → How It Works (OperationalHistory) → Interactive Labs → Audit/Contact → Footer
- * No copy or literals belong in this file — all section components are pure composition.
+ * Root page: single-page layout, section-only composition.
+ * Render order: Dev Hub badge (SystemStatusBar) -> Hero -> Solutions Showcase
+ *   -> How It Works (OperationalHistory) -> Interactive Labs -> Audit/Contact -> Footer
+ * No copy or literals belong in this file: all section components are pure composition.
  */
 function PortfolioRoot() {
   return (
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="/" element={<PortfolioRoot />} />
             <Route path="/real-estate" element={<RealEstatePage />} />
             <Route path="/live-systems" element={<LiveSystems />} />
+            <Route path="/portfolio" element={<PortfolioPage />} />
             {/* /audit redirects to the inline contact section on the main page */}
             <Route path="/audit" element={<PortfolioRoot />} />
             <Route path="*" element={<NotFound />} />

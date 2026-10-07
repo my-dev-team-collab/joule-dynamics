@@ -30,6 +30,28 @@ export interface OperationalDeployment {
   metrics: string[];
 }
 
+export interface PortfolioProject {
+  id: string;
+  rank: number;
+  title: string;
+  subtitle: string;
+  category: "Agentic RAG" | "Model Training & Fine-Tuning" | "Data & Web Intelligence" | "Embedded & Robotics";
+  status: "Live System" | "Production" | "Fine-Tuned Model" | "Open Source" | "Applied Research";
+  fitScore: string;
+  githubUrl: string;
+  liveUrl?: string;
+  techStack: string[];
+  challenge: string;
+  solutionLabel: string;
+  solution: string;
+  beforeAfter: {
+    before: string;
+    after: string;
+  };
+  resultsLabel: string;
+  results: string[];
+}
+
 export interface LinkNode {
   id: string;
   label: string;
@@ -43,11 +65,11 @@ export interface LinkNode {
 export type MetricType = "revenue" | "time" | "conversion" | "market" | "other";
 
 export interface ROIMetric {
-  label: string;        // e.g. "Margin Recovery"
-  value: string;        // e.g. "8–14%"
-  context?: string;     // e.g. "in 12 months"
+  label: string;
+  value: string;
+  context?: string;
   metricType: MetricType;
-  isBenchmark: boolean; // true → "Industry Benchmark" pill; false → verified client result
+  isBenchmark: boolean;
 }
 
 export interface DemoAsset {
@@ -56,27 +78,23 @@ export interface DemoAsset {
   posterImage?: string;
   altText: string;
   durationSeconds?: number;
-  fallbackNote?: string; // shown when kind is "screenshot" as a placeholder overlay
+  fallbackNote?: string;
 }
 
 export interface Solution {
-  id: string;               // slug — used as React key + anchor link
-  order: number;            // controls display order in the grid
-  isPublished: boolean;     // toggle visibility without deleting the entry
-  category: string;         // e.g. "Web Scraping & Data Intelligence"
-  title: string;            // outcome-oriented headline
+  id: string;
+  order: number;
+  isPublished: boolean;
+  category: string;
+  title: string;
   problemStatement: string;
   solutionDescription: string;
   demo: DemoAsset;
   roiMetrics: ROIMetric[];
-  techStackTags: string[];  // shown in collapsed "Under the hood" panel
+  techStackTags: string[];
   ctaLabel: string;
-  ctaLink: string;          // can point to #contact or an external demo link
+  ctaLink: string;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Contact / audit form interfaces (revamp additions)
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface FormField {
   name: string;
@@ -96,6 +114,7 @@ export interface RootConfig {
   deployments: OperationalDeployment[];
   labs: ProjectLab[];
   links: LinkNode[];
+  projects?: PortfolioProject[];
 
   // Revamp additions
   devHub: {

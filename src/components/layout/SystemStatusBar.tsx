@@ -46,8 +46,9 @@ export function SystemStatusBar() {
 
   const navLinks = [
     { label: "// SOLUTIONS", href: "/#solutions" },
-    { label: "// HOW IT WORKS", href: "/#how-it-works" },
+    { label: "// PORTFOLIO", href: "/portfolio" },
     { label: "// LIVE SYSTEMS", href: "/live-systems" },
+    { label: "// HOW IT WORKS", href: "/#how-it-works" },
     { label: "// ABOUT", href: "/#about" },
     { label: "// GET AUDIT", href: "/#contact" },
   ];
@@ -141,7 +142,7 @@ export function SystemStatusBar() {
             </div>
           )}
 
-          {/* Theme toggle — always visible */}
+          {/* Theme toggle: always visible */}
           <ThemeToggle />
 
           {/* Mobile menu toggle */}

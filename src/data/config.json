@@ -5,11 +5,11 @@
   },
   "devHub": {
     "badgeLabel": "🔧 Live Build",
-    "tooltip": "This is our active development hub, hosted on Vercel. Everything here is real, working code — not mockups. We ship fast here first; the branded production domain follows once the first client engagement is underway."
+    "tooltip": "This is our active development hub, hosted on Vercel. Everything here is real, working code, not mockups. We ship fast here first; the branded production domain follows once the first client engagement is underway."
   },
   "hero": {
     "headline": "Automation That Pays For Itself",
-    "subheadline": "RAG systems, pricing intelligence, and lead pipelines — built by an engineer, not a template.",
+    "subheadline": "RAG systems, pricing intelligence, and lead pipelines: built by an engineer, not a template.",
     "primaryCtaLabel": "Get My Free Automation Audit",
     "primaryCtaLink": "#contact"
   },
@@ -21,7 +21,7 @@
       "category": "Web Scraping & Data Intelligence",
       "title": "Never Get Undercut on Price Again",
       "problemStatement": "Retailers lose margin every day competitors quietly drop prices and nobody notices until sales dip.",
-      "solutionDescription": "An always-on monitor that checks competitor pricing and stock levels around the clock and flags changes the moment they happen — no manual spreadsheet-checking required.",
+      "solutionDescription": "An always-on monitor that checks competitor pricing and stock levels around the clock and flags changes the moment they happen, with no manual spreadsheet-checking required.",
       "demo": {
         "kind": "interactive",
         "url": "",
@@ -54,7 +54,7 @@
       "isPublished": true,
       "category": "Real Estate Intelligence",
       "title": "Know Before Your Competitors Which Listings Are Underpricing",
-      "problemStatement": "Property managers reprice manually and reactively — usually after they've already lost bookings to a competitor who moved first.",
+      "problemStatement": "Property managers reprice manually and reactively, usually after they've already lost bookings to a competitor who moved first.",
       "solutionDescription": "An always-on rate monitor that tracks nightly prices across Airbnb and direct listings, flags anomalies against a 7-day trailing average, and surfaces high-volatility opportunities the moment they appear.",
       "demo": {
         "kind": "interactive",
@@ -82,7 +82,7 @@
       "category": "B2B Lead Generation",
       "title": "100 Qualified Leads a Week, on Autopilot",
       "problemStatement": "Sales teams spend hours a week manually hunting for contacts instead of selling.",
-      "solutionDescription": "A pipeline that finds decision-makers matching your ideal customer profile, pulls verified contact details, and hands your team a ready-to-use list — so outreach starts same-day instead of next week.",
+      "solutionDescription": "A pipeline that finds decision-makers matching your ideal customer profile, pulls verified contact details, and hands your team a ready-to-use list so outreach starts same-day instead of next week.",
       "demo": {
         "kind": "interactive",
         "url": "",
@@ -109,7 +109,7 @@
       "category": "RAG / Conversational AI",
       "title": "Answers Your Customers Instantly, From Your Own Docs",
       "problemStatement": "Support teams re-answer the same FAQs all day, and customers wait hours for simple answers.",
-      "solutionDescription": "A chat assistant trained on your FAQs, policies, or product docs that answers instantly and correctly, on WhatsApp or your website — and escalates to a human only when it actually needs to.",
+      "solutionDescription": "A chat assistant trained on your FAQs, policies, or product docs that answers instantly and correctly, on WhatsApp or your website, and escalates to a human only when it actually needs to.",
       "demo": {
         "kind": "interactive",
         "url": "",
@@ -141,7 +141,7 @@
     {
       "step": 1,
       "title": "10-Minute Audit",
-      "description": "We identify the highest-leverage automation opportunity in your workflow — no jargon, no obligation."
+      "description": "We identify the highest-leverage automation opportunity in your workflow with no jargon and no obligation."
     },
     {
       "step": 2,
@@ -156,7 +156,7 @@
   ],
   "socialProof": {
     "founderNote": {
-      "quote": "I built and ran these pipelines against real e-commerce and B2B targets to prove them end-to-end before offering them as a service — what you see below are the actual systems running live.",
+      "quote": "I built and ran these pipelines against real e-commerce and B2B targets to prove them end-to-end before offering them as a service. What you see below are the actual systems running live.",
       "author": "John Albarka Ibrahim",
       "role": "Founder"
     },
@@ -165,7 +165,7 @@
   },
   "about": {
     "headline": "Engineering rigor, applied to AI.",
-    "bio": "I'm John — an Azure AI Engineer Associate who builds the kind of systems most agencies talk about but few actually ship: production RAG pipelines, resilient scraping infrastructure, and automation that runs unattended, day and night. Joule Dynamics turns that same discipline on the three things quietly costing you money right now — pricing you can't see, leads you're not catching, and support questions your team answers by hand, every day.",
+    "bio": "I'm John, an Azure AI Engineer Associate who builds the kind of systems most agencies talk about but few actually ship: production RAG pipelines, resilient scraping infrastructure, and automation that runs unattended, day and night. Joule Dynamics turns that same discipline on the three things quietly costing you money right now: pricing you can't see, leads you're not catching, and support questions your team answers by hand, every day.",
     "credentials": [
     "Azure AI Engineer Associate (AI-102), 2024",
     "3 Production Systems, Live Right Now",
@@ -193,7 +193,7 @@
       { "name": "notes", "label": "Anything else?", "type": "textarea", "required": false }
     ],
     "submitLabel": "Get My Free Automation Audit",
-    "trustLine": "No sales pitch — just a 10-minute look at what's automatable in your workflow.",
+    "trustLine": "No sales pitch: just a 10-minute look at what's automatable in your workflow.",
     "privacyLine": "Your information is used only to prepare your audit and is never shared."
   },
   "sections": [
@@ -287,6 +287,11 @@
       "href": "/#solutions"
     },
     {
+      "id": "portfolio",
+      "label": "NAV // PORTFOLIO",
+      "href": "/portfolio"
+    },
+    {
       "id": "how-it-works",
       "label": "NAV // HOW IT WORKS",
       "href": "/#how-it-works"
@@ -320,6 +325,238 @@
       "id": "email",
       "label": "CONTACT // EMAIL",
       "href": "mailto:john@jouledynamics.me"
+    }
+  ],
+  "projects": [
+    {
+      "id": "sentimentscope",
+      "rank": 1,
+      "title": "SentimentScope: WhatsApp Sentiment Intelligence & Agentic RAG",
+      "subtitle": "Turning chaotic multi-language chat exports into structured sentiment intelligence and hallucination-free answers.",
+      "category": "Agentic RAG",
+      "status": "Production",
+      "fitScore": "10/10",
+      "githubUrl": "https://github.com/JohnJodinho/whatsapp-sentiment-backend",
+      "liveUrl": "https://whatsapp-sentiment-frontend.vercel.app",
+      "techStack": ["FastAPI", "Python", "ChromaDB", "PostgreSQL", "Celery", "Redis", "ONNX Runtime", "Groq", "Docker", "React"],
+      "challenge": "WhatsApp is how millions of businesses in emerging markets communicate with customers, but messy multi-language chat histories make it impossible to track customer sentiment or answer business questions without hours of manual scrolling.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Built a production backend that routes queries through a four-tier architecture: deterministic lookups for simple questions, LLM-generated SQL for analytics, ChromaDB vector retrieval for conversational context, and grounded synthesis with strict source citations. Integrated a custom INT8 ONNX sentiment model running locally on CPU with Celery and Redis asynchronous workers.",
+      "beforeAfter": {
+        "before": "teams guessed customer sentiment or spent days combing through thousands of messages across English, Hausa, Yoruba, and Nigerian Pidgin.",
+        "after": "structured sentiment breakdown and citation-backed answers generated in seconds, with zero SQL injection risk and AST-validated queries."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "4-tier query routing reduces unnecessary LLM API calls and prevents hallucination",
+        "Local 384-dimensional embeddings and ChromaDB vector search for context retrieval",
+        "Sub-10ms sentiment inference via INT8 ONNX CPU execution without cloud GPU costs",
+        "Hardened with AST-level SQL validation, tenant isolation, and token-by-token SSE streaming"
+      ]
+    },
+    {
+      "id": "joule-dynamics",
+      "rank": 2,
+      "title": "Joule Dynamics: Agentic Real Estate Market Intelligence",
+      "subtitle": "Translating natural real estate questions into automated database queries, pricing alerts, and market benchmarks.",
+      "category": "Agentic RAG",
+      "status": "Live System",
+      "fitScore": "9.8/10",
+      "githubUrl": "https://github.com/JohnJodinho/joule-dynamics-server",
+      "liveUrl": "/real-estate",
+      "techStack": ["FastAPI", "PostgreSQL", "pgvector", "Supabase", "Groq", "Langfuse", "OpenTelemetry", "SSE Streaming", "Docker"],
+      "challenge": "Short-term rental managers lose bookings when competitors drop rates quietly. Checking listings by hand across multiple cities is exhausting and outdated by the time pricing decisions are made.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "An agentic backend with an 18-tool orchestration framework that translates plain English queries into parameterized PostgreSQL and pgvector operations. Uses local embeddings to dynamically select only the relevant tools per query, shrinking prompt token overhead by more than 75% while keeping multi-step reasoning intact.",
+      "beforeAfter": {
+        "before": "property managers spent hours cross-referencing Airbnb prices across spreadsheets and reacted days late to market price drops.",
+        "after": "multi-market rate tracking updated 4 times daily, with automated 25% spike anomaly detection and conversational intelligence."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "18 specialized tools covering geospatial search, volatility baselines, and CMA generation",
+        "Dynamic tool discovery via local embeddings cuts prompt tokens by over 75%",
+        "Full telemetry observability with Langfuse and OpenTelemetry tracking token spend and latency",
+        "Live tracking across 65+ listings in New York, Miami, Lagos, and Abuja"
+      ]
+    },
+    {
+      "id": "homa-afrique-gemma",
+      "rank": 3,
+      "title": "Homa (Afrique-Gemma-4B): Multilingual Agricultural LLM",
+      "subtitle": "Supervised fine-tuning of a 4B parameter model for Nigerian farmers across four indigenous languages.",
+      "category": "Model Training & Fine-Tuning",
+      "status": "Fine-Tuned Model",
+      "fitScore": "9.7/10",
+      "githubUrl": "https://huggingface.co/fallback-ai/Homa-Afrique-Gemma-4B",
+      "liveUrl": "https://huggingface.co/fallback-ai/Homa-Afrique-Gemma-4B",
+      "techStack": ["PyTorch", "Hugging Face TRL", "LoRA", "Gemma-3 4B", "GGUF", "llama.cpp", "Python"],
+      "challenge": "Smallholder farmers across Nigeria need timely guidance on crops, soil management, and livestock, but general-purpose LLMs lack localized agricultural knowledge and fail when spoken to in indigenous languages.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Led the fine-tuning pipeline for Homa as part of the Fallback AI team, adapting McGill-NLP/AfriqueGemma-4B using LoRA across attention and MLP layers. Trained on 5,500+ curated instruction-response pairs in English, Hausa, Igbo, and Yoruba, then merged weights and quantized to GGUF Q4_K_M for offline edge inference.",
+      "beforeAfter": {
+        "before": "extension workers had to travel physically to remote farms, while existing AI tools failed on regional terminology and crop diseases.",
+        "after": "a lightweight, quantized 4B model capable of running locally on modest hardware with explicit agricultural safety boundaries."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "5,500+ language-balanced instruction pairs covering crop management and livestock health",
+        "Evaluated on held-out test sets with 71.5% token prediction accuracy",
+        "Merged and quantized to GGUF Q4_K_M for offline execution via llama.cpp and Ollama",
+        "Built-in out-of-domain guardrails to refuse unsafe medical or non-farming queries"
+      ]
+    },
+    {
+      "id": "afroxlmr-mini",
+      "rank": 4,
+      "title": "AfroXLMR-mini: Nigerian Multilingual Sentiment Model",
+      "subtitle": "End-to-end transformer fine-tuning and INT8 quantization for sub-10ms CPU inference.",
+      "category": "Model Training & Fine-Tuning",
+      "status": "Fine-Tuned Model",
+      "fitScore": "9.5/10",
+      "githubUrl": "https://github.com/JohnJodinho/afroxlmr-mini-nigerian-sentiment",
+      "liveUrl": "https://huggingface.co/JohnAlbarkaIbrahim/afroxlmr-mini-nigerian-sentiment",
+      "techStack": ["PyTorch", "Hugging Face Transformers", "Afro-XLMR", "ONNX Runtime", "Python", "INT8 Quantization"],
+      "challenge": "Off-the-shelf sentiment models crumble when processing West African text because people blend English with Nigerian Pidgin, Hausa, Yoruba, and Igbo in everyday conversations.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Designed a two-stage transfer learning pipeline starting from Davlan/afro-xlmr-mini. Pre-trained across 140,256 multilingual samples, followed by domain adaptation on 1,058 anonymized WhatsApp chat messages. Optimized the PyTorch model into INT8 ONNX for cost-effective CPU serving.",
+      "beforeAfter": {
+        "before": "sentiment classification accuracy on Nigerian Pidgin sat below 60% with heavy cloud GPU hosting bills.",
+        "after": "94.29% accuracy and 94.13% Macro F1 on WhatsApp chats, running in 8.2ms on basic CPU instances."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "140,256 training samples spanning 5 regional languages",
+        "94.29% accuracy and 96.25% Macro F1 on Nigerian Pidgin test splits",
+        "Storage reduced from 469.9 MB to 112.9 MB (76% reduction) via dynamic INT8 quantization",
+        "Single-sample CPU inference latency dropped from 42ms to 8.2ms"
+      ]
+    },
+    {
+      "id": "gemini-rag",
+      "rank": 5,
+      "title": "Google Gemini RAG: Multi-Modal Document Intelligence",
+      "subtitle": "Accurate Q&A over complex PDF manuals, technical drawings, and data tables with source citations.",
+      "category": "Agentic RAG",
+      "status": "Open Source",
+      "fitScore": "8.8/10",
+      "githubUrl": "https://github.com/JohnJodinho/google-gemini-rag-app",
+      "techStack": ["Google Gemini API", "FAISS", "PyMuPDF", "Python", "Embeddings", "Streamlit"],
+      "challenge": "Real-world engineering documents and technical reports pack crucial data into charts, schematics, and multi-column tables that basic text extractors mangle into gibberish.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Developed a specialized RAG pipeline that pairs Google Gemini with FAISS vector indexing. Extracts and chunks content from text, tables, and images within PDFs, applying fuzzy document matching, duplicate detection, and explicit source attribution with confidence scoring.",
+      "beforeAfter": {
+        "before": "analysts had to manually scan 100-page operational manuals and risk missing vital figures tucked inside diagrams.",
+        "after": "instant document retrieval with exact page citations and confidence scores, cutting verification time down to seconds."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "Multi-modal chunking capable of extracting tables, visual diagrams, and dense text",
+        "FAISS vector indexing with persistent storage for rapid local retrieval",
+        "Strict citation and attribution rules to suppress hallucination",
+        "Fuzzy matching engine to handle misspelled queries and document titles"
+      ]
+    },
+    {
+      "id": "nexus-audit-crawler",
+      "rank": 6,
+      "title": "Nexus: Distributed Technical Audit Crawler & MCP Query Engine",
+      "subtitle": "High-throughput distributed crawling paired with Model Context Protocol tools for AI agents.",
+      "category": "Data & Web Intelligence",
+      "status": "Open Source",
+      "fitScore": "8.2/10",
+      "githubUrl": "https://github.com/JohnJodinho/nexus-audit-crawler",
+      "techStack": ["Python", "AsyncIO", "Redis Streams", "PostgreSQL", "Playwright", "MCP", "Docker", "Pytest"],
+      "challenge": "Deep technical website audits require crawling thousands of dynamic pages without getting blocked, while giving AI agents a clean way to inspect audit findings programmatically.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Architected a distributed web audit system using Redis Streams and consumer groups. It features a dual-engine crawler that starts with lightweight HTTP fetching and escalates to headless Playwright browsers only for JavaScript-heavy pages. Exposes an MCP adapter with 6 tools so AI agents can trigger audits and query findings.",
+      "beforeAfter": {
+        "before": "audits were slow, crashed on dynamic sites, and produced static spreadsheets that AI assistants could not interact with.",
+        "after": "fault-tolerant distributed crawling with dead-letter recovery and native MCP tools for autonomous AI agents."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "6-tool Model Context Protocol (MCP) adapter enabling AI agents to conduct site audits",
+        "Dual-engine architecture with automatic escalation to headless browser execution",
+        "Redis Streams coordination with token-bucket rate limiting and stale-task reclamation",
+        "106 automated tests ensuring zero crawl state corruption or worker dropouts"
+      ]
+    },
+    {
+      "id": "price-monitor-lead-gen",
+      "rank": 7,
+      "title": "Autonomous Price Monitor & B2B Lead Generator",
+      "subtitle": "Cost-efficient tiered extraction combining deterministic scraping with LLM fallback across three specialized engines.",
+      "category": "Data & Web Intelligence",
+      "status": "Production",
+      "fitScore": "7.8/10",
+      "githubUrl": "https://github.com/JohnJodinho/price_monitor_lead_gen",
+      "techStack": ["Python", "SQLAlchemy Async", "PostgreSQL", "curl_cffi", "Scrapling", "Groq", "GitHub Actions"],
+      "challenge": "Web scraping pipelines break whenever websites update their layout. Sending every scraped page to an LLM for parsing fixes the breakage, but it explodes API bills.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Built a unified background scraping engine with three autonomous workers: e-commerce price monitoring, real estate rate tracking, and B2B lead generation. Relies on StealthyFetcher with curl_cffi and Scrapling for anti-bot bypass, using fast Tier-1 regex and DOM extraction first, with automated Groq and LLaMA-3 fallback only when layouts mutate.",
+      "beforeAfter": {
+        "before": "scrapers broke weekly requiring manual code fixes, or cost hundreds of dollars in unnecessary LLM token fees.",
+        "after": "fully autonomous daily runs via GitHub Actions that repair themselves when websites change, keeping token costs near zero."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "Tiered extraction saves over 90% in token spend by reserving LLMs for structural fallbacks",
+        "Three distinct engines: retail price tracking, booking rate monitoring, and B2B prospecting",
+        "Stealthy HTTP fetching using curl_cffi and Scrapling to evade bot detection",
+        "Serverless cron execution powered by scheduled GitHub Actions workflows writing to PostgreSQL"
+      ]
+    },
+    {
+      "id": "smart-image-gallery",
+      "rank": 8,
+      "title": "VectorGallery: Multimodal CLIP Embeddings & Vector Search",
+      "subtitle": "Semantic image discovery and similarity retrieval integrated into live e-commerce.",
+      "category": "Agentic RAG",
+      "status": "Production",
+      "fitScore": "7.2/10",
+      "githubUrl": "https://github.com/JohnJodinho/smart_image_gallery",
+      "techStack": ["FastAPI", "CLIP", "HNSW Vector Index", "Python", "Docker"],
+      "challenge": "Traditional keyword search on e-commerce sites fails when shoppers describe visual styles (such as vintage denim jacket with brass buttons) instead of typing exact catalog titles.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Built at Zibeh Institute of Technology and integrated into a live retail store in partnership with their engineering team. Converts product imagery and text queries into 512-dimensional multimodal CLIP vectors, indexed with HNSW for sub-second visual similarity search.",
+      "beforeAfter": {
+        "before": "shoppers got zero results if their search terms did not match exact product names or tags.",
+        "after": "natural language visual search and image-to-image similarity that lifted search retrieval speed by 85%."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "512-dimensional multimodal CLIP embeddings for text-to-image and image-to-image retrieval",
+        "HNSW vector indexing delivering sub-second similarity matching across catalog items",
+        "Dual persistence model with JSONL ground truth to prevent index desynchronization",
+        "Directly integrated into a live production store catalog"
+      ]
+    },
+    {
+      "id": "nigeria-humanitarian-platform",
+      "rank": 9,
+      "title": "N-HIP: Nigeria Humanitarian Intelligence Platform",
+      "subtitle": "Automated ETL and spatial data engineering for crisis response and resource allocation across Nigeria.",
+      "category": "Data & Web Intelligence",
+      "status": "Open Source",
+      "fitScore": "6.8/10",
+      "githubUrl": "https://github.com/JohnJodinho/nigeria-humanitarian-intelligence-platform",
+      "liveUrl": "https://app.powerbi.com/view?r=eyJrIjoiMjYwNWNkMGQtMmQ3NS00OTI2LThkODktNDYyZDhhNGYxMmEwIiwidCI6ImRhOWM1Yzg5LWI2MmEtNDdhNC05MmEyLTY4Y2FjNjFmYTg1YyIsImMiOjh9&pageName=ad3927a0e6f554a8cdb5",
+      "techStack": ["Python 3.12", "PostgreSQL 17", "PostGIS 3.4", "Pydantic", "GitHub Actions", "Power BI Service"],
+      "challenge": "Humanitarian response teams in Nigeria frequently work with fragmented reports from NGOs and government agencies, making it hard to see where aid is urgently needed during crises.",
+      "solutionLabel": "HOW THIS WORKS",
+      "solution": "Automated end-to-end data pipeline extracting humanitarian indicators from the United Nations OCHA Humanitarian Data Exchange (HDX HAPI v2). Enforces Pydantic validation, aligns PostGIS boundaries across all 37 States and 774 Local Government Areas, stores relational facts in Supabase PostgreSQL, and serves interactive SQL data marts to a live Power BI Service report.",
+      "beforeAfter": {
+        "before": "relief coordinators manually stitched inconsistent spreadsheets together, slowing down critical field decisions.",
+        "after": "automated daily pipeline delivering clean, geographically grounded operational intelligence to field leaders via live cloud dashboards."
+      },
+      "resultsLabel": "KEY OUTCOMES & METRICS",
+      "results": [
+        "Live interactive Power BI Service report with demographic and cluster vulnerability heatmaps",
+        "Automated daily ETL pipeline extracting from UN OCHA HDX HAPI v2 via GitHub Actions",
+        "Spatial data normalization using PostGIS across all 37 States and 774 Nigerian LGAs",
+        "Pydantic data contract validation preventing malformed or duplicated crisis records"
+      ]
     }
   ]
 }
