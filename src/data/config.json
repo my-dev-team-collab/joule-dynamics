@@ -17,11 +17,14 @@
   },
   "profile": {
     "name": "John Albarka Ibrahim",
-    "role": "AI / ML Engineer & Systems Architect",
+    "role": "AI Engineer",
     "headline": "John Albarka Ibrahim",
-    "subheadline": "AI / ML Engineer & Systems Architect building production Agentic RAG backends, fine-tuned multilingual LLMs, and high-throughput data architectures with industrial engineering rigor.",
+    "subheadline": "AI Engineer building production Agentic RAG backends, fine-tuned multilingual LLMs, and high-throughput data architectures with industrial engineering rigor.",
     "cvUrl": "/cv/John_Albarka_Ibrahim_CV.pdf",
-    "location": "Nigeria (Available for Global Remote & Relocation)"
+    "cvPdfUrl": "/cv/John_Albarka_Ibrahim_CV.pdf",
+    "cvDocxUrl": "/cv/John_Albarka_Ibrahim_CV.docx",
+    "location": "Nigeria",
+    "availability": ""
   },
   "experience": [
     {
@@ -80,31 +83,35 @@
   "certifications": [
     {
       "id": "ai-102",
-      "title": "Microsoft Certified: Azure AI Engineer Associate",
+      "title": "Microsoft Certified: Azure AI Engineer Associate (AI-102)",
       "issuer": "Microsoft",
       "year": "2024",
-      "code": "AI-102"
+      "code": "AI-102",
+      "credentialUrl": "https://learn.microsoft.com/api/credentials/share/en-gb/JohnIbrahim-5208/F16A875BAAD30AB6?sharingId=45BC9760803DA596"
     },
     {
       "id": "ai-900",
-      "title": "Microsoft Certified: Azure AI Fundamentals",
+      "title": "Microsoft Certified: Azure AI Fundamentals (AI-900)",
       "issuer": "Microsoft",
       "year": "2024",
-      "code": "AI-900"
+      "code": "AI-900",
+      "credentialUrl": "https://learn.microsoft.com/api/credentials/share/en-gb/JohnIbrahim-5208/6B0E9423F3A3C06B?sharingId=45BC9760803DA596"
     },
     {
       "id": "dp-900",
-      "title": "Microsoft Certified: Azure Data Fundamentals",
+      "title": "Microsoft Certified: Azure Data Fundamentals (DP-900)",
       "issuer": "Microsoft",
       "year": "2023",
-      "code": "DP-900"
+      "code": "DP-900",
+      "credentialUrl": "https://learn.microsoft.com/api/credentials/share/en-gb/JohnIbrahim-5208/88F212D81E7E1078?sharingId=45BC9760803DA596"
     },
     {
       "id": "az-900",
-      "title": "Microsoft Certified: Azure Fundamentals",
+      "title": "Microsoft Certified: Azure Fundamentals (AZ-900)",
       "issuer": "Microsoft",
       "year": "2023",
-      "code": "AZ-900"
+      "code": "AZ-900",
+      "credentialUrl": "https://learn.microsoft.com/api/credentials/share/en-gb/JohnIbrahim-5208/6C8CACE8E8187B06?sharingId=45BC9760803DA596"
     },
     {
       "id": "michigan-python",
@@ -508,6 +515,7 @@
       "isFeatured": true,
       "title": "SentimentScope: WhatsApp Sentiment Intelligence & Agentic RAG",
       "subtitle": "Turning chaotic multi-language chat exports into structured sentiment intelligence and hallucination-free answers.",
+      "businessUseCase": "Analyzes multi-language WhatsApp chat exports to track customer sentiment across regional languages and answer business questions with verifiable citations.",
       "category": "Agentic RAG",
       "status": "Production",
       "highlightMetric": "Sub-10ms CPU Inference",
@@ -536,6 +544,7 @@
       "isFeatured": true,
       "title": "Joule Dynamics: Agentic Real Estate Market Intelligence",
       "subtitle": "Translating natural real estate questions into automated database queries, pricing alerts, and market benchmarks.",
+      "businessUseCase": "Automates competitor rate tracking and price spike detection across short-term rental listings so property managers do not lose bookings to quiet rate drops.",
       "category": "Agentic RAG",
       "status": "Live Pilot",
       "highlightMetric": "18-Tool Dynamic Gating",
@@ -564,6 +573,7 @@
       "isFeatured": true,
       "title": "Homa (Afrique-Gemma-4B): Multilingual Agricultural LLM",
       "subtitle": "Supervised fine-tuning of a 4B parameter model for Nigerian farmers across four indigenous languages.",
+      "businessUseCase": "Delivers localized agricultural guidance to smallholder farmers in four indigenous languages (English, Hausa, Igbo, Yoruba) with an offline edge model.",
       "category": "Model Training & Fine-Tuning",
       "status": "Fine-Tuned Model",
       "highlightMetric": "4B Gemma SFT / Q4 GGUF",
@@ -592,6 +602,7 @@
       "isFeatured": true,
       "title": "AfroXLMR-mini: Nigerian Multilingual Sentiment Model",
       "subtitle": "End-to-end transformer fine-tuning and INT8 quantization for sub-10ms CPU inference.",
+      "businessUseCase": "Classifies sentiment in mixed Nigerian Pidgin and regional dialects on cost-effective CPU servers without requiring high-cost cloud GPUs.",
       "category": "Model Training & Fine-Tuning",
       "status": "Fine-Tuned Model",
       "highlightMetric": "94.29% Macro F1 / 8.2ms INT8",
@@ -640,6 +651,7 @@
       ],
       "title": "Google Gemini RAG: Multi-Modal Document Intelligence",
       "subtitle": "Accurate Q&A over complex PDF manuals, technical drawings, and data tables with source citations.",
+      "businessUseCase": "Enables teams to search complex PDF engineering manuals and diagrams with question answering backed by exact page citations.",
       "category": "Agentic RAG",
       "status": "Open Source",
       "highlightMetric": "Multi-Modal FAISS Retrieval",
@@ -692,6 +704,7 @@
       ],
       "title": "Nexus: Distributed Technical Audit Crawler & MCP Query Engine",
       "subtitle": "High-throughput distributed crawling paired with Model Context Protocol tools for AI agents.",
+      "businessUseCase": "Conducts high-throughput technical website audits and provides Model Context Protocol (MCP) tools for autonomous AI agents to query findings.",
       "category": "Data & Web Intelligence",
       "status": "Open Source",
       "highlightMetric": "106 Automated Tests / MCP",
@@ -739,6 +752,7 @@
       ],
       "title": "Autonomous Price Monitor & B2B Lead Generator",
       "subtitle": "Cost-efficient tiered extraction combining deterministic scraping with LLM fallback across three specialized engines.",
+      "businessUseCase": "Maintains automated price monitoring, booking rate checks, and B2B prospecting pipelines that self-repair on layout changes while minimizing token expenses.",
       "category": "Data & Web Intelligence",
       "status": "Production",
       "highlightMetric": ">90% Token Reduction / Tiered",
@@ -786,6 +800,7 @@
       ],
       "title": "VectorGallery: Multimodal CLIP Embeddings & Vector Search",
       "subtitle": "Semantic image discovery and similarity retrieval integrated into live e-commerce.",
+      "businessUseCase": "Integrates multimodal visual and descriptive search into online store catalogs so shoppers can find products using descriptive phrases and photos.",
       "category": "Agentic RAG",
       "status": "Production",
       "highlightMetric": "512D CLIP / HNSW Vectors",
@@ -838,6 +853,7 @@
       ],
       "title": "N-HIP: Nigeria Humanitarian Intelligence Platform",
       "subtitle": "Automated ETL and spatial data engineering for crisis response and resource allocation across Nigeria.",
+      "businessUseCase": "Aggregates daily United Nations humanitarian indicators into standardized spatial data and interactive reports for crisis response coordination across all 37 States and 774 LGAs.",
       "category": "Data & Web Intelligence",
       "status": "Open Source",
       "highlightMetric": "PostGIS 37 States / 774 LGAs",
@@ -886,6 +902,7 @@
       ],
       "title": "Smart Assistive Wheelchair: Microcontroller Sensor Fusion & Edge Obstacle Avoidance",
       "subtitle": "Multi-sensor collision avoidance, embedded firmware, and physical chassis engineering for mobility assistance.",
+      "businessUseCase": "Provides an affordable, durable assistive wheelchair with real-time sensor fusion for automatic obstacle detection and emergency braking.",
       "category": "Embedded & Robotics",
       "status": "Applied Research",
       "highlightMetric": "100kg Chassis / <50ms Sensing",

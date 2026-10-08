@@ -17,9 +17,10 @@ interface TowerMeta {
   x: number;
   y: number;
   crownType: "routing" | "quant" | "conveyor" | "ultrasonic";
-  leaderSide: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-  leaderTarget: [number, number];
-  leaderTextPos: [number, number];
+  leaderElbow: [number, number];
+  leaderShelfEnd: [number, number];
+  titlePos: [number, number];
+  countPos: [number, number];
   textAnchor: "start" | "end";
 }
 
@@ -50,48 +51,52 @@ export function PortfolioIsoFigure({
       id: "agentic-rag",
       category: "Agentic RAG",
       shortName: "Agentic RAG",
-      x: -110,
-      y: -15,
+      x: -125,
+      y: -20,
       crownType: "routing",
-      leaderSide: "top-left",
-      leaderTarget: [85, 42],
-      leaderTextPos: [15, 38],
+      leaderElbow: [140, 74],
+      leaderShelfEnd: [20, 74],
+      titlePos: [20, 50],
+      countPos: [20, 68],
       textAnchor: "start",
     },
     {
       id: "model-training",
       category: "Model Training & Fine-Tuning",
       shortName: "Model Training & Fine-Tuning",
-      x: -15,
-      y: -110,
+      x: -20,
+      y: -125,
       crownType: "quant",
-      leaderSide: "top-right",
-      leaderTarget: [475, 42],
-      leaderTextPos: [545, 38],
+      leaderElbow: [500, 74],
+      leaderShelfEnd: [620, 74],
+      titlePos: [620, 50],
+      countPos: [620, 68],
       textAnchor: "end",
     },
     {
       id: "data-intel",
       category: "Data & Web Intelligence",
       shortName: "Data & Web Intelligence",
-      x: -45,
-      y: 75,
+      x: -50,
+      y: 85,
       crownType: "conveyor",
-      leaderSide: "bottom-left",
-      leaderTarget: [85, 290],
-      leaderTextPos: [15, 286],
+      leaderElbow: [140, 406],
+      leaderShelfEnd: [20, 406],
+      titlePos: [20, 424],
+      countPos: [20, 442],
       textAnchor: "start",
     },
     {
       id: "embedded-robotics",
       category: "Embedded & Robotics",
       shortName: "Embedded & Robotics",
-      x: 75,
-      y: -45,
+      x: 85,
+      y: -50,
       crownType: "ultrasonic",
-      leaderSide: "bottom-right",
-      leaderTarget: [475, 290],
-      leaderTextPos: [545, 286],
+      leaderElbow: [500, 406],
+      leaderShelfEnd: [620, 406],
+      titlePos: [620, 424],
+      countPos: [620, 442],
       textAnchor: "end",
     },
   ];
@@ -111,8 +116,8 @@ export function PortfolioIsoFigure({
   // Isometric projection constants: 30-degree angle
   const C = Math.cos(Math.PI / 6);
   const S = Math.sin(Math.PI / 6);
-  const OX = 280;
-  const OY = 180;
+  const OX = 320;
+  const OY = 240;
 
   const P = (x: number, y: number, z: number): [number, number] => [
     (x - y) * C + OX,
@@ -204,12 +209,12 @@ export function PortfolioIsoFigure({
     }
   };
 
-  // Dimensions
-  const W = 62;
-  const D = 62;
-  const FLOOR_H = 15;
-  const FLOOR_GAP = 3;
-  const BASE_Z = 6;
+  // Dimensions: taller towers so each floor is a clearly defined, hoverable band
+  const W = 68;
+  const D = 68;
+  const FLOOR_H = 26;
+  const FLOOR_GAP = 5;
+  const BASE_Z = 8;
 
   // Selected state info
   const selectedCount =
@@ -220,24 +225,14 @@ export function PortfolioIsoFigure({
   return (
     <div
       ref={containerRef}
-      className="w-full max-w-[560px] mx-auto select-none"
+      className="w-full select-none flex flex-col items-center"
     >
-      <div className="relative rounded-sm border border-border bg-card p-4">
-        {/* Caption Header: Plain words */}
-        <div className="flex items-center justify-between pb-3 border-b border-border text-sm font-sans">
-          <span className="font-semibold text-foreground">Filter by domain</span>
-          <span className="text-muted-foreground text-xs sm:text-sm font-mono">
-            {selectedCategory !== "All"
-              ? `${selectedCategory} (${selectedCount})`
-              : "Select a tower to filter"}
-          </span>
-        </div>
-
-        {/* Interactive SVG Stage */}
-        <div className="relative aspect-[14/10] w-full my-2">
+      <div className="relative w-full">
+        {/* Interactive SVG Stage without constricting outer box */}
+        <div className="relative w-full">
           <svg
-            viewBox="0 0 560 380"
-            className="w-full h-full block"
+            viewBox="0 0 640 480"
+            className="w-full h-auto aspect-[4/3] block"
             role="region"
             aria-label="Interactive isometric domain filter figure"
           >
@@ -292,10 +287,10 @@ export function PortfolioIsoFigure({
 
             {/* Base Motherboard Ground Plate */}
             {(() => {
-              const bX = -135;
-              const bY = -135;
-              const bW = 270;
-              const bD = 270;
+              const bX = -155;
+              const bY = -155;
+              const bW = 310;
+              const bD = 310;
               const p1 = P(bX + bW, bY, 0);
               const p2 = P(bX + bW, bY + bD, 0);
               const p3 = P(bX, bY + bD, 0);
@@ -332,10 +327,10 @@ export function PortfolioIsoFigure({
                   {/* Grid Circuit Traces on Base Top */}
                   {(() => {
                     const cCenter = P(0, 0, BASE_Z + 0.2);
-                    const cT0 = P(-80, 15, BASE_Z + 0.2);
-                    const cT1 = P(15, -80, BASE_Z + 0.2);
-                    const cT2 = P(-15, 105, BASE_Z + 0.2);
-                    const cT3 = P(105, -15, BASE_Z + 0.2);
+                    const cT0 = P(-95, 15, BASE_Z + 0.2);
+                    const cT1 = P(15, -95, BASE_Z + 0.2);
+                    const cT2 = P(-15, 115, BASE_Z + 0.2);
+                    const cT3 = P(115, -15, BASE_Z + 0.2);
                     return (
                       <g
                         stroke="var(--iso-edge)"
@@ -857,19 +852,15 @@ export function PortfolioIsoFigure({
 
                   {/* Drafting Leader Lines and Always-Visible Labels */}
                   {(() => {
-                    const end = tower.leaderTarget;
-                    const textP = tower.leaderTextPos;
+                    const elbow = tower.leaderElbow;
+                    const shelfEnd = tower.leaderShelfEnd;
                     const anchor = anchorPt;
-
-                    // Compute intermediate elbow point
-                    const elbowX = end[0];
-                    const elbowY = anchor[1];
 
                     return (
                       <g className="pointer-events-none">
                         {/* Thin drafting leader line */}
                         <path
-                          d={`M ${anchor[0]} ${anchor[1]} L ${elbowX} ${elbowY} L ${end[0]} ${end[1]}`}
+                          d={`M ${anchor[0]} ${anchor[1]} L ${elbow[0]} ${elbow[1]} L ${shelfEnd[0]} ${shelfEnd[1]}`}
                           fill="none"
                           stroke={
                             isSelected || isHovered
@@ -892,20 +883,24 @@ export function PortfolioIsoFigure({
 
                         {/* Domain Category Label */}
                         <text
-                          x={textP[0]}
-                          y={textP[1]}
+                          x={tower.titlePos[0]}
+                          y={tower.titlePos[1]}
                           textAnchor={tower.textAnchor}
-                          className="font-sans font-semibold text-[13px] fill-foreground"
+                          fontSize="14"
+                          className="font-sans font-semibold text-[14px] fill-foreground"
+                          style={{ fontSize: "14px" }}
                         >
                           {tower.shortName}
                         </text>
 
                         {/* Project Count Label */}
                         <text
-                          x={textP[0]}
-                          y={textP[1] + 16}
+                          x={tower.countPos[0]}
+                          y={tower.countPos[1]}
                           textAnchor={tower.textAnchor}
-                          className="font-sans text-[12px] fill-muted-foreground"
+                          fontSize="12"
+                          className="font-mono text-[12px] fill-muted-foreground"
+                          style={{ fontSize: "12px" }}
                         >
                           {floorCount} {floorCount === 1 ? "project" : "projects"}
                         </text>
@@ -939,7 +934,7 @@ export function PortfolioIsoFigure({
         </div>
 
         {/* Readout Footer Strip: Never covers any block */}
-        <div className="flex items-center justify-between pt-3 border-t border-border text-sm font-sans min-h-[44px]">
+        <div className="flex items-center justify-between pt-3 border-t border-border/40 text-xs sm:text-sm font-sans min-h-[44px]">
           {hoveredProject ? (
             <p className="text-foreground truncate pr-2">
               <span className="font-semibold">{hoveredProject.title}</span>{" "}
@@ -960,13 +955,13 @@ export function PortfolioIsoFigure({
             </p>
           ) : (
             <p className="text-muted-foreground">
-              Select a tower or floor to filter.
+              Select a tower or floor to filter projects by domain.
             </p>
           )}
 
           <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground shrink-0">
             <span className="size-1.5 rounded-full bg-primary" />
-            <span>10 BUILDS</span>
+            <span>{projects.length} BUILDS</span>
           </div>
         </div>
       </div>

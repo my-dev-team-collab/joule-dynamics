@@ -129,10 +129,10 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
               <span>GitHub</span>
             </a>
           )}
-          {project.liveUrl && (
+          {project.liveUrl && !project.liveUrl.startsWith("/") && (
             <a
               href={project.liveUrl}
-              target={project.liveUrl.startsWith("/") ? "_self" : "_blank"}
+              target="_blank"
               rel="noopener noreferrer"
               aria-label="View live production demo"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-sm bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
@@ -144,8 +144,20 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
         </div>
       </div>
 
-      {/* Subtitle lead paragraph - normal font style */}
-      <p className="text-foreground text-sm sm:text-base leading-relaxed">
+      {/* Business Use Case at the top */}
+      {project.businessUseCase && (
+        <div className="rounded-sm border border-border/80 bg-background/60 p-3.5 space-y-1">
+          <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+            Business Use Case
+          </h4>
+          <p className="text-foreground text-sm sm:text-base leading-relaxed">
+            {project.businessUseCase}
+          </p>
+        </div>
+      )}
+
+      {/* Subtitle lead paragraph */}
+      <p className="text-foreground text-sm leading-relaxed">
         {project.subtitle}
       </p>
 

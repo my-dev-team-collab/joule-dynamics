@@ -46,7 +46,6 @@ export function WorkshopFloorFigure({
   // Request counter per cartridge
   const [counts, setCounts] = useState<{ [id: string]: number }>({});
   const [totalRequests, setTotalRequests] = useState<number>(0);
-  const [lastTrace, setLastTrace] = useState<string>("");
 
   // Active project for the detail panel
   const activeProject = useMemo(() => {
@@ -250,21 +249,12 @@ export function WorkshopFloorFigure({
   const minY = Math.min(...dProjections.map((p) => p[1]));
   const maxY = Math.max(...dProjections.map((p) => p[1]));
 
-  const margin = 0.08 * Math.max(maxX - minX, maxY - minY);
-  let vW = maxX - minX + 2 * margin;
-  let vH = maxY - minY + 2 * margin;
-  let ox = margin - minX;
-  let oy = margin - minY;
-  const aspect = 4 / 3;
-  if (vW / vH < aspect) {
-    const nw = vH * aspect;
-    ox += (nw - vW) / 2;
-    vW = nw;
-  } else {
-    const nh = vW / aspect;
-    oy += (nh - vH) / 2;
-    vH = nh;
-  }
+  const padX = 14;
+  const padY = 14;
+  const vW = maxX - minX + 2 * padX;
+  const vH = maxY - minY + 2 * padY;
+  const ox = padX - minX;
+  const oy = padY - minY;
 
   const viewBox = `0 0 ${vW.toFixed(1)} ${vH.toFixed(1)}`;
 
@@ -576,7 +566,6 @@ export function WorkshopFloorFigure({
     setActiveCartIdx(index);
     setAnimCounter((c) => c + 1);
 
-    const targetWorkerIdx = index % numWorkers;
     const newTotal = totalRequests + 1;
     setTotalRequests(newTotal);
 
@@ -584,10 +573,6 @@ export function WorkshopFloorFigure({
       ...prev,
       [targetProject.id]: (prev[targetProject.id] || 0) + 1,
     }));
-
-    const code = targetProject.bladeCode || targetProject.title.split(":")[0];
-    const workerName = activeTiers[targetWorkerIdx]?.title || `TIER ${targetWorkerIdx + 1}`;
-    setLastTrace(`${code.toLowerCase()} → ${workerName.toLowerCase()} · trace #${newTotal}`);
   };
 
   // Run activation sequence after render updates DOM
@@ -726,16 +711,16 @@ export function WorkshopFloorFigure({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <p className="text-[13px] font-mono font-normal tracking-normal text-muted-foreground uppercase">
-            // ARCHITECTURAL BLUEPRINTS · PRODUCTION PIPELINES
+            // ARCHITECTURAL BLUEPRINTS · PRODUCTION SYSTEMS
           </p>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            System Architecture & Service Pipelines
+            System Architecture Overview
           </h2>
         </div>
         <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
           <span className="inline-block size-2 rounded-full bg-accent" />
           <span>
-            {filteredCartridges.length} PRODUCTION SERVICES · {activeTiers.length} ARCHITECTURE TIERS
+            {filteredCartridges.length} SERVICES · {activeTiers.length} TIERS
           </span>
         </div>
       </div>
@@ -744,21 +729,23 @@ export function WorkshopFloorFigure({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column (8 of 12): Isometric System Stack */}
         <div className="lg:col-span-8 flex flex-col space-y-4">
-          <div className="system-fig relative w-full rounded-sm border border-border bg-card p-3 sm:p-5 overflow-hidden min-h-[580px] flex flex-col justify-between select-none">
-            {/* Top Plate Headers: Architecture Bus Interface */}
+          <div className="system-fig relative w-full rounded-sm border border-border bg-card p-2 sm:p-5 overflow-hidden flex flex-col justify-between select-none">
+            {/* Top Plate Headers */}
             <div className="flex items-center justify-between text-xs font-mono text-muted-foreground border-b border-border/40 pb-2 px-1">
               <span className="text-foreground font-semibold uppercase tracking-wider text-[11px]">
-                SERVICE PIPELINE RUNTIME
+                SYSTEM ARCHITECTURE MAP
               </span>
-              <span className="tracking-widest uppercase text-[11px]">INTERACTIVE ARCHITECTURE INSPECTOR</span>
+              <span className="tracking-wider uppercase text-[11px] hidden sm:inline">
+                INTERACTIVE COMPONENT SELECTOR
+              </span>
             </div>
 
             {/* Isometric SVG Canvas */}
-            <div className="w-full flex-1 flex items-center justify-center py-4">
+            <div className="w-full flex-1 flex items-center justify-center py-2 sm:py-4">
               <svg
                 ref={stageRef}
                 viewBox={viewBox}
-                className="w-full h-auto max-h-[540px] overflow-visible"
+                className="w-full h-auto max-h-[380px] sm:max-h-[520px] overflow-visible"
                 style={{ shapeRendering: "geometricPrecision" }}
               >
                 <defs>
@@ -793,13 +780,13 @@ export function WorkshopFloorFigure({
               </svg>
             </div>
 
-            {/* Bottom Telemetry HUD Bar */}
+            {/* Bottom Plain Caption */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-border/40 pt-3 px-1 text-xs font-mono">
               <span className="text-muted-foreground">
-                CLICK A SERVICE TO TEST PIPELINE ROUTING · KEYS 1-{filteredCartridges.length}
+                Select a service to highlight its architecture tiers (keys 1 to {filteredCartridges.length})
               </span>
               <div className="flex items-center gap-1.5 text-foreground font-semibold">
-                <span>{lastTrace || "idle · select a service to inspect flow"}</span>
+                <span>{activeProject ? `Selected: ${activeProject.title.split(":")[0]}` : "Select a service to inspect"}</span>
               </div>
             </div>
           </div>
@@ -819,7 +806,7 @@ export function WorkshopFloorFigure({
                   aria-selected={isSelected}
                   aria-pressed={isSelected}
                   onClick={() => sendRequest(idx)}
-                  className={`px-3 py-1.5 rounded-sm text-xs font-mono transition-all flex items-center gap-2 border ${
+                  className={`px-3 py-2 min-h-[44px] rounded-sm text-xs font-mono transition-all flex items-center gap-2 border ${
                     isSelected
                       ? "border-primary bg-primary/10 text-foreground font-bold shadow-sm"
                       : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-muted-foreground"
@@ -853,20 +840,20 @@ export function WorkshopFloorFigure({
                 </span>
               </div>
 
-              {/* Title and Subtitle */}
+              {/* Title and Business Use Case */}
               <div className="space-y-1.5">
                 <h3 className="text-lg font-bold tracking-tight text-foreground leading-snug">
                   {activeProject.title}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  {activeProject.subtitle}
+                  {activeProject.businessUseCase || activeProject.subtitle}
                 </p>
               </div>
 
               {/* Highlight Metric Callout */}
               <div className="rounded-sm border border-border/80 bg-background/50 p-3 space-y-1">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
-                  VERIFIED PRODUCTION IMPACT
+                  PRODUCTION METRIC
                 </span>
                 <span className="text-sm font-semibold text-foreground font-mono">
                   {activeProject.highlightMetric}
@@ -946,7 +933,7 @@ export function WorkshopFloorFigure({
                       <Github className="size-4" />
                     </a>
                   )}
-                  {activeProject.liveUrl && (
+                  {activeProject.liveUrl && !activeProject.liveUrl.startsWith("/") && (
                     <a
                       href={activeProject.liveUrl}
                       target="_blank"

@@ -57,6 +57,7 @@ export interface PortfolioProject {
   };
   resultsLabel: string;
   results: string[];
+  businessUseCase?: string;
   architectureDiagram?: string;
   isFeatured?: boolean;
   workshopMotif?: string;
@@ -80,6 +81,7 @@ export interface ProfessionalCertification {
   issuer: string;
   year: string;
   code?: string;
+  credentialUrl?: string;
 }
 
 export interface AcademicEducation {
