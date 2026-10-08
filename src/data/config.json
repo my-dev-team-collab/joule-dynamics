@@ -561,6 +561,7 @@
     {
       "id": "homa-afrique-gemma",
       "rank": 3,
+      "isFeatured": true,
       "title": "Homa (Afrique-Gemma-4B): Multilingual Agricultural LLM",
       "subtitle": "Supervised fine-tuning of a 4B parameter model for Nigerian farmers across four indigenous languages.",
       "category": "Model Training & Fine-Tuning",
@@ -616,6 +617,27 @@
     {
       "id": "gemini-rag",
       "rank": 5,
+      "bladeCode": "RAG-01",
+      "shortName": "GEMINI RAG",
+      "workshopMotif": "gemini-lens",
+      "chassisTiers": [
+        {
+          "title": "QUERY LENS",
+          "subtitle": "Confidence scoring & verified page anchors",
+          "badge": "ACTIVE",
+          "accent": true
+        },
+        {
+          "title": "FAISS INDEX",
+          "subtitle": "Dense similarity matching across indexed chunks",
+          "badge": "INDEXED"
+        },
+        {
+          "title": "DOC PARSER",
+          "subtitle": "Parses PDF layouts, CAD drawings, tables",
+          "badge": "ONLINE"
+        }
+      ],
       "title": "Google Gemini RAG: Multi-Modal Document Intelligence",
       "subtitle": "Accurate Q&A over complex PDF manuals, technical drawings, and data tables with source citations.",
       "category": "Agentic RAG",
@@ -642,7 +664,32 @@
     {
       "id": "nexus-audit-crawler",
       "rank": 6,
-      "isFeatured": true,
+      "bladeCode": "NEXUS-02",
+      "shortName": "NEXUS MCP",
+      "workshopMotif": "nexus-hub",
+      "chassisTiers": [
+        {
+          "title": "MCP ADAPTER",
+          "subtitle": "6-tool AI runtime for autonomous inspectors",
+          "badge": "ACTIVE",
+          "accent": true
+        },
+        {
+          "title": "REDIS BROKER",
+          "subtitle": "Token-bucket leases & dead-letter recovery",
+          "badge": "STREAMING"
+        },
+        {
+          "title": "WORKER FLEET",
+          "subtitle": "Async HTTP fast fetch & Playwright headless",
+          "badge": "106 TESTS PASS"
+        },
+        {
+          "title": "AUDIT LAKE",
+          "subtitle": "PostgreSQL relational state repository",
+          "badge": "SYNCED"
+        }
+      ],
       "title": "Nexus: Distributed Technical Audit Crawler & MCP Query Engine",
       "subtitle": "High-throughput distributed crawling paired with Model Context Protocol tools for AI agents.",
       "category": "Data & Web Intelligence",
@@ -669,6 +716,27 @@
     {
       "id": "price-monitor-lead-gen",
       "rank": 7,
+      "bladeCode": "APM-03",
+      "shortName": "PRICE WATCH",
+      "workshopMotif": "price-funnel",
+      "chassisTiers": [
+        {
+          "title": "REGEX PARSER",
+          "subtitle": "Deterministic parser capturing >90% of requests",
+          "badge": "ZERO COST"
+        },
+        {
+          "title": "LLAMA-3 ENGINE",
+          "subtitle": "Self-healing schema repair on mutated DOM",
+          "badge": "ADAPTIVE",
+          "accent": true
+        },
+        {
+          "title": "STEALTH CORE",
+          "subtitle": "curl_cffi & Scrapling anti-bot evasion",
+          "badge": "CRON LIVE"
+        }
+      ],
       "title": "Autonomous Price Monitor & B2B Lead Generator",
       "subtitle": "Cost-efficient tiered extraction combining deterministic scraping with LLM fallback across three specialized engines.",
       "category": "Data & Web Intelligence",
@@ -695,6 +763,27 @@
     {
       "id": "smart-image-gallery",
       "rank": 8,
+      "bladeCode": "VEC-04",
+      "shortName": "VECTOR CLIP",
+      "workshopMotif": "vector-space",
+      "chassisTiers": [
+        {
+          "title": "SEARCH API",
+          "subtitle": "Sub-second visual and semantic query routing",
+          "badge": "ONLINE"
+        },
+        {
+          "title": "HNSW GRAPH",
+          "subtitle": "High-dimensional nearest neighbor traversal",
+          "badge": "512D VECTOR",
+          "accent": true
+        },
+        {
+          "title": "CLIP ENCODER",
+          "subtitle": "ViT-B/32 multimodal vision and text weights",
+          "badge": "PRE-TRAINED"
+        }
+      ],
       "title": "VectorGallery: Multimodal CLIP Embeddings & Vector Search",
       "subtitle": "Semantic image discovery and similarity retrieval integrated into live e-commerce.",
       "category": "Agentic RAG",
@@ -721,6 +810,32 @@
     {
       "id": "nigeria-humanitarian-platform",
       "rank": 9,
+      "bladeCode": "NHIP-05",
+      "shortName": "N-HIP GIS",
+      "workshopMotif": "terrain-hex",
+      "chassisTiers": [
+        {
+          "title": "POWER BI CLOUD",
+          "subtitle": "Vulnerability matrices & demographic heatmaps",
+          "badge": "LIVE"
+        },
+        {
+          "title": "POSTGRES MART",
+          "subtitle": "Normalized crisis fact tables & SQL views",
+          "badge": "REPLICATED"
+        },
+        {
+          "title": "POSTGIS SPATIAL",
+          "subtitle": "37 States & 774 LGA boundary resolution",
+          "badge": "VALIDATED",
+          "accent": true
+        },
+        {
+          "title": "HDX INGEST",
+          "subtitle": "Automated daily ETL with Pydantic contracts",
+          "badge": "AUTOMATED"
+        }
+      ],
       "title": "N-HIP: Nigeria Humanitarian Intelligence Platform",
       "subtitle": "Automated ETL and spatial data engineering for crisis response and resource allocation across Nigeria.",
       "category": "Data & Web Intelligence",
@@ -748,6 +863,27 @@
     {
       "id": "assistive-wheelchair",
       "rank": 10,
+      "bladeCode": "WHEEL-06",
+      "shortName": "SMART WHEEL",
+      "workshopMotif": "wheel-path",
+      "chassisTiers": [
+        {
+          "title": "SAFETY BRAKE",
+          "subtitle": "Sub-50ms deterministic reaction & emergency stop",
+          "badge": "CRITICAL",
+          "accent": true
+        },
+        {
+          "title": "SENSOR FUSION",
+          "subtitle": "Ultrasonic distance arrays & infrared inputs",
+          "badge": "INTERRUPT"
+        },
+        {
+          "title": "PWM MOTOR DRV",
+          "subtitle": "High-torque PWM on 100kg steel chassis",
+          "badge": "12V DIRECT"
+        }
+      ],
       "title": "Smart Assistive Wheelchair: Microcontroller Sensor Fusion & Edge Obstacle Avoidance",
       "subtitle": "Multi-sensor collision avoidance, embedded firmware, and physical chassis engineering for mobility assistance.",
       "category": "Embedded & Robotics",

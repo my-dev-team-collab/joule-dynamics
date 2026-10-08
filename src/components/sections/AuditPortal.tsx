@@ -298,7 +298,7 @@ export default function AuditPortal() {
                         {contact.trustLine}
                       </p>
                       {contact.privacyLine && (
-                        <p className="text-center text-[10px] text-muted-foreground/70 leading-relaxed">
+                        <p className="text-center text-xs text-muted-foreground leading-relaxed">
                           {contact.privacyLine}
                         </p>
                       )}

@@ -135,9 +135,9 @@ export default function InteractiveLabs() {
                   <div className="h-3 w-3 rounded-full bg-green-500/80" />
 
                   {/* Fake path */}
-                  <div className="ml-3 flex items-center gap-1.5 text-zinc-500">
+                  <div className="ml-3 flex items-center gap-1.5 text-muted-foreground">
                     <Terminal className="size-3" />
-                    <span className="font-mono text-[10px] tracking-wide">
+                    <span className="font-mono text-xs tracking-wide">
                       joule-dynamics ~ api/v1/{lab.id}/stream
                     </span>
                   </div>
@@ -145,8 +145,8 @@ export default function InteractiveLabs() {
 
                 {/* Prompt line */}
                 <div className="px-4 pt-3 pb-1 flex items-center gap-2">
-                  <span className="font-mono text-[11px] text-green-400">$</span>
-                  <span className="font-mono text-[11px] text-zinc-500">
+                  <span className="font-mono text-xs text-green-400">$</span>
+                  <span className="font-mono text-xs text-muted-foreground">
                     curl -X POST /api/v1/{lab.id}/analyze --stream
                   </span>
                 </div>
@@ -160,10 +160,10 @@ export default function InteractiveLabs() {
 
                 {/* Status bar */}
                 <div className="border-t border-zinc-800 px-4 py-2 flex items-center justify-between bg-zinc-900/50">
-                  <span className="font-mono text-[10px] text-green-400">
+                  <span className="font-mono text-xs text-green-400">
                     ✓ 200 OK
                   </span>
-                  <span className="font-mono text-[10px] text-zinc-600">
+                  <span className="font-mono text-xs text-muted-foreground">
                     {lab.architecture.join(" · ")}
                   </span>
                 </div>

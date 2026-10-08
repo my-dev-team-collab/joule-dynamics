@@ -1,4 +1,5 @@
-import * as React from "react";
+import { useState, useEffect, Fragment } from "react";
+import type { PortfolioProject } from "@/types/data";
 import {
   Dialog,
   DialogContent,
@@ -10,14 +11,12 @@ import {
   DrawerContent,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Github, CheckCircle2 } from "lucide-react";
-import type { PortfolioProject } from "@/types/data";
 
 function useMediaQuery(query: string) {
-  const [value, setValue] = React.useState(false);
+  const [value, setValue] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     function onChange(event: MediaQueryListEvent) {
       setValue(event.matches);
     }
@@ -38,32 +37,80 @@ interface ProjectDetailModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+function ArchitectureFlow({ diagram }: { diagram: string }) {
+  const regex = /\[([^\]]+)\](?:\s*\(([^)]+)\))?/g;
+  const nodes: { title: string; detail?: string }[] = [];
+  let match;
+  while ((match = regex.exec(diagram)) !== null) {
+    nodes.push({ title: match[1], detail: match[2] });
+  }
+
+  if (nodes.length === 0) {
+    return (
+      <div className="p-3.5 rounded-sm bg-card border border-border">
+        <pre className="font-mono text-xs text-foreground whitespace-pre-wrap">{diagram}</pre>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2 p-3.5 rounded-sm border border-border bg-card/60">
+      <div className="flex flex-wrap items-center gap-2">
+        {nodes.map((node, i) => (
+          <Fragment key={i}>
+            <div className="flex flex-col p-2.5 rounded-sm border border-border bg-background min-w-[140px] max-w-[280px]">
+              <span className="font-mono text-xs font-semibold text-foreground leading-snug">
+                {node.title}
+              </span>
+              {node.detail && (
+                <span className="font-mono text-xs text-muted-foreground mt-0.5 leading-tight">
+                  {node.detail}
+                </span>
+              )}
+            </div>
+            {i < nodes.length - 1 && (
+              <span className="text-muted-foreground font-mono text-xs px-0.5">→</span>
+            )}
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetailModalProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (!project) return null;
 
-  const getStatusColor = (status: string) => {
-    if (status === "Live System") return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
-    if (status === "Live Pilot") return "bg-teal-500/10 text-teal-400 border-teal-500/20";
-    if (status === "Production") return "bg-cyan-500/10 text-cyan-500 border-cyan-500/20";
-    if (status === "Fine-Tuned Model") return "bg-purple-500/10 text-purple-500 border-purple-500/20";
-    if (status === "Open Source") return "bg-blue-500/10 text-blue-500 border-blue-500/20";
-    return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+  const getStatusBadge = (status: string) => {
+    let dotColor = "bg-muted-foreground";
+    if (status === "Production" || status === "Live System") {
+      dotColor = "bg-primary";
+    } else if (status === "Live Pilot" || status === "Applied Research") {
+      dotColor = "bg-accent";
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+        <span className={`size-1.5 rounded-full ${dotColor} shrink-0`} />
+        <span>{status}</span>
+      </span>
+    );
   };
 
   const Content = () => (
     <div className="flex flex-col gap-6 text-sm py-2">
-      {/* Top Badges and Highlight Metric */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className={`font-mono text-[10px] tracking-wider uppercase rounded-full ${getStatusColor(project.status)}`}>
-            {project.status}
-          </Badge>
-          <Badge variant="outline" className="font-mono text-[10px] tracking-wider uppercase rounded-full bg-primary/10 text-primary border-primary/25">
+      {/* Top Meta Strip: Status, Plain Metric, Category & Actions */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {getStatusBadge(project.status)}
+          <span className="text-muted-foreground font-mono text-xs">·</span>
+          <span className="font-mono text-xs font-semibold text-foreground">
             {project.highlightMetric}
-          </Badge>
-          <span className="text-[11px] font-mono text-muted-foreground hidden sm:inline">
+          </span>
+          <span className="text-muted-foreground font-mono text-xs">·</span>
+          <span className="text-xs font-mono text-muted-foreground">
             {project.category}
           </span>
         </div>
@@ -75,7 +122,8 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+              aria-label="View source code on GitHub"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-sm border border-border bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
             >
               <Github className="size-3.5" />
               <span>GitHub</span>
@@ -86,7 +134,8 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
               href={project.liveUrl}
               target={project.liveUrl.startsWith("/") ? "_self" : "_blank"}
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-colors"
+              aria-label="View live production demo"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-sm bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
             >
               <span>{project.status === "Fine-Tuned Model" ? "Hugging Face" : "Live Demo"}</span>
               <ExternalLink className="size-3.5" />
@@ -95,14 +144,14 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
         </div>
       </div>
 
-      {/* Subtitle */}
-      <p className="text-muted-foreground text-sm leading-relaxed italic">
-        "{project.subtitle}"
+      {/* Subtitle lead paragraph - normal font style */}
+      <p className="text-foreground text-sm sm:text-base leading-relaxed">
+        {project.subtitle}
       </p>
 
       {/* The Challenge */}
       <div className="flex flex-col gap-2">
-        <h4 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+        <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           The Challenge
         </h4>
         <p className="text-foreground leading-relaxed">
@@ -112,7 +161,7 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
 
       {/* How This Works */}
       <div className="flex flex-col gap-2">
-        <h4 className="font-mono text-[11px] font-bold tracking-widest text-primary uppercase">
+        <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           {project.solutionLabel || "How This Works"}
         </h4>
         <p className="text-foreground leading-relaxed">
@@ -120,45 +169,44 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
         </p>
       </div>
 
-      {/* Before & After Box */}
-      <div className="flex flex-col gap-2 p-4 bg-muted/30 rounded-lg border border-border">
-        <h4 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-1">
-          Before & After
-        </h4>
-        <div className="flex flex-col gap-3 text-xs sm:text-sm">
-          <div className="flex gap-2">
-            <span className="text-muted-foreground font-semibold shrink-0">Before:</span>
-            <span className="text-muted-foreground italic">{project.beforeAfter.before}</span>
-          </div>
-          <div className="flex gap-2">
-            <span className="text-foreground font-semibold shrink-0">After:</span>
-            <span className="text-foreground font-medium">{project.beforeAfter.after}</span>
-          </div>
+      {/* Before and After - 2 columns divided by a hairline */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-3 border-y border-border">
+        <div className="flex flex-col gap-1">
+          <span className="font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Before
+          </span>
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            {project.beforeAfter.before}
+          </p>
+        </div>
+        <div className="flex flex-col gap-1 sm:border-l sm:border-border sm:pl-4">
+          <span className="font-mono text-xs font-semibold text-foreground uppercase tracking-wider">
+            After
+          </span>
+          <p className="text-foreground text-xs leading-relaxed font-medium">
+            {project.beforeAfter.after}
+          </p>
         </div>
       </div>
 
-      {/* System Architecture & Flow */}
+      {/* System Architecture and Flow */}
       {project.architectureDiagram && (
         <div className="flex flex-col gap-2">
-          <h4 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+          <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
             System Architecture & Flow
           </h4>
-          <div className="p-3.5 rounded-lg bg-zinc-950/80 dark:bg-black/80 border border-border/80 overflow-x-auto assistant-scrollbar">
-            <pre className="font-mono text-[11px] sm:text-xs text-primary leading-relaxed select-text">
-              {project.architectureDiagram}
-            </pre>
-          </div>
+          <ArchitectureFlow diagram={project.architectureDiagram} />
         </div>
       )}
 
-      {/* Key Outcomes & Metrics */}
+      {/* Key Outcomes and Metrics */}
       <div className="flex flex-col gap-2">
-        <h4 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+        <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           {project.resultsLabel || "Key Outcomes & Metrics"}
         </h4>
-        <ul className="flex flex-col gap-2.5 text-foreground leading-relaxed">
+        <ul className="flex flex-col gap-2 text-foreground leading-relaxed">
           {project.results.map((result, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-xs sm:text-sm">
+            <li key={i} className="flex items-start gap-2 text-xs sm:text-sm">
               <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
               <span>{result}</span>
             </li>
@@ -167,15 +215,15 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
       </div>
 
       {/* Tech Stack */}
-      <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
-        <h4 className="font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+      <div className="flex flex-col gap-2 border-t border-border pt-4">
+        <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Technologies & Infrastructure
         </h4>
         <div className="flex flex-wrap gap-1.5">
           {project.techStack.map((tech, i) => (
             <span
               key={i}
-              className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-muted/60 text-foreground border border-border/50"
+              className="text-xs font-mono px-2 py-0.5 rounded-sm bg-muted text-foreground border border-border"
             >
               {tech}
             </span>
@@ -188,8 +236,8 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto assistant-scrollbar">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[768px] max-h-[85vh] overflow-y-auto assistant-scrollbar">
+          <DialogHeader className="sticky top-0 bg-background z-10 pb-3 border-b border-border">
             <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground text-left leading-snug">
               {project.title}
             </DialogTitle>

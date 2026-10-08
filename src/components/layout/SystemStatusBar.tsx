@@ -9,7 +9,7 @@ import config from "@/data/config.json";
 import type { RootConfig } from "@/types/data";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LogoIcon, LogoLockup } from "@/components/ui/Logo";
-import { Menu, X, FileText } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface TelemetryData {
@@ -45,12 +45,12 @@ export function SystemStatusBar() {
   }, []);
 
   const navLinks = [
-    { label: "PORTFOLIO", href: "/portfolio" },
-    { label: "LIVE SYSTEMS", href: "/live-systems" },
-    { label: "EXPERIENCE", href: "/#experience" },
-    { label: "SKILLS", href: "/#skills" },
-    { label: "ABOUT", href: "/#about" },
-    { label: "CONTACT", href: "/#contact" },
+    { label: "Solutions", href: "/#solutions" },
+    { label: "Portfolio", href: "/portfolio" },
+    { label: "Live Systems", href: "/live-systems" },
+    { label: "How It Works", href: "/#how-it-works" },
+    { label: "About", href: "/#about" },
+    { label: "Get Audit", href: "/#contact" },
   ];
 
   return (
@@ -63,17 +63,17 @@ export function SystemStatusBar() {
             <a href="/" className="hover:opacity-80 transition-opacity flex items-center">
               {/* Icon-only on mobile, full lockup on sm+ */}
               <LogoIcon className="h-5 w-auto sm:hidden" />
-              <LogoLockup className="h-5 w-auto hidden sm:block text-zinc-900 dark:text-white" />
+              <LogoLockup className="h-5 w-auto hidden sm:block text-foreground" />
             </a>
           </span>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-5">
+          <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
               <a 
                 key={link.label}
                 href={link.href} 
-                className="font-mono text-[10px] tracking-widest text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                className="font-sans text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               >
                 {link.label}
               </a>
@@ -84,15 +84,14 @@ export function SystemStatusBar() {
         {/* Center / Right: Dev Hub badge + telemetry + theme toggle */}
         <div className="flex items-center gap-3 ml-auto">
 
-          {/* ── Dev Hub Badge ── */}
+          {/* Dev Hub Badge */}
           <div className="relative hidden sm:flex">
             <button
               type="button"
               className="
-                flex items-center gap-1.5 rounded-sm border border-amber-500/30
-                bg-amber-500/8 px-2.5 py-1 font-mono text-[10px] tracking-wide
-                text-amber-400 hover:border-amber-500/60 hover:bg-amber-500/15
-                transition-all duration-150 cursor-help
+                flex items-center gap-1.5 rounded-sm border border-border
+                bg-warning text-warning-foreground px-2.5 py-1 font-mono text-xs
+                font-semibold hover:opacity-90 transition-opacity cursor-help
               "
               aria-label={devHub.tooltip}
               onMouseEnter={() => setTooltipVisible(true)}
@@ -108,7 +107,7 @@ export function SystemStatusBar() {
               <div
                 role="tooltip"
                 className="
-                  absolute top-full left-0 mt-2 z-50 w-72 rounded-md border border-border
+                  absolute top-full left-0 mt-2 z-50 w-72 rounded-sm border border-border
                   bg-popover p-3 text-xs text-muted-foreground leading-relaxed shadow-lg
                 "
               >
@@ -117,46 +116,30 @@ export function SystemStatusBar() {
             )}
           </div>
 
-          {/* ── Telemetry readouts (hidden on very small screens) ── */}
+          {/* Telemetry readouts (hidden on very small screens) */}
           {telemetry && (
             <div className="hidden md:flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[10px] text-muted-foreground">UPTIME</span>
-                <span className="font-mono text-[10px] text-primary font-bold">{telemetry.uptime_pct}%</span>
+                <span className="font-mono text-xs text-muted-foreground">UPTIME</span>
+                <span className="font-mono text-xs text-primary font-bold">{telemetry.uptime_pct}%</span>
               </div>
 
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[10px] text-muted-foreground">LATENCY</span>
-                <span className="font-mono text-[10px] text-primary font-bold">{telemetry.latency_ms}ms</span>
+                <span className="font-mono text-xs text-muted-foreground">LATENCY</span>
+                <span className="font-mono text-xs text-primary font-bold">{telemetry.latency_ms}ms</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${telemetry.status === 'ACTIVE' ? 'bg-green-500' : 'bg-amber-500'}`} />
-                  <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${telemetry.status === 'ACTIVE' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-primary" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                 </span>
-                <span className={`font-mono text-[10px] font-bold tracking-widest ${telemetry.status === 'ACTIVE' ? 'text-green-400' : 'text-amber-400'}`}>
+                <span className="font-mono text-xs font-bold text-primary">
                   {telemetry.status}
                 </span>
               </div>
             </div>
           )}
-
-          {/* CV Action */}
-          <a
-            href="/cv/John_Albarka_Ibrahim_CV.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              hidden sm:inline-flex items-center gap-1.5 rounded-sm border border-primary/40
-              bg-primary/10 px-2.5 py-1 font-mono text-[10px] tracking-wider font-semibold
-              text-primary hover:bg-primary/20 hover:border-primary
-              transition-all duration-150
-            "
-          >
-            <FileText className="size-3" />
-            <span>CV / RESUME</span>
-          </a>
 
           {/* Theme toggle: always visible */}
           <ThemeToggle />
@@ -174,28 +157,18 @@ export function SystemStatusBar() {
 
       {/* Mobile Nav Dropdown */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-border bg-background px-4 py-3 shadow-lg">
+        <div className="lg:hidden border-t border-border bg-background px-4 py-3">
           <div className="flex flex-col gap-3">
             {navLinks.map((link) => (
               <a 
                 key={link.label}
                 href={link.href} 
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-mono text-[10px] tracking-widest text-muted-foreground hover:text-primary transition-colors py-1"
+                className="font-sans text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-1"
               >
                 {link.label}
               </a>
             ))}
-            <a 
-              href="/cv/John_Albarka_Ibrahim_CV.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-              className="font-mono text-[10px] tracking-widest text-primary font-bold py-1 flex items-center gap-1.5"
-            >
-              <FileText className="size-3" />
-              <span>DOWNLOAD CV (PDF)</span>
-            </a>
           </div>
         </div>
       )}

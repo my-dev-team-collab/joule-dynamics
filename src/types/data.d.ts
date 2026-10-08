@@ -30,6 +30,13 @@ export interface OperationalDeployment {
   metrics: string[];
 }
 
+export interface ChassisTier {
+  title: string;
+  subtitle: string;
+  badge: string;
+  accent?: boolean;
+}
+
 export interface PortfolioProject {
   id: string;
   rank: number;
@@ -52,6 +59,10 @@ export interface PortfolioProject {
   results: string[];
   architectureDiagram?: string;
   isFeatured?: boolean;
+  workshopMotif?: string;
+  bladeCode?: string;
+  shortName?: string;
+  chassisTiers?: ChassisTier[];
 }
 
 export interface CareerExperience {

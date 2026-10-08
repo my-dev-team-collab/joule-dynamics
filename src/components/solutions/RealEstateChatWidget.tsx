@@ -615,10 +615,10 @@ export default function RealEstateChatWidget() {
           {/* Centered Content Column */}
           <div className={`flex flex-col flex-1 overflow-hidden ${isMaximized ? 'max-w-4xl mx-auto w-full' : 'w-full'}`}>
             {/* Intelligence Grounding Notice */}
-            <div className="px-3.5 sm:px-4 py-2 bg-primary/10 border-b border-primary/20 flex items-center gap-2 text-xs text-primary dark:text-cyan-400 shrink-0">
+            <div className="px-3.5 sm:px-4 py-2 bg-primary/10 border-b border-primary/20 flex items-center gap-2 text-xs text-primary shrink-0">
               <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <Database className="w-3.5 h-3.5 shrink-0 text-primary dark:text-cyan-400" />
-              <span className="leading-snug text-[11px] sm:text-xs">Answers grounded live from page data and methodology context.</span>
+              <Database className="w-3.5 h-3.5 shrink-0 text-primary" />
+              <span className="leading-snug text-xs">Answers grounded live from page data and methodology context.</span>
             </div>
 
             {/* Messages Feed */}
@@ -783,17 +783,17 @@ export default function RealEstateChatWidget() {
               />
               <div className="flex justify-between items-center mt-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+                  <span className="px-2 py-0.5 bg-muted rounded text-xs font-mono text-muted-foreground">
                     rate-monitor-v1
                   </span>
                   {input.length > 0 && (
                     <span 
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all duration-150 ${
+                      className={`px-1.5 py-0.5 rounded text-xs font-mono transition-all duration-150 ${
                         input.length >= 1000 
                           ? "bg-red-500/15 text-red-500 font-bold border border-red-500/30 animate-pulse" 
                           : input.length >= 800 
                             ? "bg-amber-500/15 text-amber-500 font-medium border border-amber-500/30" 
-                            : "text-muted-foreground/70"
+                            : "text-muted-foreground"
                       }`}
                       title={input.length >= 1000 ? "Character limit reached" : `${1000 - input.length} characters remaining`}
                     >
@@ -807,8 +807,8 @@ export default function RealEstateChatWidget() {
                   disabled={loading || !input.trim()}
                   className={`p-1.5 rounded-full flex items-center justify-center w-8 h-8 transition-all shrink-0 ${
                     loading || !input.trim() 
-                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed" 
-                      : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_var(--color-primary)]"
+                      ? "bg-muted text-muted-foreground cursor-not-allowed" 
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
                   }`}
                   aria-label="Send message"
                 >

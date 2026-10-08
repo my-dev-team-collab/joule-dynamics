@@ -23,10 +23,10 @@ function LinkItem({ link }: { link: LinkNode }) {
       <Link
         key={link.id}
         to={link.href}
-        className="group inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-muted-foreground transition-colors duration-150 hover:text-accent"
+        className="group inline-flex items-center gap-1.5 font-mono text-xs tracking-wider uppercase text-muted-foreground transition-colors duration-150 hover:text-accent"
       >
         <span
-          className="inline-block h-1 w-1 shrink-0 rounded-full bg-muted-foreground transition-colors duration-150 group-hover:bg-accent"
+          className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground transition-colors duration-150 group-hover:bg-accent"
           aria-hidden="true"
         />
         {link.label}
@@ -40,10 +40,10 @@ function LinkItem({ link }: { link: LinkNode }) {
       href={link.href}
       target={isMailto ? undefined : "_blank"}
       rel={isMailto ? undefined : "noopener noreferrer"}
-      className="group inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-muted-foreground transition-colors duration-150 hover:text-accent"
+      className="group inline-flex items-center gap-1.5 font-mono text-xs tracking-wider uppercase text-muted-foreground transition-colors duration-150 hover:text-accent"
     >
       <span
-        className="inline-block h-1 w-1 shrink-0 rounded-full bg-muted-foreground transition-colors duration-150 group-hover:bg-accent"
+        className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground transition-colors duration-150 group-hover:bg-accent"
         aria-hidden="true"
       />
       {link.label}
@@ -57,11 +57,9 @@ export default function CredentialFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
 
-          {/* ── Column 1: Brand Lock ── */}
+          {/* Column 1: Brand Lock */}
           <div className="flex flex-col gap-3">
-            <a href="/" className="inline-block">
-              <LogoLockup className="h-5 w-auto text-zinc-900 dark:text-white" />
-            </a>
+            <LogoLockup />
             <p className="text-sm text-muted-foreground font-mono">
               Built on Industrial Logic.
             </p>
@@ -72,14 +70,14 @@ export default function CredentialFooter() {
               <Mail className="size-3" />
               john@jouledynamics.me
             </a>
-            <p className="text-[10px] text-muted-foreground/60 font-mono">
+            <p className="text-xs text-muted-foreground font-mono">
               © 2026 Joule Dynamics
             </p>
           </div>
 
-          {/* ── Columns 2–3: Direct Access Links ── */}
+          {/* Columns 2-3: Direct Access Links */}
           <div className="md:col-span-2 flex flex-col gap-2">
-            <p className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase mb-1">
+            <p className="font-mono text-xs text-muted-foreground tracking-widest uppercase mb-1">
               DIRECT ACCESS
             </p>
             <div className="flex flex-wrap gap-x-6 gap-y-3">
@@ -91,8 +89,8 @@ export default function CredentialFooter() {
 
         </div>
 
-        {/* ── Bottom SYS bar ── */}
-        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-[10px]">
+        {/* Bottom SYS bar */}
+        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <p className="font-mono text-muted-foreground tracking-wider leading-relaxed break-words">
             SYS // JOULE-DYNAMICS-V2.0.0 · STACK: REACT 19 · VITE · TAILWIND V4 · POSTGRES · FASTAPI · GROQ · LANGFUSE
           </p>

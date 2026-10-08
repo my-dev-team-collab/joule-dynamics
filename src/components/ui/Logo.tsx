@@ -1,14 +1,14 @@
 export const LogoIcon = ({ className = "" }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className={className} aria-hidden="true">
-    <polygon points="16,34 24,34 32,10 24,10" fill="#3b82f6"/>
-    <polygon points="34,38 42,38 52,10 44,10" fill="#3b82f6"/>
-    <polygon points="34,38 42,38 34,54 18,54 26,44" fill="#3b82f6"/>
+    <polygon points="16,34 24,34 32,10 24,10" fill="var(--primary)"/>
+    <polygon points="34,38 42,38 52,10 44,10" fill="var(--primary)"/>
+    <polygon points="34,38 42,38 34,54 18,54 26,44" fill="var(--primary)"/>
   </svg>
 );
 
 export const LogoLockup = ({ className = "" }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 845.2 82" className={className} aria-hidden="true">
-    <g transform="translate(-23.27,-6.55) scale(1.4545)" fill="#3b82f6">
+    <g transform="translate(-23.27,-6.55) scale(1.4545)" fill="var(--primary)">
       <polygon points="16,34 24,34 32,10 24,10"/>
       <polygon points="34,38 42,38 52,10 44,10"/>
       <polygon points="34,38 42,38 34,54 18,54 26,44"/>

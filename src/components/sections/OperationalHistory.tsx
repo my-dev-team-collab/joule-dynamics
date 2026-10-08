@@ -12,7 +12,7 @@ const { howItWorks } = config as unknown as RootConfig;
 export default function OperationalHistory() {
   return (
     <section id="how-it-works" className="py-16 border-b border-border">
-      {/* ── Section identifier ── */}
+      {/* Section identifier */}
       <div className="flex items-center gap-3 mb-10">
         <SectionHeader sectionId="how-it-works" />
         <span
@@ -22,17 +22,13 @@ export default function OperationalHistory() {
         />
       </div>
 
-      {/* ── 3-step strip ── */}
+      {/* 3-step strip */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {howItWorks.map((step) => (
           <div key={step.step} className="flex flex-col gap-4">
             {/* Step number */}
             <div
-              className="flex items-center justify-center w-12 h-12 rounded-full text-xl font-black shrink-0"
-              style={{
-                background: "linear-gradient(135deg, var(--color-primary) 0%, hsl(199 89% 68%) 100%)",
-                color: "var(--color-primary-foreground)",
-              }}
+              className="flex items-center justify-center w-10 h-10 rounded-sm text-lg font-bold font-mono shrink-0 bg-primary text-primary-foreground"
             >
               {step.step}
             </div>

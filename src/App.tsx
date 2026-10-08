@@ -4,9 +4,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SystemStatusBar } from "@/components/layout/SystemStatusBar";
 import CredentialFooter from "@/components/layout/CredentialFooter";
 import HeroEngine from "@/components/sections/HeroEngine";
-import FeaturedProjectsSection from "@/components/sections/FeaturedProjectsSection";
-import ExperienceSection from "@/components/sections/ExperienceSection";
-import SkillsAndCredentialsSection from "@/components/sections/SkillsAndCredentialsSection";
 import SolutionsShowcase from "@/components/sections/SolutionsShowcase";
 import OperationalHistory from "@/components/sections/OperationalHistory";
 import AuditPortal from "@/components/sections/AuditPortal";
@@ -18,8 +15,7 @@ import PortfolioPage from "@/pages/PortfolioPage";
 
 /**
  * Root page: single-page layout, section-only composition.
- * Render order: SystemStatusBar -> Hero -> Featured Projects -> Career Experience
- *   -> Skills & Credentials -> Solutions Showcase -> How It Works -> About -> Contact -> Footer
+ * Render order: SystemStatusBar -> HeroEngine -> Solutions Showcase -> How It Works -> About -> Contact -> Footer
  */
 function PortfolioRoot() {
   return (
@@ -27,9 +23,6 @@ function PortfolioRoot() {
       <SystemStatusBar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 space-y-0">
         <HeroEngine />
-        <FeaturedProjectsSection />
-        <ExperienceSection />
-        <SkillsAndCredentialsSection />
         <SolutionsShowcase />
         <OperationalHistory />
         <AboutSection />

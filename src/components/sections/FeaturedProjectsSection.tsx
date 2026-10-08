@@ -4,7 +4,6 @@ import config from "@/data/config.json";
 import type { PortfolioProject } from "@/types/data";
 import { ProjectDetailModal } from "@/components/portfolio/ProjectDetailModal";
 import { ArrowRight, ExternalLink, Github, CheckCircle2, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export default function FeaturedProjectsSection() {
@@ -15,13 +14,20 @@ export default function FeaturedProjectsSection() {
     return all.filter((p) => p.isFeatured).slice(0, 4);
   }, []);
 
-  const getStatusColor = (status: string) => {
-    if (status === "Live System") return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
-    if (status === "Live Pilot") return "bg-teal-500/10 text-teal-400 border-teal-500/20";
-    if (status === "Production") return "bg-cyan-500/10 text-cyan-500 border-cyan-500/20";
-    if (status === "Fine-Tuned Model") return "bg-purple-500/10 text-purple-500 border-purple-500/20";
-    if (status === "Open Source") return "bg-blue-500/10 text-blue-500 border-blue-500/20";
-    return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+  const getStatusBadge = (status: string) => {
+    let dotColor = "bg-muted-foreground/60";
+    if (status === "Production" || status === "Live System") {
+      dotColor = "bg-primary";
+    } else if (status === "Live Pilot" || status === "Applied Research") {
+      dotColor = "bg-accent";
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+        <span className={`size-1.5 rounded-full ${dotColor} shrink-0`} />
+        <span>{status}</span>
+      </span>
+    );
   };
 
   return (
@@ -44,7 +50,7 @@ export default function FeaturedProjectsSection() {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 font-mono text-xs border-border self-start md:self-auto shrink-0"
+          className="gap-2 font-mono text-xs border-border self-start md:self-auto shrink-0 rounded-sm"
           asChild
         >
           <Link to="/portfolio">
@@ -60,23 +66,18 @@ export default function FeaturedProjectsSection() {
           <div
             key={project.id}
             onClick={() => setSelectedProject(project)}
-            className="rounded-xl border border-border bg-card/50 hover:bg-card/90 p-6 flex flex-col justify-between transition-all duration-200 group cursor-pointer shadow-sm hover:shadow-md hover:border-primary/40"
+            className="rounded-sm border border-border bg-card hover:bg-muted/30 p-6 flex flex-col justify-between transition-colors duration-150 group cursor-pointer hover:border-primary"
           >
             <div className="space-y-4">
               {/* Card Meta Bar */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className={`font-mono text-[10px] tracking-wider uppercase rounded-full ${getStatusColor(project.status)}`}
-                  >
-                    {project.status}
-                  </Badge>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase px-2 py-0.5 rounded bg-muted/60 border border-border/40">
+                  {getStatusBadge(project.status)}
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase px-2 py-0.5 rounded-sm bg-muted/60 border border-border/40">
                     {project.category}
                   </span>
                 </div>
-                <span className="text-[11px] font-mono font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded border border-primary/25">
+                <span className="text-[11px] font-mono font-medium text-primary bg-primary/10 px-2.5 py-0.5 rounded-sm border border-primary/25">
                   {project.highlightMetric}
                 </span>
               </div>
@@ -111,13 +112,13 @@ export default function FeaturedProjectsSection() {
                 {project.techStack.slice(0, 5).map((tech, idx) => (
                   <span
                     key={idx}
-                    className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/40"
+                    className="text-[10px] font-mono px-2 py-0.5 rounded-sm bg-muted/60 text-muted-foreground border border-border/40"
                   >
                     {tech}
                   </span>
                 ))}
                 {project.techStack.length > 5 && (
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded text-muted-foreground/80">
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-sm text-muted-foreground/80">
                     +{project.techStack.length - 5}
                   </span>
                 )}

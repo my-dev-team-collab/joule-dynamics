@@ -80,7 +80,7 @@ const CustomTrendTooltip = ({ active, payload, label }: any) => {
                 <span className="font-bold text-xs">{Number(entry.value).toFixed(2)}</span>
               </div>
               {total > 0 && (
-                <span className={`text-[10px] ${isLowConfidence ? 'text-amber-500 font-medium' : 'text-muted-foreground/70'}`}>
+                <span className={`text-xs ${isLowConfidence ? 'text-warning-foreground font-medium' : 'text-muted-foreground'}`}>
                   based on {reporting} of {total} products
                 </span>
               )}

@@ -1,3 +1,10 @@
+@import "@fontsource/barlow-condensed/600.css";
+@import "@fontsource/barlow-condensed/700.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -21,59 +28,126 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --font-sans: "Geist Sans", "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --color-text-cyan: var(--text-cyan);
+  --color-text-orange: var(--text-orange);
+  --color-warning: var(--warning-bg);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-iso-top: var(--iso-top);
+  --color-iso-left: var(--iso-left);
+  --color-iso-right: var(--iso-right);
+  --color-iso-edge: var(--iso-edge);
+  --color-iso-edge-active: var(--iso-edge-active);
+  --color-iso-glow: var(--iso-glow);
+  --color-iso-accent: var(--iso-accent);
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Barlow Condensed", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer base {
   :root {
     /* Light Mode: Industrial Datasheet */
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(240 10% 4%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(240 10% 4%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(240 10% 4%);
-    --primary: hsl(199 89% 48%);
-    --primary-foreground: hsl(0 0% 100%);
-    --secondary: hsl(240 5% 96%);
-    --secondary-foreground: hsl(240 6% 10%);
-    --muted: hsl(240 5% 96%);
-    --muted-foreground: hsl(240 4% 46%);
-    --accent: hsl(24 95% 53%);
-    --accent-foreground: hsl(0 0% 100%);
-    --border: hsl(240 6% 90%);
-    --input: hsl(240 6% 90%);
-    --ring: hsl(199 89% 48%);
+    --background: #FFFFFF;
+    --foreground: #27272A;
+    --card: #F4F4F5;
+    --card-foreground: #27272A;
+    --popover: #FFFFFF;
+    --popover-foreground: #27272A;
+    --primary: #0369A1;
+    --primary-foreground: #FFFFFF;
+    --secondary: #E4E4E7;
+    --secondary-foreground: #27272A;
+    --muted: #E4E4E7;
+    --muted-foreground: #52525B;
+    --accent: #C2410C;
+    --accent-foreground: #FFFFFF;
+    --border: #D4D4D8;
+    --input: #D4D4D8;
+    --ring: #0EA5E9;
     --radius: 0.25rem;
+
+    --text-cyan: #0369A1;
+    --text-orange: #C2410C;
+    --warning-bg: #FFEDD5;
+    --warning-foreground: #9A3412;
+
+    --iso-top: #FFFFFF;
+    --iso-left: #F4F4F5;
+    --iso-right: #E4E4E7;
+    --iso-edge: #52525B;
+    --iso-edge-active: #0369A1;
+    --iso-glow: transparent;
+    --iso-accent: #C2410C;
+    --iso-detail-bg: #F4F4F5;
+    --iso-detail-border: #D4D4D8;
   }
 
   .dark {
     /* Dark Mode: Telemetry Dashboard */
-    --background: hsl(240 5% 10%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(240 5% 13%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(240 5% 12%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(199 89% 48%);
-    --primary-foreground: hsl(0 0% 100%);
-    --secondary: hsl(240 4% 18%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(240 4% 20%);
-    --muted-foreground: hsl(240 5% 65%);
-    --accent: hsl(24 95% 53%);
-    --accent-foreground: hsl(0 0% 98%);
-    --border: hsl(240 5% 18%);
-    --input: hsl(240 5% 18%);
-    --ring: hsl(199 89% 48%);
+    --background: #18181B;
+    --foreground: #FAFAFA;
+    --card: #202024;
+    --card-foreground: #FAFAFA;
+    --popover: #202024;
+    --popover-foreground: #FAFAFA;
+    --primary: #0EA5E9;
+    --primary-foreground: #09090B;
+    --secondary: #27272A;
+    --secondary-foreground: #FAFAFA;
+    --muted: #27272A;
+    --muted-foreground: #A1A1AA;
+    --accent: #F97316;
+    --accent-foreground: #09090B;
+    --border: #3F3F46;
+    --input: #3F3F46;
+    --ring: #0EA5E9;
+
+    --text-cyan: #0EA5E9;
+    --text-orange: #F97316;
+    --warning-bg: #431407;
+    --warning-foreground: #FDBA74;
+
+    --iso-top: #2A2A30;
+    --iso-left: #202024;
+    --iso-right: #18181B;
+    --iso-edge: #71717A;
+    --iso-edge-active: #0EA5E9;
+    --iso-glow: #0EA5E9;
+    --iso-accent: #F97316;
+    --iso-detail-bg: #202024;
+    --iso-detail-border: #3F3F46;
   }
 
-  * { border-color: var(--border); outline-color: var(--ring); }
-  body { background-color: var(--background); color: var(--foreground); font-family: var(--font-sans); }
+  *, ::before, ::after {
+    border-color: var(--border);
+    box-shadow: none !important;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+  }
+
+  :focus-visible {
+    outline: 2px solid #0EA5E9 !important;
+    outline-offset: 2px !important;
+  }
+
+  button:focus:not(:focus-visible), a:focus:not(:focus-visible) {
+    outline: none !important;
+  }
 }
 
 @layer utilities {

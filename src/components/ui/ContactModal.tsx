@@ -162,7 +162,7 @@ export default function ContactModal({ trigger }: ContactModalProps) {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="John Doe"
-                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
                     />
                   </div>
 
@@ -179,14 +179,14 @@ export default function ContactModal({ trigger }: ContactModalProps) {
                       onChange={(e) => setEmail(e.target.value)}
                       onBlur={() => setEmailTouched(true)}
                       placeholder="you@company.com"
-                      className={`rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 transition-colors ${
+                      className={`rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 transition-colors ${
                         emailTouched && email && !emailValid
                           ? "border-red-500 focus:ring-red-500"
                           : "border-border focus:ring-primary"
                       }`}
                     />
                     {emailTouched && email && !emailValid && (
-                      <p className="text-[10px] text-red-400">Please enter a valid email address.</p>
+                      <p className="text-xs text-red-400">Please enter a valid email address.</p>
                     )}
                   </div>
 
@@ -202,7 +202,7 @@ export default function ContactModal({ trigger }: ContactModalProps) {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Tell us about your project or question..."
-                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-none"
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-none"
                     />
                   </div>
 
