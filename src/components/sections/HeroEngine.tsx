@@ -1,10 +1,5 @@
-/**
- * HeroEngine.tsx
- * Revamp: copy now pulled entirely from config.json's hero key.
- * Structural grid preserved; headline/subheadline/CTA updated for buyer framing.
- */
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FileText, Bot, Award, GraduationCap, Code2 } from "lucide-react";
 import config from "@/data/config.json";
 import type { RootConfig } from "@/types/data";
 
@@ -24,7 +19,7 @@ export default function HeroEngine() {
         }}
       />
 
-      {/* Radial glow — primary cyan tint */}
+      {/* Radial glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0"
@@ -34,9 +29,15 @@ export default function HeroEngine() {
         }}
       />
 
-      <div className="relative z-10 py-20 md:py-32 px-4 sm:px-6 lg:px-0">
-        {/* ── Main headline — from config.hero ── */}
-        <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.05] text-foreground max-w-4xl">
+      <div className="relative z-10 py-16 md:py-28 px-4 sm:px-6 lg:px-8">
+        {/* Role Identity Tag */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/25 bg-primary/10 text-primary text-xs font-mono font-medium mb-5">
+          <Bot className="size-3.5" />
+          <span>AI / ML Engineer & Systems Architect</span>
+        </div>
+
+        {/* Main headline */}
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.08] text-foreground max-w-4xl">
           <span
             className="text-transparent bg-clip-text"
             style={{
@@ -48,42 +49,89 @@ export default function HeroEngine() {
           </span>
         </h1>
 
-        {/* ── Subheadline — from config.hero ── */}
-        <p className="mt-6 max-w-2xl text-base md:text-lg leading-relaxed text-muted-foreground">
+        {/* Subheadline */}
+        <p className="mt-5 max-w-2xl text-base sm:text-lg leading-relaxed text-muted-foreground font-normal">
           {hero.subheadline}
         </p>
 
-        {/* ── CTA row ── */}
-        <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        {/* Quick Credentials Strip */}
+        <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-2.5 max-w-4xl">
+          <div className="flex items-center gap-2 p-2.5 rounded-lg border border-border/80 bg-card/60 backdrop-blur-sm">
+            <Award className="size-4 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-mono font-semibold text-foreground truncate">Azure AI Associate</p>
+              <p className="text-[10px] font-mono text-muted-foreground">Certified AI-102</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 p-2.5 rounded-lg border border-border/80 bg-card/60 backdrop-blur-sm">
+            <GraduationCap className="size-4 text-emerald-400 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-mono font-semibold text-foreground truncate">B.Eng Mech. Engineering</p>
+              <p className="text-[10px] font-mono text-muted-foreground">First Class Honors (4.63 GPA)</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 p-2.5 rounded-lg border border-border/80 bg-card/60 backdrop-blur-sm">
+            <Bot className="size-4 text-purple-400 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-mono font-semibold text-foreground truncate">AI / ML Lead</p>
+              <p className="text-[10px] font-mono text-muted-foreground">Zibeh Institute of Technology</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 p-2.5 rounded-lg border border-border/80 bg-card/60 backdrop-blur-sm">
+            <Code2 className="size-4 text-cyan-400 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-mono font-semibold text-foreground truncate">10 Technical Builds</p>
+              <p className="text-[10px] font-mono text-muted-foreground">Public Repos & Benchmarks</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Primary Actions Row */}
+        <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button
             size="lg"
-            className="w-full sm:w-auto gap-2 font-semibold tracking-wide"
+            className="gap-2 font-semibold tracking-wide shadow-sm"
             style={{
               backgroundColor: "var(--color-primary)",
               color: "var(--color-primary-foreground)",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "hsl(199 89% 42%)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "var(--color-primary)")
-            }
             asChild
           >
-            <a href={hero.primaryCtaLink} id="hero-primary-cta">
-              {hero.primaryCtaLabel}
-              <ArrowRight className="size-4" />
+            <a
+              href="/cv/John_Albarka_Ibrahim_CV.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              download="John_Albarka_Ibrahim_CV.pdf"
+              id="hero-download-cv"
+            >
+              <FileText className="size-4" />
+              <span>Download CV (PDF)</span>
             </a>
           </Button>
 
           <Button
             variant="outline"
             size="lg"
-            className="w-full sm:w-auto gap-2 border-border text-foreground hover:border-primary hover:text-primary transition-colors"
+            className="gap-2 border-border text-foreground hover:border-primary hover:text-primary transition-colors"
             asChild
           >
-            <a href="#solutions" id="hero-secondary-cta">
-              See the solutions
+            <a href="/portfolio" id="hero-view-portfolio">
+              <span>Explore 10 Projects</span>
+              <ArrowRight className="size-4" />
+            </a>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="lg"
+            className="text-muted-foreground hover:text-foreground font-mono text-xs tracking-wider"
+            asChild
+          >
+            <a href="#contact" id="hero-contact-cta">
+              Contact / Hire Me
             </a>
           </Button>
         </div>

@@ -9,7 +9,7 @@ import config from "@/data/config.json";
 import type { RootConfig } from "@/types/data";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LogoIcon, LogoLockup } from "@/components/ui/Logo";
-import { Menu, X } from "lucide-react";
+import { Menu, X, FileText } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface TelemetryData {
@@ -45,12 +45,12 @@ export function SystemStatusBar() {
   }, []);
 
   const navLinks = [
-    { label: "SOLUTIONS", href: "/#solutions" },
     { label: "PORTFOLIO", href: "/portfolio" },
     { label: "LIVE SYSTEMS", href: "/live-systems" },
-    { label: "HOW IT WORKS", href: "/#how-it-works" },
+    { label: "EXPERIENCE", href: "/#experience" },
+    { label: "SKILLS", href: "/#skills" },
     { label: "ABOUT", href: "/#about" },
-    { label: "GET AUDIT", href: "/#contact" },
+    { label: "CONTACT", href: "/#contact" },
   ];
 
   return (
@@ -142,6 +142,22 @@ export function SystemStatusBar() {
             </div>
           )}
 
+          {/* CV Action */}
+          <a
+            href="/cv/John_Albarka_Ibrahim_CV.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              hidden sm:inline-flex items-center gap-1.5 rounded-sm border border-primary/40
+              bg-primary/10 px-2.5 py-1 font-mono text-[10px] tracking-wider font-semibold
+              text-primary hover:bg-primary/20 hover:border-primary
+              transition-all duration-150
+            "
+          >
+            <FileText className="size-3" />
+            <span>CV / RESUME</span>
+          </a>
+
           {/* Theme toggle: always visible */}
           <ThemeToggle />
 
@@ -170,6 +186,16 @@ export function SystemStatusBar() {
                 {link.label}
               </a>
             ))}
+            <a 
+              href="/cv/John_Albarka_Ibrahim_CV.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-mono text-[10px] tracking-widest text-primary font-bold py-1 flex items-center gap-1.5"
+            >
+              <FileText className="size-3" />
+              <span>DOWNLOAD CV (PDF)</span>
+            </a>
           </div>
         </div>
       )}

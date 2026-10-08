@@ -1,18 +1,191 @@
 {
   "meta": {
-    "title": "Joule Dynamics | Automation That Pays For Itself",
-    "description": "RAG chatbots, price monitoring, and lead generation systems built for measurable ROI. Get your free automation audit."
+    "title": "John Albarka Ibrahim | AI / ML Engineer & Systems Architect",
+    "description": "AI / ML Engineer and Systems Architect. Production Agentic RAG backends, fine-tuned multilingual LLMs, and distributed data systems built with industrial engineering rigor."
   },
   "devHub": {
-    "badgeLabel": "🔧 Live Build",
-    "tooltip": "This is our active development hub, hosted on Vercel. Everything here is real, working code, not mockups. We ship fast here first; the branded production domain follows once the first client engagement is underway."
+    "badgeLabel": "Live Build",
+    "tooltip": "This is our active engineering hub, hosted on Vercel. Everything here is real, working code, with public repositories, benchmarks, and live pilots."
   },
   "hero": {
-    "headline": "Automation That Pays For Itself",
-    "subheadline": "RAG systems, pricing intelligence, and lead pipelines: built by an engineer, not a template.",
-    "primaryCtaLabel": "Get My Free Automation Audit",
-    "primaryCtaLink": "#contact"
+    "headline": "John Albarka Ibrahim",
+    "subheadline": "AI / ML Engineer & Systems Architect building production Agentic RAG backends, fine-tuned multilingual LLMs, and high-throughput data architectures with industrial engineering rigor.",
+    "primaryCtaLabel": "Download CV",
+    "primaryCtaLink": "/cv/John_Albarka_Ibrahim_CV.pdf",
+    "secondaryCtaLabel": "Explore 10 Projects",
+    "secondaryCtaLink": "/portfolio"
   },
+  "profile": {
+    "name": "John Albarka Ibrahim",
+    "role": "AI / ML Engineer & Systems Architect",
+    "headline": "John Albarka Ibrahim",
+    "subheadline": "AI / ML Engineer & Systems Architect building production Agentic RAG backends, fine-tuned multilingual LLMs, and high-throughput data architectures with industrial engineering rigor.",
+    "cvUrl": "/cv/John_Albarka_Ibrahim_CV.pdf",
+    "location": "Nigeria (Available for Global Remote & Relocation)"
+  },
+  "experience": [
+    {
+      "id": "zibeh-lead",
+      "role": "AI / ML Lead",
+      "organization": "Zibeh Institute of Technology",
+      "location": "Jos, Nigeria",
+      "timeline": "Jul 2024 : Present",
+      "achievements": [
+        "Direct the institute's AI/ML and Data Science initiatives, supervising applied machine learning, LLM systems, and analytics dashboard development.",
+        "Mentor students through end-to-end data science projects from problem formulation to model evaluation, achieving an 80% project completion rate.",
+        "Coordinate technical delivery across multiple engineering cohorts, translating research into production-grade AI solutions."
+      ]
+    },
+    {
+      "id": "teknowledge-trainer",
+      "role": "Virtual AI / ML Trainer",
+      "organization": "TeKnowledge",
+      "location": "Lagos, Nigeria",
+      "timeline": "May 2025",
+      "achievements": [
+        "Delivered an intensive Microsoft Azure AI and Microsoft Copilot bootcamp to 50+ participants, covering Azure AI services, LLMs, and generative AI development.",
+        "Guided participants in integrating OpenAI GPT models with Azure cloud services to construct real-time automation and conversational Q&A prototypes.",
+        "Achieved 100% course completion with participants shipping functional LLM prototypes."
+      ]
+    },
+    {
+      "id": "3mtt-trainer",
+      "role": "AI / ML Trainer",
+      "organization": "3MTT (in collaboration with A+ Computer Training Technology)",
+      "location": "Bauchi, Nigeria",
+      "timeline": "Feb 2024 : May 2024",
+      "achievements": [
+        "Designed and instructed a 12-week applied AI/ML curriculum covering Python, machine learning, computer vision, and LLM fundamentals.",
+        "Trained 20+ participants through hands-on implementation of classification, image recognition, and conversational bots with a 90% project completion rate."
+      ]
+    },
+    {
+      "id": "mlsa",
+      "role": "Microsoft Learn Student Ambassador",
+      "organization": "Microsoft",
+      "location": "Nigeria",
+      "timeline": "2022 : 2025",
+      "achievements": [
+        "Organized community workshops and technical sessions on Responsible AI, Large Language Models, and Microsoft Azure cloud engineering."
+      ]
+    }
+  ],
+  "education": {
+    "degree": "B.Eng. Mechanical Engineering",
+    "honors": "First Class Honors",
+    "institution": "University of Jos, Nigeria",
+    "timeline": "2018 : 2023",
+    "gpa": "CGPA: 4.63 / 5.00"
+  },
+  "certifications": [
+    {
+      "id": "ai-102",
+      "title": "Microsoft Certified: Azure AI Engineer Associate",
+      "issuer": "Microsoft",
+      "year": "2024",
+      "code": "AI-102"
+    },
+    {
+      "id": "ai-900",
+      "title": "Microsoft Certified: Azure AI Fundamentals",
+      "issuer": "Microsoft",
+      "year": "2024",
+      "code": "AI-900"
+    },
+    {
+      "id": "dp-900",
+      "title": "Microsoft Certified: Azure Data Fundamentals",
+      "issuer": "Microsoft",
+      "year": "2023",
+      "code": "DP-900"
+    },
+    {
+      "id": "az-900",
+      "title": "Microsoft Certified: Azure Fundamentals",
+      "issuer": "Microsoft",
+      "year": "2023",
+      "code": "AZ-900"
+    },
+    {
+      "id": "michigan-python",
+      "title": "Python 3 Programming Specialization",
+      "issuer": "University of Michigan",
+      "year": "Coursera"
+    },
+    {
+      "id": "ucsc-c",
+      "title": "Coding for Everyone: C and C++ Specialization",
+      "issuer": "UC Santa Cruz",
+      "year": "Coursera"
+    }
+  ],
+  "groupedSkills": [
+    {
+      "category": "Agentic RAG & LLMs",
+      "skills": [
+        "Agentic Tool Calling",
+        "Dynamic Schema Gating",
+        "ChromaDB",
+        "pgvector",
+        "FAISS",
+        "LangChain",
+        "Groq",
+        "Grounded Synthesis",
+        "AST SQL Validation",
+        "Prompt Hardening",
+        "SSE Streaming"
+      ]
+    },
+    {
+      "category": "Model Training & Fine-Tuning",
+      "skills": [
+        "PyTorch",
+        "Hugging Face Transformers",
+        "TRL SFTTrainer",
+        "LoRA / QLoRA",
+        "GGUF Quantization",
+        "llama.cpp",
+        "Afro-XLMR",
+        "ONNX Runtime",
+        "INT8 CPU Quantization"
+      ]
+    },
+    {
+      "category": "Backend & Distributed Systems",
+      "skills": [
+        "FastAPI",
+        "Python (AsyncIO)",
+        "Celery",
+        "Redis Streams",
+        "PostgreSQL",
+        "Docker",
+        "Playwright",
+        "REST APIs"
+      ]
+    },
+    {
+      "category": "Cloud, Data & Observability",
+      "skills": [
+        "Microsoft Azure (AI-102)",
+        "PostGIS",
+        "Supabase",
+        "Langfuse",
+        "OpenTelemetry",
+        "GitHub Actions",
+        "Power BI Service"
+      ]
+    },
+    {
+      "category": "Engineering Foundations",
+      "skills": [
+        "Mechanical Systems Design",
+        "Failure Mode Analysis",
+        "Sensor Fusion",
+        "Microcontroller C++",
+        "Deterministic Logic"
+      ]
+    }
+  ],
   "solutions": [
     {
       "id": "pricing-monitor",
@@ -164,37 +337,38 @@
     "testimonials": []
   },
   "about": {
-    "headline": "Engineering rigor, applied to AI.",
-    "bio": "I'm John, an Azure AI Engineer Associate who builds the kind of systems most agencies talk about but few actually ship: production RAG pipelines, resilient scraping infrastructure, and automation that runs unattended, day and night. Joule Dynamics turns that same discipline on the three things quietly costing you money right now: pricing you can't see, leads you're not catching, and support questions your team answers by hand, every day.",
+    "headline": "Engineering Rigor, Applied to AI.",
+    "bio": "I am John Albarka Ibrahim, an AI / ML Engineer and Systems Architect with a First Class degree in Mechanical Engineering. In mechanical systems, guessing tolerances or ignoring boundary conditions leads to physical failure. I bring that exact discipline to AI engineering: ensuring RAG pipelines are rigorously grounded, SQL queries are AST-validated, transformer models are efficiently quantized for CPU/edge inference, and agentic workflows are strictly gated rather than blindly executing arbitrary tools. Joule Dynamics is my proprietary engineering lab where these architectures are designed, tested, and deployed as live systems.",
     "credentials": [
-    "Azure AI Engineer Associate (AI-102), 2024",
-    "3 Production Systems, Live Right Now",
-    "Founder, Joule Dynamics"
-  ]
+      "Microsoft Certified: Azure AI Engineer Associate (AI-102)",
+      "B.Eng Mechanical Engineering, First Class Honors (4.63 GPA)",
+      "AI / ML Lead, Zibeh Institute of Technology",
+      "10 Production & Applied Builds with Public Benchmarks"
+    ]
   },
   "contact": {
-    "headline": "Let's find what's automatable in your business.",
-    "subheadline": "10-minute audit. No sales pitch.",
+    "headline": "Let's connect.",
+    "subheadline": "Open for full-time engineering roles, AI system architecture, and specialized advisory.",
     "fields": [
       { "name": "name", "label": "Name", "type": "text", "required": true },
       { "name": "email", "label": "Work email", "type": "email", "required": true },
       {
         "name": "problem",
-        "label": "What's costing you the most right now?",
+        "label": "Inquiry Type",
         "type": "select",
         "required": true,
         "options": [
-          "Pricing / competitor blindness",
-          "Lead generation",
-          "Slow support / knowledge access",
-          "Something else"
+          "Recruiter / Full-Time Engineering Role",
+          "Contract / Technical Architecture",
+          "Pilot Build / Collaboration",
+          "General Inquiry"
         ]
       },
-      { "name": "notes", "label": "Anything else?", "type": "textarea", "required": false }
+      { "name": "notes", "label": "Message or Role Details", "type": "textarea", "required": false }
     ],
-    "submitLabel": "Get My Free Automation Audit",
-    "trustLine": "No sales pitch: just a 10-minute look at what's automatable in your workflow.",
-    "privacyLine": "Your information is used only to prepare your audit and is never shared."
+    "submitLabel": "Send Message",
+    "trustLine": "Direct response within 24 hours. You can also reach out directly via WhatsApp or LinkedIn.",
+    "privacyLine": "Your information is confidential and never shared."
   },
   "sections": [
     { "id": "solutions", "label": "SOLUTIONS" },
@@ -331,6 +505,7 @@
     {
       "id": "sentimentscope",
       "rank": 1,
+      "isFeatured": true,
       "title": "SentimentScope: WhatsApp Sentiment Intelligence & Agentic RAG",
       "subtitle": "Turning chaotic multi-language chat exports into structured sentiment intelligence and hallucination-free answers.",
       "category": "Agentic RAG",
@@ -358,6 +533,7 @@
     {
       "id": "joule-dynamics",
       "rank": 2,
+      "isFeatured": true,
       "title": "Joule Dynamics: Agentic Real Estate Market Intelligence",
       "subtitle": "Translating natural real estate questions into automated database queries, pricing alerts, and market benchmarks.",
       "category": "Agentic RAG",
@@ -412,6 +588,7 @@
     {
       "id": "afroxlmr-mini",
       "rank": 4,
+      "isFeatured": true,
       "title": "AfroXLMR-mini: Nigerian Multilingual Sentiment Model",
       "subtitle": "End-to-end transformer fine-tuning and INT8 quantization for sub-10ms CPU inference.",
       "category": "Model Training & Fine-Tuning",
@@ -465,6 +642,7 @@
     {
       "id": "nexus-audit-crawler",
       "rank": 6,
+      "isFeatured": true,
       "title": "Nexus: Distributed Technical Audit Crawler & MCP Query Engine",
       "subtitle": "High-throughput distributed crawling paired with Model Context Protocol tools for AI agents.",
       "category": "Data & Web Intelligence",

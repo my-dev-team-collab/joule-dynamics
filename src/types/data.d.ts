@@ -51,6 +51,37 @@ export interface PortfolioProject {
   resultsLabel: string;
   results: string[];
   architectureDiagram?: string;
+  isFeatured?: boolean;
+}
+
+export interface CareerExperience {
+  id: string;
+  role: string;
+  organization: string;
+  location: string;
+  timeline: string;
+  achievements: string[];
+}
+
+export interface ProfessionalCertification {
+  id: string;
+  title: string;
+  issuer: string;
+  year: string;
+  code?: string;
+}
+
+export interface AcademicEducation {
+  degree: string;
+  honors: string;
+  institution: string;
+  timeline: string;
+  gpa: string;
+}
+
+export interface SkillCategoryGroup {
+  category: string;
+  skills: string[];
 }
 
 export interface LinkNode {
@@ -117,6 +148,20 @@ export interface RootConfig {
   links: LinkNode[];
   projects?: PortfolioProject[];
 
+  // Recruiter Profile & Experience Additions
+  profile?: {
+    name: string;
+    role: string;
+    headline: string;
+    subheadline: string;
+    cvUrl: string;
+    location: string;
+  };
+  experience?: CareerExperience[];
+  certifications?: ProfessionalCertification[];
+  education?: AcademicEducation;
+  groupedSkills?: SkillCategoryGroup[];
+
   // Revamp additions
   devHub: {
     badgeLabel: string;
@@ -131,6 +176,8 @@ export interface RootConfig {
     subheadline: string;
     primaryCtaLabel: string;
     primaryCtaLink: string;
+    secondaryCtaLabel?: string;
+    secondaryCtaLink?: string;
   };
   sections: Array<{
     id: string;
