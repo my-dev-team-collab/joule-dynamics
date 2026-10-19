@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import type { PortfolioProject, ChassisTier } from "@/types/data";
+import { matchesPortfolioProject } from "@/lib/portfolio";
 import { ArrowRight, Github, ExternalLink } from "lucide-react";
 
 interface WorkshopFloorFigureProps {
@@ -20,18 +21,9 @@ export function WorkshopFloorFigure({
 
   // Filter projects according to category and search query
   const filteredCartridges = useMemo(() => {
-    return projects.filter((project) => {
-      const matchesCategory =
-        selectedCategory === "All" || project.category === selectedCategory;
-      const q = searchQuery.toLowerCase().trim();
-      if (!q) return matchesCategory;
-      const matchesSearch =
-        project.title.toLowerCase().includes(q) ||
-        project.subtitle.toLowerCase().includes(q) ||
-        project.challenge.toLowerCase().includes(q) ||
-        project.techStack.some((tech) => tech.toLowerCase().includes(q));
-      return matchesCategory && matchesSearch;
-    });
+    return projects.filter((project) =>
+      matchesPortfolioProject(project, selectedCategory, searchQuery),
+    );
   }, [projects, selectedCategory, searchQuery]);
 
   // If filtered list is empty, section should collapse
@@ -786,7 +778,7 @@ export function WorkshopFloorFigure({
                 Select a service to highlight its architecture tiers (keys 1 to {filteredCartridges.length})
               </span>
               <div className="flex items-center gap-1.5 text-foreground font-semibold">
-                <span>{activeProject ? `Selected: ${activeProject.title.split(":")[0]}` : "Select a service to inspect"}</span>
+                <span>{activeProject ? `Selected: ${activeProject.displayTitle || activeProject.title.split(":")[0]}` : "Select a service to inspect"}</span>
               </div>
             </div>
           </div>
@@ -843,7 +835,7 @@ export function WorkshopFloorFigure({
               {/* Title and Business Use Case */}
               <div className="space-y-1.5">
                 <h3 className="text-lg font-bold tracking-tight text-foreground leading-snug">
-                  {activeProject.title}
+                  {activeProject.displayTitle || activeProject.title}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {activeProject.businessUseCase || activeProject.subtitle}

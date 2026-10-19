@@ -4,18 +4,18 @@ import type { PortfolioProject, CareerExperience, ProfessionalCertification } fr
 import { ProjectDetailModal } from "@/components/portfolio/ProjectDetailModal";
 import { PortfolioIsoFigure } from "@/components/portfolio/PortfolioIsoFigure";
 import { WorkshopFloorFigure } from "@/components/portfolio/WorkshopFloorFigure";
+import { ProjectCard } from "@/components/portfolio/ProjectCard";
 import { PortfolioNav } from "@/components/portfolio/PortfolioNav";
 import { PortfolioFooter } from "@/components/portfolio/PortfolioFooter";
+import { matchesPortfolioProject } from "@/lib/portfolio";
 import {
   ArrowRight,
   ExternalLink,
-  Github,
   Search,
   MessageCircle,
   Mail,
   Linkedin,
   Download,
-  FileText,
   Briefcase,
   GraduationCap,
   Award,
@@ -90,150 +90,19 @@ export default function PortfolioPage() {
       .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0));
   }, [projects]);
 
-  const filteredFeaturedProjects = useMemo(() => {
-    return featuredProjects.filter((project) => {
-      const matchesCategory =
-        selectedCategory === "All" || project.category === selectedCategory;
-      const q = searchQuery.toLowerCase().trim();
-      if (!q) return matchesCategory;
-      return (
-        project.title.toLowerCase().includes(q) ||
-        project.subtitle.toLowerCase().includes(q) ||
-        (project.businessUseCase && project.businessUseCase.toLowerCase().includes(q)) ||
-        project.challenge.toLowerCase().includes(q) ||
-        project.techStack.some((tech) => tech.toLowerCase().includes(q))
-      );
-    });
-  }, [featuredProjects, selectedCategory, searchQuery]);
+  const filteredFeaturedProjects = useMemo(
+    () => featuredProjects.filter((project) => matchesPortfolioProject(project, selectedCategory, searchQuery)),
+    [featuredProjects, selectedCategory, searchQuery],
+  );
 
-  const filteredOtherProjects = useMemo(() => {
-    return otherProjects.filter((project) => {
-      const matchesCategory =
-        selectedCategory === "All" || project.category === selectedCategory;
-      const q = searchQuery.toLowerCase().trim();
-      if (!q) return matchesCategory;
-      return (
-        project.title.toLowerCase().includes(q) ||
-        project.subtitle.toLowerCase().includes(q) ||
-        (project.businessUseCase && project.businessUseCase.toLowerCase().includes(q)) ||
-        project.challenge.toLowerCase().includes(q) ||
-        project.techStack.some((tech) => tech.toLowerCase().includes(q))
-      );
-    });
-  }, [otherProjects, selectedCategory, searchQuery]);
+  const filteredOtherProjects = useMemo(
+    () => otherProjects.filter((project) => matchesPortfolioProject(project, selectedCategory, searchQuery)),
+    [otherProjects, selectedCategory, searchQuery],
+  );
 
   const totalFilteredCount = filteredFeaturedProjects.length + filteredOtherProjects.length;
 
-  const getStatusBadge = (status: string) => {
-    let dotColor = "bg-muted-foreground";
-    if (status === "Production" || status === "Live System") {
-      dotColor = "bg-primary";
-    } else if (status === "Live Pilot" || status === "Applied Research") {
-      dotColor = "bg-accent";
-    }
-
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
-        <span className={`size-1.5 rounded-full ${dotColor} shrink-0`} />
-        <span>{status}</span>
-      </span>
-    );
-  };
-
   const cvPdfUrl = config.profile.cvPdfUrl || "/cv/John_Albarka_Ibrahim_CV.pdf";
-  const cvDocxUrl = config.profile.cvDocxUrl || "/cv/John_Albarka_Ibrahim_CV.docx";
-
-  const renderProjectCard = (project: PortfolioProject) => {
-    const isHoverMatched = hoveredCategory === project.category;
-
-    return (
-      <div
-        key={project.id}
-        onClick={() => setSelectedProject(project)}
-        className={`rounded-sm bg-card p-6 flex flex-col justify-between transition-colors duration-150 group cursor-pointer ${
-          isHoverMatched ? "border-2 border-primary" : "border border-border"
-        } hover:border-primary lg:col-span-1 min-h-[320px]`}
-      >
-        <div className="space-y-3">
-          {/* Status dot + category */}
-          <div className="flex items-center justify-between gap-2">
-            {getStatusBadge(project.status)}
-            <span className="text-xs font-mono text-muted-foreground uppercase">
-              {project.category}
-            </span>
-          </div>
-
-          {/* Title */}
-          <h3 className="font-bold tracking-tight text-foreground transition-colors group-hover:text-primary text-xl leading-snug">
-            {project.title}
-          </h3>
-
-          {/* Plain-language business use case */}
-          <p className="text-sm text-foreground/90 leading-relaxed font-sans">
-            {project.businessUseCase || project.subtitle}
-          </p>
-
-          {/* Metric callout */}
-          <div className="pt-1">
-            <span className="inline-block text-xs font-mono font-medium text-foreground bg-muted px-2 py-0.5 rounded-sm border border-border">
-              {project.highlightMetric}
-            </span>
-          </div>
-        </div>
-
-        {/* Footer: Tech stack + Action links */}
-        <div className="pt-5 border-t border-border mt-5 space-y-3">
-          <div className="flex flex-wrap gap-1.5">
-            {project.techStack.slice(0, 4).map((tech) => (
-              <span
-                key={tech}
-                className="text-xs font-mono px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground"
-              >
-                {tech}
-              </span>
-            ))}
-            {project.techStack.length > 4 && (
-              <span className="text-xs font-mono px-1 py-0.5 text-muted-foreground">
-                +{project.techStack.length - 4}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between text-xs font-mono pt-1">
-            <span className="text-primary font-semibold group-hover:underline inline-flex items-center gap-1">
-              <span>View Breakdown</span>
-              <ArrowRight className="size-3" />
-            </span>
-
-            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-              {project.githubUrl && (
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View source on GitHub"
-                  className="p-1 rounded-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Github className="size-4" />
-                </a>
-              )}
-              {project.liveUrl && !project.liveUrl.startsWith("/") && (
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View live deployment"
-                  className="p-1 rounded-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ExternalLink className="size-4" />
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <>
@@ -248,47 +117,45 @@ export default function PortfolioPage() {
               <span>AI ENGINEER</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
-              {config.profile.name}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.08]">
+              I build AI systems that turn messy data into decisions.
             </h1>
 
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-              {config.profile.subheadline}
+            <p className="max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
+              {config.profile.name} is an AI Engineer building production RAG backends, multilingual ML systems, and market intelligence tools for teams that need better answers, faster.
             </p>
 
-            {/* Direct Actions: Download CV PDF as primary, DOCX as secondary */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
+              <a
+                href="#projects"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors min-h-[44px]"
+              >
+                <span>View selected work</span>
+                <ArrowRight className="size-4" />
+              </a>
+
               <a
                 href={cvPdfUrl}
                 download="John_Albarka_Ibrahim_CV.pdf"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors min-h-[44px]"
-              >
-                <Download className="size-4" />
-                <span>Download CV (PDF)</span>
-              </a>
-
-              <a
-                href={cvDocxUrl}
-                download="John_Albarka_Ibrahim_CV.docx"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm border border-border bg-card hover:bg-muted text-foreground text-sm font-medium transition-colors min-h-[44px]"
               >
-                <FileText className="size-4" />
-                <span>Download Word (DOCX)</span>
+                <Download className="size-4" />
+                <span>Download CV</span>
               </a>
 
               <a
-                href="#projects"
+                href="#contact"
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-mono text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
               >
-                <span>Explore Projects</span>
-                <ArrowRight className="size-3.5" />
+                <span>Contact me</span>
               </a>
             </div>
 
-            {/* Credential line under the buttons */}
-            <p className="text-xs font-mono text-muted-foreground pt-1">
-              {config.education.degree} ({config.education.honors}) · Microsoft Certified Azure AI Engineer Associate (AI-102)
-            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-xs font-mono text-muted-foreground">
+              <span>10 shipped systems</span>
+              <span>65+ tracked listings</span>
+              <span>Azure AI Engineer</span>
+            </div>
           </div>
 
           {/* Interactive Isometric Hero Figure */}
@@ -300,6 +167,7 @@ export default function PortfolioPage() {
               onHoverCategory={setHoveredCategory}
               onSelectProject={setSelectedProject}
             />
+            <p className="sr-only">Four practice areas. Ten systems. Select a domain to explore.</p>
           </div>
         </section>
 
@@ -307,12 +175,15 @@ export default function PortfolioPage() {
         <section id="projects" className="scroll-mt-24 space-y-8 pt-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
             <div>
-              <p className="text-xs font-mono uppercase text-muted-foreground">
-                // PRODUCTION & APPLIED BUILDS
+              <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                // SELECTED WORK
               </p>
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                Projects & Architectures
+                Systems built for real decisions
               </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                A small selection of production and applied systems. Open a case study to see the problem, my role, the outcome, and the architecture behind it.
+              </p>
             </div>
             <span className="text-xs font-mono text-muted-foreground">
               {totalFilteredCount} OF {projects.length} PROJECTS DISPLAYED
@@ -382,7 +253,14 @@ export default function PortfolioPage() {
               {/* Featured Projects Grid */}
               {filteredFeaturedProjects.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {filteredFeaturedProjects.map((p) => renderProjectCard(p))}
+                  {filteredFeaturedProjects.map((p) => (
+                    <ProjectCard
+                      key={p.id}
+                      project={p}
+                      isCategoryHighlighted={hoveredCategory === p.category}
+                      onSelect={setSelectedProject}
+                    />
+                  ))}
                 </div>
               )}
 
@@ -402,8 +280,8 @@ export default function PortfolioPage() {
         {/* Section 3: Experience */}
         <section id="experience" className="scroll-mt-24 space-y-8 pt-8 border-t border-border">
           <div className="space-y-1">
-            <p className="text-xs font-mono uppercase text-muted-foreground">
-              // VERIFIED CAREER TRACK RECORD
+            <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+              // EXPERIENCE
             </p>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <Briefcase className="size-6 text-primary" />
@@ -451,12 +329,12 @@ export default function PortfolioPage() {
         {/* Section 4: Skills */}
         <section id="skills" className="scroll-mt-24 space-y-8 pt-8 border-t border-border">
           <div className="space-y-1">
-            <p className="text-xs font-mono uppercase text-muted-foreground">
-              // ENGINEERING CAPABILITIES
+            <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+              // TECHNICAL FOCUS
             </p>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <Layers className="size-6 text-primary" />
-              <span>Technical Skills</span>
+              <span>Where I do my best work</span>
             </h2>
           </div>
 
@@ -487,12 +365,12 @@ export default function PortfolioPage() {
         {/* Section 5: Education and Certifications */}
         <section id="education" className="scroll-mt-24 space-y-8 pt-8 border-t border-border">
           <div className="space-y-1">
-            <p className="text-xs font-mono uppercase text-muted-foreground">
-              // ACADEMICS & PROFESSIONAL CREDENTIALS
+            <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+              // CREDENTIALS
             </p>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <GraduationCap className="size-6 text-primary" />
-              <span>Education & Certifications</span>
+              <span>Education and selected credentials</span>
             </h2>
           </div>
 
@@ -528,7 +406,7 @@ export default function PortfolioPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                {certifications.map((cert) => {
+                {certifications.slice(0, 4).map((cert) => {
                   const isLink = Boolean(cert.credentialUrl);
 
                   if (isLink) {
@@ -587,10 +465,10 @@ export default function PortfolioPage() {
         >
           <div className="space-y-2 max-w-xl">
             <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-              Hiring? Download my CV or get in touch.
+              Building something difficult?
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Reach out directly for engineering roles, technical interviews, or project inquiries.
+              I’m open to engineering roles, technical conversations, and carefully scoped applied AI work.
             </p>
             {config.profile.availability && (
               <div className="pt-1">

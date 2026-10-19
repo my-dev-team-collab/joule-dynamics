@@ -41,6 +41,7 @@ export interface PortfolioProject {
   id: string;
   rank: number;
   title: string;
+  displayTitle?: string;
   subtitle: string;
   category: "Agentic RAG" | "Model Training & Fine-Tuning" | "Data & Web Intelligence" | "Embedded & Robotics";
   status: "Live System" | "Live Pilot" | "Production" | "Fine-Tuned Model" | "Open Source" | "Applied Research";
@@ -57,6 +58,8 @@ export interface PortfolioProject {
   };
   resultsLabel: string;
   results: string[];
+  myRole?: string;
+  scale?: string;
   businessUseCase?: string;
   architectureDiagram?: string;
   isFeatured?: boolean;

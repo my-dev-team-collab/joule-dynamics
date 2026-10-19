@@ -144,7 +144,7 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
         </div>
       </div>
 
-      {/* Business Use Case at the top */}
+      {/* Outcome-led summary */}
       {project.businessUseCase && (
         <div className="rounded-sm border border-border/80 bg-background/60 p-3.5 space-y-1">
           <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
@@ -156,7 +156,28 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
         </div>
       )}
 
-      {/* Subtitle lead paragraph */}
+      {(project.myRole || project.scale) && (
+        <div className="grid grid-cols-1 gap-3 border-y border-border py-3 sm:grid-cols-2">
+          {project.myRole && (
+            <div>
+              <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                My role
+              </h4>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{project.myRole}</p>
+            </div>
+          )}
+          {project.scale && (
+            <div>
+              <h4 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Scale
+              </h4>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{project.scale}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Context paragraph */}
       <p className="text-foreground text-sm leading-relaxed">
         {project.subtitle}
       </p>
@@ -251,7 +272,7 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
         <DialogContent className="sm:max-w-[768px] max-h-[85vh] overflow-y-auto assistant-scrollbar">
           <DialogHeader className="sticky top-0 bg-background z-10 pb-3 border-b border-border">
             <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground text-left leading-snug">
-              {project.title}
+              {project.displayTitle || project.title}
             </DialogTitle>
           </DialogHeader>
           <Content />
@@ -265,7 +286,7 @@ export function ProjectDetailModal({ project, open, onOpenChange }: ProjectDetai
       <DrawerContent className="max-h-[90vh]">
         <div className="px-4 pt-4 pb-2 border-b border-border shrink-0">
           <DrawerTitle className="text-lg font-bold tracking-tight text-foreground text-left">
-            {project.title}
+            {project.displayTitle || project.title}
           </DrawerTitle>
         </div>
         <div className="p-4 overflow-y-auto assistant-scrollbar">
