@@ -3,5 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /audit/
 
-# Sitemap location (update once deployed)
-# Sitemap: https://joule-dynamics.dev/sitemap.xml
+Sitemap: https://www.jouledynamics.me/sitemap.xml

@@ -114,7 +114,7 @@ export default function PortfolioPage() {
           <div className="lg:col-span-5 space-y-4">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-sm bg-muted text-foreground border border-border text-xs font-mono">
               <span className="size-1.5 rounded-full bg-primary" />
-              <span>AI ENGINEER</span>
+              <span>AI ENGINEER · JOULE DYNAMICS</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.08]">

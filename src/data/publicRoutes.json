@@ -1,0 +1,37 @@
+[
+  {
+    "path": "/",
+    "indexable": true,
+    "title": "Joule Dynamics | Production AI & Data Systems",
+    "description": "Joule Dynamics is John Albarka Ibrahim's engineering lab for production agentic RAG, multilingual ML, market intelligence, and resilient data systems.",
+    "type": "website"
+  },
+  {
+    "path": "/portfolio",
+    "indexable": true,
+    "title": "John Albarka Ibrahim | AI Engineer Portfolio | Joule Dynamics",
+    "description": "Explore John Albarka Ibrahim's production AI systems, multilingual models, agentic RAG backends, and data intelligence projects built through Joule Dynamics.",
+    "type": "profile"
+  },
+  {
+    "path": "/live-systems",
+    "indexable": true,
+    "title": "Live AI & Data Systems | Joule Dynamics",
+    "description": "Explore live Joule Dynamics demonstrations for pricing intelligence, real-estate monitoring, customer support RAG, and B2B lead generation.",
+    "type": "website"
+  },
+  {
+    "path": "/real-estate",
+    "indexable": true,
+    "title": "Real Estate Rate Monitor | Joule Dynamics",
+    "description": "Monitor short-term rental rates, availability, market changes, and pricing anomalies across New York, Miami, Lagos, and Abuja.",
+    "type": "website"
+  },
+  {
+    "path": "/audit",
+    "indexable": false,
+    "title": "Automation Audit | Joule Dynamics",
+    "description": "Start a conversation about an automation or data-system opportunity with Joule Dynamics.",
+    "type": "website"
+  }
+]

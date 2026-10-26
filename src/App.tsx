@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SystemStatusBar } from "@/components/layout/SystemStatusBar";
 import CredentialFooter from "@/components/layout/CredentialFooter";
@@ -12,6 +12,7 @@ import NotFound from "@/components/sections/NotFound";
 import LiveSystems from "@/pages/LiveSystems";
 import RealEstatePage from "@/pages/RealEstatePage";
 import PortfolioPage from "@/pages/PortfolioPage";
+import SeoManager from "@/components/seo/SeoManager";
 
 /**
  * Root page: single-page layout, section-only composition.
@@ -57,6 +58,7 @@ export default function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="joule-ui-theme">
       <BrowserRouter>
+        <SeoManager />
         <ScrollToHash />
         <div className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
           <Routes>
@@ -64,8 +66,7 @@ export default function App() {
             <Route path="/real-estate" element={<RealEstatePage />} />
             <Route path="/live-systems" element={<LiveSystems />} />
             <Route path="/portfolio" element={<PortfolioPage />} />
-            {/* /audit redirects to the inline contact section on the main page */}
-            <Route path="/audit" element={<PortfolioRoot />} />
+            <Route path="/audit" element={<Navigate to="/#contact" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
