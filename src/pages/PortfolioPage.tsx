@@ -153,7 +153,6 @@ export default function PortfolioPage() {
 
             <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-xs font-mono text-muted-foreground">
               <span>10 shipped systems</span>
-              <span>65+ tracked listings</span>
               <span>Azure AI Engineer</span>
             </div>
           </div>
