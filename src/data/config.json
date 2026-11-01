@@ -723,7 +723,7 @@
       "status": "Open Source",
       "highlightMetric": "106 Automated Tests / MCP",
       "githubUrl": "https://github.com/JohnJodinho/nexus-audit-crawler",
-      "liveUrl": "https://huggingface.co/JohnAlbarkaIbrahim/afroxlmr-mini-nigerian-sentiment",
+      "liveUrl": "https://console.jouledynamics.me",
       "techStack": ["Python", "AsyncIO", "Redis Streams", "PostgreSQL", "Playwright", "MCP", "Docker", "Pytest"],
       "challenge": "Deep technical website audits require crawling thousands of dynamic pages without getting blocked, while giving AI agents a clean way to inspect audit findings programmatically.",
       "solutionLabel": "HOW THIS WORKS",
