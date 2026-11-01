@@ -393,7 +393,6 @@ export default function PortfolioPage() {
               <div className="space-y-1 text-xs font-mono text-muted-foreground pt-2 border-t border-border">
                 <p className="text-foreground font-medium">{config.education.institution}</p>
                 <p>Timeline: {config.education.timeline}</p>
-                <p className="text-foreground font-semibold">{config.education.gpa}</p>
               </div>
             </div>
 

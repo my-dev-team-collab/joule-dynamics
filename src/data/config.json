@@ -77,8 +77,7 @@
     "degree": "B.Eng. Mechanical Engineering",
     "honors": "First Class Honors",
     "institution": "University of Jos, Nigeria",
-    "timeline": "2018 : 2023",
-    "gpa": "CGPA: 4.63 / 5.00"
+    "timeline": "2018 : 2023"
   },
   "certifications": [
     {
@@ -350,7 +349,7 @@
     "bio": "I am John Albarka Ibrahim, an AI / ML Engineer and Systems Architect with a First Class degree in Mechanical Engineering. In mechanical systems, guessing tolerances or ignoring boundary conditions leads to physical failure. I bring that exact discipline to AI engineering: ensuring RAG pipelines are rigorously grounded, SQL queries are AST-validated, transformer models are efficiently quantized for CPU/edge inference, and agentic workflows are strictly gated rather than blindly executing arbitrary tools. Joule Dynamics is my proprietary engineering lab where these architectures are designed, tested, and deployed as live systems.",
     "credentials": [
       "Microsoft Certified: Azure AI Engineer Associate (AI-102)",
-      "B.Eng Mechanical Engineering, First Class Honors (4.63 GPA)",
+      "B.Eng Mechanical Engineering, First Class Honors",
       "AI / ML Lead, Zibeh Institute of Technology",
       "10 Production & Applied Builds with Public Benchmarks"
     ]

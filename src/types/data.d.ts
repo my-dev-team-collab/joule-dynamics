@@ -92,7 +92,6 @@ export interface AcademicEducation {
   honors: string;
   institution: string;
   timeline: string;
-  gpa: string;
 }
 
 export interface SkillCategoryGroup {

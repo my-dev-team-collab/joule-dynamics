@@ -72,7 +72,7 @@ export default function ExperienceSection() {
                   {education.degree}
                 </h3>
                 <p className="text-xs sm:text-sm font-semibold text-emerald-400 mt-0.5">
-                  {education.honors} ({education.gpa})
+                  {education.honors}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {education.institution}
