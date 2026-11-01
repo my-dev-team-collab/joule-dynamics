@@ -557,7 +557,7 @@
       "status": "Live Pilot",
       "highlightMetric": "18-Tool Dynamic Gating",
       "githubUrl": "https://github.com/JohnJodinho/joule-dynamics-server",
-      "liveUrl": "/real-estate",
+      "liveUrl": "https://www.jouledynamics.me/real-estate",
       "techStack": ["FastAPI", "PostgreSQL", "pgvector", "Supabase", "Groq", "Langfuse", "OpenTelemetry", "SSE Streaming", "Docker"],
       "challenge": "Short-term rental managers lose bookings when competitors drop rates quietly. Checking listings by hand across multiple cities is exhausting and outdated by the time pricing decisions are made.",
       "solutionLabel": "HOW THIS WORKS",
