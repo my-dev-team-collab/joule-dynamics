@@ -56,7 +56,7 @@ function ScrollToHash() {
 
 export default function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="joule-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="joule-ui-theme">
       <BrowserRouter>
         <SeoManager />
         <ScrollToHash />
