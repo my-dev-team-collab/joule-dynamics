@@ -16,6 +16,14 @@ interface PageMetadata {
 }
 
 function getMetadata(pathname: string): PageMetadata {
+  if (pathname === "/wheelchair-demo" || pathname === "/wheelchair") {
+    return {
+      title: "Smart Assistive Wheelchair Field Test | Joule Dynamics",
+      description: "Private engineering demonstration and field test video for the Smart Assistive Wheelchair project.",
+      type: "website",
+      indexable: false,
+    };
+  }
   const route = publicRoutes.find((candidate) => candidate.path === pathname);
   if (route) {
     const metadata: PageMetadata = {

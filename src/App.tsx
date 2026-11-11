@@ -12,6 +12,7 @@ import NotFound from "@/components/sections/NotFound";
 import LiveSystems from "@/pages/LiveSystems";
 import RealEstatePage from "@/pages/RealEstatePage";
 import PortfolioPage from "@/pages/PortfolioPage";
+import WheelchairDemoPage from "@/pages/WheelchairDemoPage";
 import SeoManager from "@/components/seo/SeoManager";
 
 /**
@@ -66,6 +67,8 @@ export default function App() {
             <Route path="/real-estate" element={<RealEstatePage />} />
             <Route path="/live-systems" element={<LiveSystems />} />
             <Route path="/portfolio" element={<PortfolioPage />} />
+            <Route path="/wheelchair-demo" element={<WheelchairDemoPage />} />
+            <Route path="/wheelchair" element={<Navigate to="/wheelchair-demo" replace />} />
             <Route path="/audit" element={<Navigate to="/#contact" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
